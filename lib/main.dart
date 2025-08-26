@@ -1,6 +1,11 @@
+import 'dart:ui';
+
+import 'package:rinf/rinf.dart';
+import 'src/bindings/bindings.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+Future<void> main() async {
+  await initializeRust(assignRustSignal);
   runApp(const MyApp());
 }
 
@@ -54,7 +59,25 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late final AppLifecycleListener _listener;
   int _counter = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _listener = AppLifecycleListener(
+      onExitRequested: () async {
+        finalizeRust(); // Shut down the async Rust runtime.
+        return AppExitResponse.exit;
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _listener.dispose();
+    super.dispose();
+  }
 
   void _incrementCounter() {
     setState(() {
