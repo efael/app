@@ -1,25 +1,56 @@
-use rinf::{DartSignal, RustSignal, SignalPiece};
+pub mod full_session;
+pub mod homeserver_login_details;
+pub mod init_client_error;
+pub mod logout_error;
+pub mod oidc_configuration;
+pub mod oidc_error;
+pub mod oidc_prompt;
+pub mod save_session_error;
+pub mod sliding_sync_version;
+
+use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
-/// To send data from Dart to Rust, use `DartSignal`.
-#[derive(Deserialize, DartSignal)]
-pub struct SmallText {
-    pub text: String,
+use crate::signals::{
+    homeserver_login_details::HomeserverLoginDetails, oidc_configuration::OidcConfiguration,
+};
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixInitRequest {
+    pub application_support_directory: String,
+    pub homeserver_url: String,
 }
 
-/// To send data from Rust to Dart, use `RustSignal`.
-#[derive(Serialize, RustSignal)]
-pub struct SmallNumber {
-    pub number: i32,
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixInitResponse {
+    Ok {
+        homeserver_login_details: HomeserverLoginDetails,
+        is_active: bool,
+        is_logged_in: bool,
+    },
+    Err {
+        message: String,
+    },
 }
 
-/// A signal can be nested inside another signal.
-#[derive(Serialize, RustSignal)]
-pub struct BigBool {
-    pub member: bool,
-    pub nested: SmallBool,
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixOidcAuthRequest {
+    pub oidc_configuration: OidcConfiguration,
 }
 
-/// To nest a signal inside other signal, use `SignalPiece`.
-#[derive(Serialize, SignalPiece)]
-pub struct SmallBool(pub bool);
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixOidcAuthResponse {
+    Ok { url: String },
+    Err { message: String },
+}
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixOidcAuthFinishRequest {
+    pub url: String,
+}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixOidcAuthFinishResponse {
+    Ok,
+    Err { message: String },
+}

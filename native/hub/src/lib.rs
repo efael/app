@@ -2,6 +2,7 @@
 //! entry point of the Rust logic.
 
 mod actors;
+mod extensions;
 mod signals;
 
 use actors::create_actors;

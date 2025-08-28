@@ -11,15 +11,50 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
-import 'package:widgetbook_workspace/cool_button.dart'
-    as _widgetbook_workspace_cool_button;
+import 'package:widgetbook_workspace/widgets/chat_item.dart'
+    as _widgetbook_workspace_widgets_chat_item;
+import 'package:widgetbook_workspace/widgets/message_preview.dart'
+    as _widgetbook_workspace_widgets_message_preview;
+import 'package:widgetbook_workspace/widgets/username.dart'
+    as _widgetbook_workspace_widgets_username;
+import 'package:widgetbook_workspace/widgets/userpic.dart'
+    as _widgetbook_workspace_widgets_userpic;
 
 final directories = <_widgetbook.WidgetbookNode>[
-  _widgetbook.WidgetbookLeafComponent(
-    name: 'CoolButton',
-    useCase: _widgetbook.WidgetbookUseCase(
-      name: 'Default',
-      builder: _widgetbook_workspace_cool_button.buildCoolButtonUseCase,
-    ),
+  _widgetbook.WidgetbookFolder(
+    name: 'widgets',
+    children: [
+      _widgetbook.WidgetbookLeafComponent(
+        name: 'ChatItem',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder:
+              _widgetbook_workspace_widgets_chat_item.buildCoolButtonUseCase,
+        ),
+      ),
+      _widgetbook.WidgetbookLeafComponent(
+        name: 'MessagePreview',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder: _widgetbook_workspace_widgets_message_preview
+              .buildCoolButtonUseCase,
+        ),
+      ),
+      _widgetbook.WidgetbookLeafComponent(
+        name: 'Username',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder:
+              _widgetbook_workspace_widgets_username.buildCoolButtonUseCase,
+        ),
+      ),
+      _widgetbook.WidgetbookLeafComponent(
+        name: 'Userpic',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder: _widgetbook_workspace_widgets_userpic.buildCoolButtonUseCase,
+        ),
+      ),
+    ],
   ),
 ];
