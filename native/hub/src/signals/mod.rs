@@ -54,3 +54,25 @@ pub enum MatrixOidcAuthFinishResponse {
     Ok,
     Err { message: String },
 }
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixSyncRequest {
+    pub sync_token: Option<String>,
+}
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixLogoutRequest {}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub struct MatrixLogoutResponse {}
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixListChatsRequest {
+    pub url: String,
+}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixListChatsResponse {
+    Ok,
+    Err { message: String },
+}

@@ -1,6 +1,9 @@
 pub mod init_request;
+pub mod list_chats_request;
+pub mod logout_request;
 pub mod oidc_auth_request;
 pub mod oidc_finish_request;
+pub mod sync_request;
 
 use std::{io::ErrorKind, path::PathBuf};
 
@@ -11,7 +14,8 @@ use tokio::task::JoinSet;
 use crate::{
     extensions::easy_listener::EasyListener,
     signals::{
-        MatrixInitRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest,
+        MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
+        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixSyncRequest,
         full_session::FullSession, init_client_error::InitClientError, logout_error::LogoutError,
         save_session_error::SaveSessionError,
     },
@@ -54,6 +58,7 @@ impl Matrix {
         actor.listen_to::<MatrixInitRequest>();
         actor.listen_to::<MatrixOidcAuthRequest>();
         actor.listen_to::<MatrixOidcAuthFinishRequest>();
+        actor.listen_to::<MatrixListChatsRequest>();
 
         actor
     }
@@ -84,13 +89,16 @@ impl Matrix {
         let mut client0_session = client0_dir.clone();
         client0_session.push("./session.json");
 
-        if let Ok(ref session) = tokio::fs::read_to_string(&client0_session).await
-            && let Ok(FullSession {
-                user_session,
-                sync_token: _,
-            }) = serde_json::from_str(session)
+        if let Some(FullSession {
+            user_session,
+            sync_token,
+        }) = self.get_session().await
         {
             let _ = client.restore_session(user_session).await;
+
+            if sync_token.is_some() && client.auth_api().is_some() {
+                self.emit_sync_request(sync_token);
+            }
         }
 
         self.client = Some(client);
@@ -115,6 +123,7 @@ impl Matrix {
 
         let homeserver_url = client.homeserver();
 
+        let _ = client.logout().await;
         drop(client);
         self.client = None;
 
@@ -128,14 +137,25 @@ impl Matrix {
             .map_err(|err| err.into());
     }
 
-    pub async fn save_session(&mut self) -> Result<(), SaveSessionError> {
+    pub async fn get_session(&self) -> Option<FullSession> {
+        let application_support_directory = self.application_support_directory.as_ref()?;
+        let mut client0_session = application_support_directory.clone();
+        client0_session.push("./client0/session.json");
+        let session = tokio::fs::read_to_string(&client0_session).await.ok()?;
+        serde_json::from_str(&session).ok()
+    }
+
+    pub async fn save_session(
+        &mut self,
+        sync_token: Option<String>,
+    ) -> Result<(), SaveSessionError> {
         if let Some(ref client) = self.client
             && let Some(user_session) = client.matrix_auth().session()
             && let Some(ref application_support_directory) = self.application_support_directory
         {
             let session = FullSession {
                 user_session,
-                sync_token: None,
+                sync_token,
             };
 
             let session = serde_json::to_string(&session).map_err(SaveSessionError::Serialize)?;
@@ -149,5 +169,21 @@ impl Matrix {
         }
 
         Ok(())
+    }
+
+    pub fn emit_sync_request(&mut self, sync_token: Option<String>) {
+        let mut addr = self.self_addr.clone();
+        self.owned_tasks.spawn(async move {
+            let request = MatrixSyncRequest { sync_token };
+            let _ = addr.notify(request).await;
+        });
+    }
+
+    pub fn emit_logout_request(&mut self) {
+        let mut addr = self.self_addr.clone();
+        self.owned_tasks.spawn(async move {
+            let request = MatrixLogoutRequest {};
+            let _ = addr.notify(request).await;
+        });
     }
 }

@@ -39,9 +39,11 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
             Ok(_) => {
                 debug_print!("MatrixOidcAuthFinishRequest: logged in");
 
-                if let Err(err) = self.save_session().await {
+                if let Err(err) = self.save_session(None).await {
                     debug_print!("MatrixOidcAuthFinishRequest: failed to save session: {err:?}");
                 }
+
+                self.emit_sync_request(None);
 
                 MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
             }

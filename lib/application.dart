@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:messenger/app_config.dart';
 import 'package:messenger/router.dart';
+import 'package:messenger/src/bindings/bindings.dart';
 import 'package:rinf/rinf.dart';
 
 class Application extends StatefulWidget {
@@ -14,6 +17,8 @@ class Application extends StatefulWidget {
 
 class _ApplicationState extends State<Application> {
   late final AppLifecycleListener _listener;
+  late final StreamSubscription<RustSignalPack<MatrixLogoutResponse>>
+  _logoutListener;
 
   @override
   void initState() {
@@ -25,10 +30,15 @@ class _ApplicationState extends State<Application> {
         return AppExitResponse.exit;
       },
     );
+
+    _logoutListener = MatrixLogoutResponse.rustSignalStream.listen((signal) {
+      navigatorKey.currentContext?.go("/authorize");
+    });
   }
 
   @override
   void dispose() {
+    _logoutListener.cancel();
     _listener.dispose();
     super.dispose();
   }
