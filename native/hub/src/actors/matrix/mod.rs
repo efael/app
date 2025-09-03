@@ -3,7 +3,8 @@ pub mod list_chats_request;
 pub mod logout_request;
 pub mod oidc_auth_request;
 pub mod oidc_finish_request;
-pub mod sync_request;
+pub mod process_sync_response_request;
+pub mod refresh_token_request;
 
 use std::{io::ErrorKind, path::PathBuf};
 
@@ -12,20 +13,23 @@ use messages::{actor::Actor, prelude::Address};
 use tokio::task::JoinSet;
 
 use crate::{
+    actors::matrix_sync::MatrixSync,
     extensions::easy_listener::EasyListener,
     signals::{
         MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixSyncRequest,
-        full_session::FullSession, init_client_error::InitClientError, logout_error::LogoutError,
+        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixProcessSyncResponseRequest,
+        MatrixRefreshTokenRequest, MatrixSyncRequest, full_session::FullSession,
+        init_client_error::InitClientError, logout_error::LogoutError,
         save_session_error::SaveSessionError,
     },
 };
 
 pub struct Matrix {
+    self_addr: Address<Self>,
     client: Option<Client>,
     owned_tasks: JoinSet<()>,
-    self_addr: Address<Self>,
     application_support_directory: Option<PathBuf>,
+    matrix_sync_addr: Address<MatrixSync>,
 }
 
 impl Actor for Matrix {}
@@ -45,7 +49,7 @@ impl EasyListener for Matrix {
 }
 
 impl Matrix {
-    pub fn new(self_addr: Address<Self>) -> Self {
+    pub fn new(self_addr: Address<Self>, matrix_sync_addr: Address<MatrixSync>) -> Self {
         let owned_tasks = JoinSet::new();
 
         let mut actor = Self {
@@ -53,12 +57,16 @@ impl Matrix {
             owned_tasks,
             self_addr,
             application_support_directory: None,
+            matrix_sync_addr,
         };
 
         actor.listen_to::<MatrixInitRequest>();
         actor.listen_to::<MatrixOidcAuthRequest>();
         actor.listen_to::<MatrixOidcAuthFinishRequest>();
         actor.listen_to::<MatrixListChatsRequest>();
+        actor.listen_to::<MatrixLogoutRequest>();
+        actor.listen_to::<MatrixRefreshTokenRequest>();
+        actor.listen_to::<MatrixProcessSyncResponseRequest>();
 
         actor
     }
@@ -96,8 +104,11 @@ impl Matrix {
         {
             let _ = client.restore_session(user_session).await;
 
-            if sync_token.is_some() && client.auth_api().is_some() {
-                self.emit_sync_request(sync_token);
+            if client.auth_api().is_some() {
+                self.emit_sync_request(MatrixSyncRequest::Init {
+                    client: client.clone(),
+                    sync_token,
+                });
             }
         }
 
@@ -148,7 +159,7 @@ impl Matrix {
     pub async fn save_session(
         &mut self,
         sync_token: Option<String>,
-    ) -> Result<(), SaveSessionError> {
+    ) -> Result<Option<FullSession>, SaveSessionError> {
         if let Some(ref client) = self.client
             && let Some(user_session) = client.matrix_auth().session()
             && let Some(ref application_support_directory) = self.application_support_directory
@@ -158,31 +169,33 @@ impl Matrix {
                 sync_token,
             };
 
-            let session = serde_json::to_string(&session).map_err(SaveSessionError::Serialize)?;
+            let session_str =
+                serde_json::to_string(&session).map_err(SaveSessionError::Serialize)?;
 
             let mut client0_session = application_support_directory.clone();
             client0_session.push("./client0/session.json");
 
-            tokio::fs::write(client0_session, session)
+            tokio::fs::write(client0_session, session_str)
                 .await
                 .map_err(SaveSessionError::Save)?;
+
+            return Ok(Some(session));
         }
 
-        Ok(())
-    }
-
-    pub fn emit_sync_request(&mut self, sync_token: Option<String>) {
-        let mut addr = self.self_addr.clone();
-        self.owned_tasks.spawn(async move {
-            let request = MatrixSyncRequest { sync_token };
-            let _ = addr.notify(request).await;
-        });
+        Ok(None)
     }
 
     pub fn emit_logout_request(&mut self) {
         let mut addr = self.self_addr.clone();
         self.owned_tasks.spawn(async move {
             let request = MatrixLogoutRequest {};
+            let _ = addr.notify(request).await;
+        });
+    }
+
+    pub fn emit_sync_request(&mut self, request: MatrixSyncRequest) {
+        let mut addr = self.matrix_sync_addr.clone();
+        self.owned_tasks.spawn(async move {
             let _ = addr.notify(request).await;
         });
     }
