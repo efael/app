@@ -5,7 +5,7 @@ use rinf::{RustSignal, debug_print};
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncRequest},
+    signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse},
 };
 
 #[async_trait]
@@ -35,20 +35,9 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
             }
         };
 
-        match client.oauth().finish_login(url.into()).await {
+        match client.login_with_oidc_callback(url.into()).await {
             Ok(_) => {
                 debug_print!("MatrixOidcAuthFinishRequest: logged in");
-                let client = client.clone();
-
-                if let Err(err) = self.save_session(None).await {
-                    debug_print!("MatrixOidcAuthFinishRequest: failed to save session: {err:?}");
-                }
-
-                self.emit_sync_request(MatrixSyncRequest::Init {
-                    client,
-                    sync_token: None,
-                });
-
                 MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
             }
             Err(err) => {

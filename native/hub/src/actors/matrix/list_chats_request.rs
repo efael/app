@@ -4,7 +4,7 @@ use rinf::{RustSignal, debug_print};
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixListChatsRequest, MatrixListChatsResponse, room::Room},
+    signals::{MatrixListChatsRequest, MatrixListChatsResponse},
 };
 
 #[async_trait]
@@ -22,10 +22,10 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             }
         };
 
-        debug_print!("{:?}", client.rooms());
-        debug_print!("{}", client.rooms().len());
-        for room in client.rooms() {
-            debug_print!("{:?}", Room::from_matrix(room).await);
-        }
+        // debug_print!("{:?}", client.rooms());
+        // debug_print!("{}", client.rooms().len());
+        // for room in client.rooms() {
+        //     debug_print!("{:?}", Room::from_matrix(room).await);
+        // }
     }
 }

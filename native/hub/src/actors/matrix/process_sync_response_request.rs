@@ -15,10 +15,10 @@ impl Notifiable<MatrixProcessSyncResponseRequest> for Matrix {
             }
         };
 
-        match msg {
-            MatrixProcessSyncResponseRequest::Response(response) => {
-                let _ = client.process_sync(response).await;
-            }
-        }
+        // match msg {
+        //     MatrixProcessSyncResponseRequest::Response(response) => {
+        //         // let _ = client.process_sync(response).await;
+        //     }
+        // }
     }
 }

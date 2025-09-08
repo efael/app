@@ -1,24 +1,11 @@
-pub mod full_session;
-pub mod homeserver_login_details;
 pub mod init_client_error;
-pub mod logout_error;
-pub mod oidc_configuration;
-pub mod oidc_error;
-pub mod oidc_prompt;
 pub mod room;
 pub mod save_session_error;
-pub mod sliding_sync_version;
 
-use matrix_sdk::{
-    Client, authentication::matrix::MatrixSession, config::SyncSettings,
-    ruma::api::client::sync::sync_events, sync::SyncResponse,
-};
+use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_events};
+use matrix_sdk_rinf::authentication::{HomeserverLoginDetails, OidcConfiguration};
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
-
-use crate::signals::{
-    homeserver_login_details::HomeserverLoginDetails, oidc_configuration::OidcConfiguration,
-};
 
 #[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixInitRequest {
@@ -72,12 +59,14 @@ pub enum MatrixSyncRequest {
         sync_settings: SyncSettings,
         sync_token: Option<String>,
     },
+    OK,
 }
 
 #[derive(Deserialize, DartSignal, Debug)]
 pub enum MatrixProcessSyncResponseRequest {
     #[serde(skip)]
     Response(sync_events::v3::Response),
+    OK,
 }
 
 #[derive(Deserialize, DartSignal, Debug)]
@@ -89,7 +78,10 @@ pub struct MatrixRefreshTokenRequest {
 }
 
 #[derive(Serialize, RustSignal, Debug)]
-pub struct MatrixLogoutResponse {}
+pub enum MatrixLogoutResponse {
+    Ok,
+    Err { message: String },
+}
 
 #[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixListChatsRequest {

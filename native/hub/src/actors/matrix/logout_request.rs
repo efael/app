@@ -4,20 +4,34 @@ use rinf::{RustSignal, debug_print};
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixLogoutRequest, MatrixLogoutResponse, logout_error::LogoutError},
+    signals::{MatrixLogoutRequest, MatrixLogoutResponse},
 };
 
 #[async_trait]
 impl Notifiable<MatrixLogoutRequest> for Matrix {
     async fn notify(&mut self, _msg: MatrixLogoutRequest, _: &Context<Self>) {
-        match self.logout().await {
-            Ok(_) | Err(LogoutError::ClientNotInitialized) => {
+        let client = match self.client.as_mut() {
+            Some(client) => client,
+            None => {
+                debug_print!("MatrixLogoutRequest: client is not initialized");
+                MatrixLogoutResponse::Err {
+                    message: "Client is not initialized".to_string(),
+                }
+                .send_signal_to_dart();
+                return;
+            }
+        };
+        match client.logout().await {
+            Ok(_) => {
                 debug_print!("MatrixLogoutRequest: logged out");
-                MatrixLogoutResponse {}.send_signal_to_dart();
+                MatrixLogoutResponse::Ok {}.send_signal_to_dart();
             }
             Err(err) => {
                 debug_print!("MatrixLogoutRequest: {err:?}");
-                MatrixLogoutResponse {}.send_signal_to_dart();
+                MatrixLogoutResponse::Err {
+                    message: err.to_string(),
+                }
+                .send_signal_to_dart();
             }
         };
     }

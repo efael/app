@@ -6,9 +6,7 @@ use rinf::{RustSignal, debug_print};
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{
-        MatrixInitRequest, MatrixInitResponse, homeserver_login_details::HomeserverLoginDetails,
-    },
+    signals::{MatrixInitRequest, MatrixInitResponse},
 };
 
 #[async_trait]
@@ -41,12 +39,12 @@ impl Notifiable<MatrixInitRequest> for Matrix {
             .as_ref()
             .expect("MatrixInitClient: client should exist already");
 
-        let homeserver_login_details = HomeserverLoginDetails::from_client(client).await;
+        let homeserver_login_details = client.homeserver_login_details().await;
 
         let response = MatrixInitResponse::Ok {
             homeserver_login_details,
             is_active: client.is_active(),
-            is_logged_in: client.auth_api().is_some(),
+            is_logged_in: client.is_authorized(),
         };
 
         debug_print!("MatrixInitRequest: client was successfully initialized: {response:?}");
