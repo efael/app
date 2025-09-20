@@ -74,7 +74,7 @@ pub struct RoomListService {
 }
 
 impl RoomListService {
-    fn state(&self, listener: Box<dyn RoomListServiceStateListener>) -> Arc<TaskHandle> {
+    pub fn state(&self, listener: Box<dyn RoomListServiceStateListener>) -> Arc<TaskHandle> {
         let state_stream = self.inner.state();
 
         Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
@@ -92,7 +92,7 @@ impl RoomListService {
         Ok(Arc::new(Room::new(self.inner.room(room_id)?, self.utd_hook.clone())))
     }
 
-    async fn all_rooms(self: Arc<Self>) -> Result<Arc<RoomList>, RoomListError> {
+    pub async fn all_rooms(self: Arc<Self>) -> Result<Arc<RoomList>, RoomListError> {
         Ok(Arc::new(RoomList {
             room_list_service: self.clone(),
             inner: Arc::new(self.inner.all_rooms().await.map_err(RoomListError::from)?),
@@ -159,7 +159,7 @@ impl RoomList {
         })
     }
 
-    fn entries_with_dynamic_adapters(
+    pub fn entries_with_dynamic_adapters(
         self: Arc<Self>,
         page_size: u32,
         listener: Box<dyn RoomListEntriesListener>,
@@ -279,6 +279,7 @@ pub struct RoomListLoadingStateResult {
     pub state_stream: Arc<TaskHandle>,
 }
 
+#[derive(Debug)]
 pub enum RoomListServiceState {
     // Name it `Initial` instead of `Init`, otherwise it creates a keyword conflict in Swift
     // as of 2023-08-21.
