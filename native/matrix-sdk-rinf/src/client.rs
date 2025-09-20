@@ -13,10 +13,7 @@ use matrix_sdk::media::MediaFileHandle as SdkMediaFileHandle;
 use matrix_sdk::{
     authentication::oauth::{
         AccountManagementActionFull, ClientId, OAuthAuthorizationData, OAuthSession,
-    },
-    event_cache::EventCacheError,
-    media::{MediaFormat, MediaRequestParameters, MediaRetentionPolicy, MediaThumbnailSettings},
-    ruma::{
+    }, config::SyncSettings, event_cache::EventCacheError, media::{MediaFormat, MediaRequestParameters, MediaRetentionPolicy, MediaThumbnailSettings}, ruma::{
         api::client::{
             discovery::{
                 discover_homeserver::RtcFocusInfo,
@@ -36,11 +33,7 @@ use matrix_sdk::{
         },
         serde::Raw,
         EventEncryptionAlgorithm, RoomId, TransactionId, UInt, UserId,
-    },
-    sliding_sync::Version as SdkSlidingSyncVersion,
-    store::RoomLoadSettings as SdkRoomLoadSettings,
-    AuthApi, AuthSession, Client as MatrixClient, SessionChange, SessionTokens,
-    STATE_STORE_DATABASE_NAME,
+    }, sliding_sync::Version as SdkSlidingSyncVersion, store::RoomLoadSettings as SdkRoomLoadSettings, AuthApi, AuthSession, Client as MatrixClient, RefreshTokenError, SessionChange, SessionTokens, STATE_STORE_DATABASE_NAME
 };
 use matrix_sdk_common::{stream::StreamExt, SendOutsideWasm, SyncOutsideWasm};
 use matrix_sdk_ui::{
@@ -51,7 +44,7 @@ use matrix_sdk_ui::{
     unable_to_decrypt_hook::UtdHookManager,
 };
 use mime::Mime;
-use rinf::SignalPiece;
+use rinf::{debug_print, SignalPiece};
 use ruma::{
     api::client::{alias::get_alias, error::ErrorKind, uiaa::UserIdentifier},
     events::{
@@ -292,10 +285,12 @@ impl Client {
         }
 
         if let Some(session_delegate) = session_delegate {
+            debug_print!("@ setting session callbacks");
             client.inner.set_session_callbacks(
                 {
                     let session_delegate = session_delegate.clone();
                     Box::new(move |client| {
+                        debug_print!("@ rink trying to retreive session");
                         let session_delegate = session_delegate.clone();
                         let user_id = client.user_id().context("user isn't logged in")?;
                         Ok(Self::retrieve_session(session_delegate, user_id)?)
@@ -304,6 +299,7 @@ impl Client {
                 {
                     let session_delegate = session_delegate.clone();
                     Box::new(move |client| {
+                        debug_print!("@ rink trying to save session");
                         let session_delegate = session_delegate.clone();
                         Ok(Self::save_session(session_delegate, client)?)
                     })
@@ -709,6 +705,21 @@ impl Client {
 
     pub fn is_authorized(&self) -> bool {
         self.inner.auth_api().is_some()
+    }
+
+    pub async fn whoami(&self) {
+        debug_print!("@ whoami: {:?}", self.inner.whoami().await.unwrap())
+    }
+
+    pub async fn is_server_accepts_session(&self) -> bool {
+        let whoami = self.inner.whoami().await;
+        whoami.is_ok()
+    }
+
+    pub async fn refresh_access_token(&self) -> Result<(), RefreshTokenError> {
+        self.inner
+            .refresh_access_token()
+            .await
     }
 }
 
@@ -2020,7 +2031,7 @@ pub struct Session {
     /// The access token used for this session.
     pub access_token: String,
     /// The token used for [refreshing the access token], if any.
-    ///
+    ///a
     /// [refreshing the access token]: https://spec.matrix.org/v1.3/client-server-api/#refreshing-access-tokens
     pub refresh_token: Option<String>,
     /// The user the access token was issued for.
