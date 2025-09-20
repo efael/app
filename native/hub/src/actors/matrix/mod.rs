@@ -13,6 +13,7 @@ use matrix_sdk::Client as SdkClient;
 use matrix_sdk_rinf::client::Client;
 use messages::{actor::Actor, prelude::Address};
 use tokio::task::JoinSet;
+use rinf::debug_print;
 
 use crate::{
     actors::matrix::client_session_delegate::ClientSessionDelegateImplementation,
@@ -75,6 +76,7 @@ impl Matrix {
         )?;
 
         let mut client0_dir = application_support_directory.clone();
+        debug_print!("# application folder: {}", &client0_dir.to_str().unwrap());
         client0_dir.push("./client0");
 
         self.client.take();
@@ -86,13 +88,13 @@ impl Matrix {
         };
 
         let sdk_client = SdkClient::builder()
-            .server_name_or_homeserver_url(homeserver_url)
+            .server_name_or_homeserver_url(&homeserver_url)
             .sqlite_store(&client0_dir, None)
             .build()
             .await
             .map_err(InitClientError::SdkClientBuildError)?;
 
-        let session_delegate = ClientSessionDelegateImplementation::new(client0_dir.clone());
+        let session_delegate = ClientSessionDelegateImplementation::new(application_support_directory.clone());
         let client = Client::new(
             sdk_client,
             true,
@@ -103,6 +105,19 @@ impl Matrix {
         .map_err(InitClientError::ClientBuildError)?;
 
         self.client = Some(client);
+        Ok(())
+    }
+
+    pub async fn clean_storage(&self) -> Result<(), ()> {
+        let dir = self.application_support_directory.clone().ok_or(())?;
+        debug_print!("# clean_storage: removing {dir:?}");
+
+        let mut entries = tokio::fs::read_dir(dir).await.map_err(|_| ())?;
+        while let Ok(Some(entry)) = entries.next_entry().await {
+            let path = entry.path();
+            debug_print!("# clean_storage: removing {path:?}");
+            let _ = tokio::fs::remove_dir_all(path).await;
+        }
 
         Ok(())
     }
