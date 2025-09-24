@@ -4,32 +4,31 @@ pub mod list_chats_request;
 pub mod logout_request;
 pub mod oidc_auth_request;
 pub mod oidc_finish_request;
-pub mod process_sync_response_request;
+pub mod sync_service_request;
 pub mod refresh_token_request;
 
 use std::{io::ErrorKind, path::PathBuf, sync::Arc};
 
 use matrix_sdk::Client as SdkClient;
-use matrix_sdk_rinf::client::Client;
-use messages::{actor::Actor, prelude::Address};
+use matrix_sdk_rinf::{client::Client, room_list::RoomListService, sync_service::SyncService, task_handle::TaskHandle};
+use messages::{actor::Actor, prelude::{Address, Notifiable}};
 use tokio::task::JoinSet;
-use rinf::debug_print;
+use rinf::{debug_print, DartSignal};
 
 use crate::{
     actors::matrix::client_session_delegate::ClientSessionDelegateImplementation,
     extensions::easy_listener::EasyListener,
-    signals::{
-        MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixProcessSyncResponseRequest,
-        MatrixRefreshTokenRequest, init_client_error::InitClientError,
-    },
+    signals::{ init_client_error::InitClientError, MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest, MatrixSyncServiceRequest},
 };
 
 pub struct Matrix {
     self_addr: Address<Self>,
     client: Option<Client>,
     owned_tasks: JoinSet<()>,
+    rinf_taks: Vec<Arc<TaskHandle>>,
     application_support_directory: Option<PathBuf>,
+    sync_service: Option<Arc<SyncService>>,
+    room_service: Option<Arc<RoomListService>>,
 }
 
 impl Actor for Matrix {}
@@ -55,8 +54,11 @@ impl Matrix {
         let mut actor = Self {
             client: None,
             owned_tasks,
+            rinf_taks: Vec::new(),
             self_addr,
             application_support_directory: None,
+            sync_service: None,
+            room_service: None,
         };
 
         actor.listen_to::<MatrixInitRequest>();
@@ -65,7 +67,7 @@ impl Matrix {
         actor.listen_to::<MatrixListChatsRequest>();
         actor.listen_to::<MatrixLogoutRequest>();
         actor.listen_to::<MatrixRefreshTokenRequest>();
-        actor.listen_to::<MatrixProcessSyncResponseRequest>();
+        actor.listen_to::<MatrixSyncServiceRequest>();
 
         actor
     }
@@ -122,10 +124,12 @@ impl Matrix {
         Ok(())
     }
 
-    pub fn emit_logout_request(&mut self) {
+    pub async fn emit<Signal>(&mut self, request: Signal) where 
+        Self: Notifiable<Signal>,
+        Signal: DartSignal + Send + 'static,
+    {
         let mut addr = self.self_addr.clone();
         self.owned_tasks.spawn(async move {
-            let request = MatrixLogoutRequest {};
             let _ = addr.notify(request).await;
         });
     }

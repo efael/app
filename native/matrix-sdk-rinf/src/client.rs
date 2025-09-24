@@ -285,12 +285,10 @@ impl Client {
         }
 
         if let Some(session_delegate) = session_delegate {
-            debug_print!("@ setting session callbacks");
             client.inner.set_session_callbacks(
                 {
                     let session_delegate = session_delegate.clone();
                     Box::new(move |client| {
-                        debug_print!("@ rink trying to retreive session");
                         let session_delegate = session_delegate.clone();
                         let user_id = client.user_id().context("user isn't logged in")?;
                         Ok(Self::retrieve_session(session_delegate, user_id)?)
@@ -299,7 +297,6 @@ impl Client {
                 {
                     let session_delegate = session_delegate.clone();
                     Box::new(move |client| {
-                        debug_print!("@ rink trying to save session");
                         let session_delegate = session_delegate.clone();
                         Ok(Self::save_session(session_delegate, client)?)
                     })

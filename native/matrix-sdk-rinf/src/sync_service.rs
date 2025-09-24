@@ -22,7 +22,7 @@ use matrix_sdk_ui::{
         State as MatrixSyncServiceState, SyncService as MatrixSyncService,
         SyncServiceBuilder as MatrixSyncServiceBuilder,
     },
-    unable_to_decrypt_hook::UtdHookManager,
+    unable_to_decrypt_hook::UtdHookManager
 };
 
 use crate::{
@@ -30,6 +30,7 @@ use crate::{
     runtime::get_runtime_handle, TaskHandle,
 };
 
+#[derive(Debug)]
 pub enum SyncServiceState {
     Idle,
     Running,
@@ -73,6 +74,13 @@ impl SyncService {
 
     pub async fn stop(&self) {
         self.inner.stop().await
+    }
+
+    pub fn next_state(&self) -> SyncServiceState {
+        self.inner
+            .state()
+            .next_now()
+            .into()
     }
 
     pub fn state(&self, listener: Box<dyn SyncServiceStateObserver>) -> Arc<TaskHandle> {

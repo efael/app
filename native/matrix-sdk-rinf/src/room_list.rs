@@ -21,6 +21,7 @@ use matrix_sdk_ui::{
     },
     unable_to_decrypt_hook::UtdHookManager,
 };
+use rinf::debug_print;
 
 use crate::{
     room::{Membership, Room},
@@ -219,16 +220,21 @@ impl RoomList {
             Arc::new(RoomListDynamicEntriesController::new(dynamic_entries_controller));
 
         let utd_hook = this.room_list_service.utd_hook.clone();
+        
+        debug_print!("@ before creating handle");
         let entries_stream = Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
             pin_mut!(entries_stream);
 
+            debug_print!("@ looping through entities_stream");
             while let Some(diffs) = entries_stream.next().await {
-                listener.on_update(
-                    diffs
-                        .into_iter()
-                        .map(|room| RoomListEntriesUpdate::from(utd_hook.clone(), room))
-                        .collect(),
-                );
+                debug_print!("@ got diff, triggering update: {}", diffs.len());
+                let mapped = diffs
+                    .into_iter()
+                    .map(|room| RoomListEntriesUpdate::from(utd_hook.clone(), room))
+                    .collect();
+
+                debug_print!("@ mapped, trying on_update");
+                listener.on_update(mapped);
             }
         })));
 
@@ -265,11 +271,11 @@ pub struct RoomListEntriesWithDynamicAdaptersResult {
 }
 
 impl RoomListEntriesWithDynamicAdaptersResult {
-    fn controller(&self) -> Arc<RoomListDynamicEntriesController> {
+    pub fn controller(&self) -> Arc<RoomListDynamicEntriesController> {
         self.controller.clone()
     }
 
-    fn entries_stream(&self) -> Arc<TaskHandle> {
+    pub fn entries_stream(&self) -> Arc<TaskHandle> {
         self.entries_stream.clone()
     }
 }
@@ -421,15 +427,15 @@ impl RoomListDynamicEntriesController {
 }
 
 impl RoomListDynamicEntriesController {
-    fn set_filter(&self, kind: RoomListEntriesDynamicFilterKind) -> bool {
+    pub fn set_filter(&self, kind: RoomListEntriesDynamicFilterKind) -> bool {
         self.inner.set_filter(kind.into())
     }
 
-    fn add_one_page(&self) {
+    pub fn add_one_page(&self) {
         self.inner.add_one_page();
     }
 
-    fn reset_to_one_page(&self) {
+    pub fn reset_to_one_page(&self) {
         self.inner.reset_to_one_page();
     }
 }

@@ -7,7 +7,7 @@ use std::{fs, path::PathBuf};
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse},
+    signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncServiceRequest},
 };
 
 #[async_trait]
@@ -54,6 +54,8 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
                 );
 
                 MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
+
+                self.emit(MatrixSyncServiceRequest::Start).await;
             }
             Err(err) => {
                 debug_print!("MatrixOidcAuthFinishRequest: failed to finish login: {err:?}");

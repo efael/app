@@ -1,11 +1,10 @@
-use std::time::Duration;
 use async_trait::async_trait;
-use matrix_sdk_rinf::room_list::{RoomListEntriesListener, RoomListEntriesUpdate, RoomListServiceStateListener};
+use matrix_sdk_rinf::room_list::{RoomListEntriesDynamicFilterKind, RoomListEntriesListener, RoomListEntriesUpdate, RoomListServiceStateListener};
 use messages::prelude::{Context, Notifiable};
 use rinf::{RustSignal, debug_print};
 use crate::{
     actors::matrix::Matrix,
-    signals::{room::Room, MatrixListChatsRequest, MatrixListChatsResponse, MatrixRoomListUpdate},
+    signals::{room::Room, MatrixListChatsRequest, MatrixListChatsResponse, MatrixRoomListUpdate}
 };
 
 #[async_trait]
@@ -14,7 +13,7 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
         let client = match self.client.as_mut() {
             Some(client) => client,
             None => {
-                debug_print!("[room]atrixOidcAuthFinishRequest: client is not initialized");
+                debug_print!("[room] MatrixOidcAuthFinishRequest: client is not initialized");
                 MatrixListChatsResponse::Err {
                     message: "Client is not initialized".to_string(),
                 }
@@ -23,33 +22,54 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             }
         };
 
-        // Subscribing to any updates on rooms
-        let service = client
-            .sync_service()
-            .finish()
-            .await
-            .unwrap();
+        let sync_service = match self.sync_service.as_ref() {
+            Some(sync_service) => sync_service.clone(),
+            None => {
+                debug_print!("[room] MatrixOidcAuthFinishRequest: sync service is not initialized");
+                MatrixListChatsResponse::Err {
+                    message: "sync service is not initialized".to_string(),
+                }
+                .send_signal_to_dart();
+                return;
+            }
+        };
 
         debug_print!("[room] started sync service inside list-chat");
-        service
+        sync_service
             .start()
             .await;
 
-        let room_list_service = service.room_list_service();
-        debug_print!("[room] subscribing to state changes");
-        room_list_service
-            .state(Box::new(RoomStateListener));
+        let room_service = match self.room_service.as_ref() {
+            None => {
+                let service = sync_service.room_list_service();
+
+                self.room_service = Some(service.clone());
+                service
+            },
+            Some(service) => service.clone(),
+        };
+
+        // debug_print!("[room] subscribing to state changes");
+        // room_service
+        //     .state(Box::new(RoomStateListener));
 
         debug_print!("[room] subscribing to upcoming changes");
-        room_list_service
-            .clone()
+        let res = room_service
             .all_rooms()
             .await
             .unwrap()
             .clone()
             .entries_with_dynamic_adapters(50, Box::new(RoomListNotifier));
 
-        std::thread::sleep(Duration::from_secs(5));
+        let set_filter = res
+            .controller()
+            .set_filter(RoomListEntriesDynamicFilterKind::All {
+                filters: vec![RoomListEntriesDynamicFilterKind::NonLeft],
+            });
+        debug_print!("[room] does filter set: {set_filter}");
+
+        // self.rinf_taks.push(res.entries_stream());
+        // tokio::thread::sleep(Duration::from_secs(5));
 
         // Static room list
         debug_print!("[room] room count = {}", client.rooms().len());

@@ -104,3 +104,10 @@ pub enum MatrixRoomListUpdate {
     List { rooms: Vec<Room> },
     Remove { indices: Vec<u32> },
 }
+
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub enum MatrixSyncServiceRequest {
+    Start,
+    Stop,
+}

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:messenger/src/bindings/bindings.dart';
 
@@ -47,8 +49,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
       });
     });
 
-    // send request
-    MatrixListChatsRequest(url: "").sendSignalToRust();
+    // after sync-service successfully started, it emits MatrixListChatsRequest, not from dart
+    // MatrixListChatsRequest(url: "").sendSignalToRust();
+
+    Timer.periodic(const Duration(seconds: 3), (timer) {
+      debugPrint(timer.tick.toString());
+      MatrixListChatsRequest(url: "").sendSignalToRust();
+    });
   }
 
   @override

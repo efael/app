@@ -7,7 +7,7 @@ use matrix_sdk_rinf::{client::{Client, Session}, error::ClientError};
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixInitRequest, MatrixInitResponse},
+    signals::{MatrixInitRequest, MatrixInitResponse, MatrixProcessSyncResponseRequest, MatrixSyncRequest, MatrixSyncServiceRequest},
 };
 
 #[async_trait]
@@ -53,6 +53,7 @@ impl Notifiable<MatrixInitRequest> for Matrix {
                         is_logged_in: true,
                     }.send_signal_to_dart();
 
+                    self.emit(MatrixSyncServiceRequest::Start).await;
                     return;
                 },
                 Err(err) => {
