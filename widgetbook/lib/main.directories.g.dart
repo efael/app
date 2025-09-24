@@ -28,32 +28,45 @@ final directories = <_widgetbook.WidgetbookNode>[
         name: 'ChatItem',
         useCase: _widgetbook.WidgetbookUseCase(
           name: 'Default',
-          builder:
-              _widgetbook_workspace_widgets_chat_item.buildCoolButtonUseCase,
+          builder: _widgetbook_workspace_widgets_chat_item.build,
         ),
       ),
       _widgetbook.WidgetbookLeafComponent(
         name: 'MessagePreview',
         useCase: _widgetbook.WidgetbookUseCase(
           name: 'Default',
-          builder: _widgetbook_workspace_widgets_message_preview
-              .buildCoolButtonUseCase,
+          builder: _widgetbook_workspace_widgets_message_preview.build,
         ),
       ),
-      _widgetbook.WidgetbookLeafComponent(
+      _widgetbook.WidgetbookComponent(
         name: 'Username',
-        useCase: _widgetbook.WidgetbookUseCase(
-          name: 'Default',
-          builder:
-              _widgetbook_workspace_widgets_username.buildCoolButtonUseCase,
-        ),
+        useCases: [
+          _widgetbook.WidgetbookUseCase(
+            name: 'Secure=No, Mute=No',
+            builder: _widgetbook_workspace_widgets_username.buildNoSecureNoMute,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'Secure=Yes, Mute=No',
+            builder: _widgetbook_workspace_widgets_username.buildSecureNoMute,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'Secure=Yes, Mute=Yes',
+            builder: _widgetbook_workspace_widgets_username.buildSecureMute,
+          ),
+        ],
       ),
-      _widgetbook.WidgetbookLeafComponent(
+      _widgetbook.WidgetbookComponent(
         name: 'Userpic',
-        useCase: _widgetbook.WidgetbookUseCase(
-          name: 'Default',
-          builder: _widgetbook_workspace_widgets_userpic.buildCoolButtonUseCase,
-        ),
+        useCases: [
+          _widgetbook.WidgetbookUseCase(
+            name: 'Medium',
+            builder: _widgetbook_workspace_widgets_userpic.buildMedium,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'Small',
+            builder: _widgetbook_workspace_widgets_userpic.buildSmall,
+          ),
+        ],
       ),
     ],
   ),
