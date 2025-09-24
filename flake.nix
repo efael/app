@@ -146,7 +146,7 @@
 
             NIX_LDFLAGS = pkgs.lib.concatLines (builtins.map (x: "-L${x}/lib") [
               pkgs.openssl
-              pkgs.pkgsCross.x86_64-embedded.openssl
+              # pkgs.pkgsCross.x86_64-embedded.openssl
             ]);
 
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
