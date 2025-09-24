@@ -20,6 +20,10 @@ class WidgetbookApp extends StatelessWidget {
       // The [directories] variable does not exist yet,
       // it will be generated in the next step
       directories: directories,
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData.dark(
+        useMaterial3: true,
+      ).copyWith(scaffoldBackgroundColor: Color.fromRGBO(24, 35, 48, 1)),
     );
   }
 }
