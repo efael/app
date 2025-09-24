@@ -23,11 +23,11 @@ async-trait = { workspace = true }
 messages = "0.3.1"
 thiserror = { workspace = true }
 serde_json = { workspace = true }
-matrix-sdk = { workspace = true, features = ["native-tls"] }
+matrix-sdk = { workspace = true, features = ["rustls-tls"] }
 # matrix-sdk = { git = "https://github.com/efael/matrix-rust-sdk", branch = "matrix-sdk-0.13.0", features = [
 #   "native-tls",
 # ] }
-matrix-sdk-rinf = { path = "../matrix-sdk-rinf", features = ["native-tls"] }
+matrix-sdk-rinf = { path = "../matrix-sdk-rinf", features = ["rustls-tls"] }
 # matrix-sdk-rinf = { git = "https://github.com/efael/matrix-rust-sdk", branch = "matrix-sdk-0.13.0", features = [
 #   "native-tls",
 # ] }
