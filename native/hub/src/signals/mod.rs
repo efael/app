@@ -92,12 +92,9 @@ pub struct MatrixListChatsRequest {
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixListChatsResponse {
-    Ok {
-        rooms: Vec<Room>
-    },
+    Ok { rooms: Vec<Room> },
     Err { message: String },
 }
-
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixRoomListUpdate {
@@ -105,9 +102,8 @@ pub enum MatrixRoomListUpdate {
     Remove { indices: Vec<u32> },
 }
 
-
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub enum MatrixSyncServiceRequest {
-    Start,
+    Loop,
     Stop,
 }

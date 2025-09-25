@@ -1,13 +1,12 @@
 use async_trait::async_trait;
-use matrix_sdk_rinf::sync_service::SyncServiceState;
 use messages::prelude::{Context, Notifiable};
 use rinf::debug_print;
 
-use crate::{actors::matrix::Matrix, signals::{MatrixListChatsRequest, MatrixSyncServiceRequest}};
+use crate::{actors::matrix::Matrix, signals::MatrixSyncServiceRequest};
 
 #[async_trait]
 impl Notifiable<MatrixSyncServiceRequest> for Matrix {
-    async fn notify(&mut self, msg: MatrixSyncServiceRequest, _: &Context<Self>) {
+    async fn notify(&mut self, _msg: MatrixSyncServiceRequest, _: &Context<Self>) {
         let client = match self.client.as_mut() {
             Some(client) => client,
             None => {
@@ -16,57 +15,32 @@ impl Notifiable<MatrixSyncServiceRequest> for Matrix {
             }
         };
 
-        let sync_service = match &self.sync_service {
-            None => {
-                let service = client
-                    .sync_service()
-                    .finish()
-                    .await
-                    .unwrap();
+        if self.sync_service.is_none() {
+            let service = client
+                .sync_service()
+                .with_offline_mode()
+                .finish()
+                .await
+                .unwrap();
+            self.sync_service = Some(service);
+        }
 
-                self.sync_service = Some(service.clone());
-                service
-            },
-            Some(service) => {
-                service.clone()
-            }
-        };
+        let sync_service = self.sync_service.as_mut().expect("should exist a value");
 
-        sync_service
-            .start()
-            .await;
-
-        debug_print!("sync service started, emitting list-chat req");
+        sync_service.start().await;
 
         // after staring sync-service
         // self.emit(MatrixListChatsRequest { url: "".to_string() }).await;
 
-        // if let Some(_) = sync_service.next_state().await {
-        //     debug_print!("next state switched, anyways starting sync again");
-        //     self.emit(MatrixSyncServiceRequest::Start).await;
-        // }
+        let state = sync_service.next_state();
+        debug_print!("state: {state:?}");
 
-        debug_print!("waiting for next-state");
-        let duration = tokio::time::Duration::from_secs(15);
-        tokio::time::sleep(duration).await;
-
-        match sync_service.next_state() {
-            // not implemented
-            SyncServiceState::Error => {
-                debug_print!("[MatrixSyncServiceRequest] not implemented handling Error sync-service state");
-            },
-
-            // not implemented
-            SyncServiceState::Offline => {
-                debug_print!("[MatrixSyncServiceRequest] not implemented handling Offline sync-service state");
-            },
-
-            // call itself again
-            SyncServiceState::Idle | 
-            SyncServiceState::Terminated |
-            SyncServiceState::Running => {
-                self.emit(MatrixSyncServiceRequest::Start).await;
-            },
-        }
+        let mut addr = self.self_addr.clone();
+        let duration = tokio::time::Duration::from_millis(200);
+        self.owned_tasks.spawn(async move {
+            tokio::time::sleep(duration).await;
+            let _ = addr.notify(MatrixSyncServiceRequest::Loop).await;
+        });
     }
 }
+

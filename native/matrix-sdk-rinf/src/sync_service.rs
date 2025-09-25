@@ -80,16 +80,16 @@ impl SyncService {
         self.inner.state().next_now().into()
     }
 
-    pub fn state(&self, listener: Box<dyn SyncServiceStateObserver>) -> Arc<TaskHandle> {
+    pub fn state(&self, listener: Box<dyn SyncServiceStateObserver>) -> TaskHandle {
         let state_stream = self.inner.state();
 
-        Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
+        TaskHandle::new(get_runtime_handle().spawn(async move {
             pin_mut!(state_stream);
 
             while let Some(state) = state_stream.next().await {
                 listener.on_update(state.into());
             }
-        })))
+        }))
     }
 }
 

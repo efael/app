@@ -57,7 +57,7 @@ impl Notifiable<MatrixInitRequest> for Matrix {
                     }
                     .send_signal_to_dart();
 
-                    self.emit(MatrixSyncServiceRequest::Start).await;
+                    self.emit(MatrixSyncServiceRequest::Loop);
                     return;
                 }
                 Err(err) => {

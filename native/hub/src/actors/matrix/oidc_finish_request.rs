@@ -60,7 +60,7 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
 
                 MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
 
-                self.emit(MatrixSyncServiceRequest::Start).await;
+                self.emit(MatrixSyncServiceRequest::Loop);
             }
             Err(err) => {
                 debug_print!("MatrixOidcAuthFinishRequest: failed to finish login: {err:?}");
@@ -82,4 +82,3 @@ fn save_session(session: Session, mut dir: PathBuf) {
         .unwrap()
         .unwrap();
 }
-

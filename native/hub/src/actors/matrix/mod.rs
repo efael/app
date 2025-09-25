@@ -4,21 +4,30 @@ pub mod list_chats_request;
 pub mod logout_request;
 pub mod oidc_auth_request;
 pub mod oidc_finish_request;
-pub mod sync_service_request;
 pub mod refresh_token_request;
+pub mod sync_service_request;
 
 use std::{io::ErrorKind, path::PathBuf, sync::Arc};
 
 use matrix_sdk::Client as SdkClient;
-use matrix_sdk_rinf::{client::Client, room_list::RoomListService, sync_service::SyncService, task_handle::TaskHandle};
-use messages::{actor::Actor, prelude::{Address, Notifiable}};
+use matrix_sdk_rinf::{
+    client::Client, room_list::RoomListService, sync_service::SyncService, task_handle::TaskHandle,
+};
+use messages::{
+    actor::Actor,
+    prelude::{Address, Notifiable},
+};
+use rinf::{DartSignal, debug_print};
 use tokio::task::JoinSet;
-use rinf::{debug_print, DartSignal};
 
 use crate::{
     actors::matrix::client_session_delegate::ClientSessionDelegateImplementation,
     extensions::easy_listener::EasyListener,
-    signals::{ init_client_error::InitClientError, MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest, MatrixSyncServiceRequest},
+    signals::{
+        MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
+        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest,
+        MatrixSyncServiceRequest, init_client_error::InitClientError,
+    },
 };
 
 pub struct Matrix {
@@ -96,7 +105,8 @@ impl Matrix {
             .await
             .map_err(InitClientError::SdkClientBuildError)?;
 
-        let session_delegate = ClientSessionDelegateImplementation::new(application_support_directory.clone());
+        let session_delegate =
+            ClientSessionDelegateImplementation::new(application_support_directory.clone());
         let client = Client::new(
             sdk_client,
             true,
@@ -124,7 +134,8 @@ impl Matrix {
         Ok(())
     }
 
-    pub async fn emit<Signal>(&mut self, request: Signal) where 
+    pub fn emit<Signal>(&mut self, request: Signal)
+    where
         Self: Notifiable<Signal>,
         Signal: DartSignal + Send + 'static,
     {
