@@ -23,7 +23,7 @@ use crate::{
     ClientError,
 };
 
-pub struct TimelineEvent(pub(crate) Box<AnySyncTimelineEvent>);
+pub struct TimelineEvent(pub Box<AnySyncTimelineEvent>);
 
 impl TimelineEvent {
     pub fn event_id(&self) -> String {
@@ -40,12 +40,12 @@ impl TimelineEvent {
 
     pub fn event_type(&self) -> Result<TimelineEventType, ClientError> {
         let event_type = match self.0.deref() {
-            AnySyncTimelineEvent::MessageLike(event) => {
-                TimelineEventType::MessageLike { content: event.clone().try_into()? }
-            }
-            AnySyncTimelineEvent::State(event) => {
-                TimelineEventType::State { content: event.clone().try_into()? }
-            }
+            AnySyncTimelineEvent::MessageLike(event) => TimelineEventType::MessageLike {
+                content: event.clone().try_into()?,
+            },
+            AnySyncTimelineEvent::State(event) => TimelineEventType::State {
+                content: event.clone().try_into()?,
+            },
         };
         Ok(event_type)
     }
@@ -82,14 +82,19 @@ pub enum StateEventContent {
     RoomGuestAccess,
     RoomHistoryVisibility,
     RoomJoinRules,
-    RoomMemberContent { user_id: String, membership_state: MembershipState },
+    RoomMemberContent {
+        user_id: String,
+        membership_state: MembershipState,
+    },
     RoomName,
     RoomPinnedEvents,
     RoomPowerLevels,
     RoomServerAcl,
     RoomThirdPartyInvite,
     RoomTombstone,
-    RoomTopic { topic: String },
+    RoomTopic {
+        topic: String,
+    },
     SpaceChild,
     SpaceParent,
 }
@@ -127,7 +132,9 @@ impl TryFrom<AnySyncStateEvent> for StateEventContent {
             AnySyncStateEvent::RoomTopic(content) => {
                 let content = get_state_event_original_content(content)?;
 
-                StateEventContent::RoomTopic { topic: content.topic }
+                StateEventContent::RoomTopic {
+                    topic: content.topic,
+                }
             }
             AnySyncStateEvent::SpaceChild(_) => StateEventContent::SpaceChild,
             AnySyncStateEvent::SpaceParent(_) => StateEventContent::SpaceParent,
@@ -148,7 +155,9 @@ impl TryFrom<AnySyncStateEvent> for StateEventContent {
 pub enum MessageLikeEventContent {
     CallAnswer,
     CallInvite,
-    CallNotify { notify_type: NotifyType },
+    CallNotify {
+        notify_type: NotifyType,
+    },
     CallHangup,
     CallCandidates,
     KeyVerificationReady,
@@ -158,11 +167,21 @@ pub enum MessageLikeEventContent {
     KeyVerificationKey,
     KeyVerificationMac,
     KeyVerificationDone,
-    Poll { question: String },
-    ReactionContent { related_event_id: String },
+    Poll {
+        question: String,
+    },
+    ReactionContent {
+        related_event_id: String,
+    },
     RoomEncrypted,
-    RoomMessage { message_type: MessageType, in_reply_to_event_id: Option<String> },
-    RoomRedaction { redacted_event_id: Option<String>, reason: Option<String> },
+    RoomMessage {
+        message_type: MessageType,
+        in_reply_to_event_id: Option<String>,
+    },
+    RoomRedaction {
+        redacted_event_id: Option<String>,
+        reason: Option<String>,
+    },
     Sticker,
 }
 
@@ -218,10 +237,14 @@ impl TryFrom<AnySyncMessageLikeEvent> for MessageLikeEventContent {
             AnySyncMessageLikeEvent::RoomMessage(content) => {
                 let original_content = get_message_like_event_original_content(content)?;
                 let in_reply_to_event_id =
-                    original_content.relates_to.and_then(|relation| match relation {
-                        Relation::Reply { in_reply_to } => Some(in_reply_to.event_id.to_string()),
-                        _ => None,
-                    });
+                    original_content
+                        .relates_to
+                        .and_then(|relation| match relation {
+                            Relation::Reply { in_reply_to } => {
+                                Some(in_reply_to.event_id.to_string())
+                            }
+                            _ => None,
+                        });
                 MessageLikeEventContent::RoomMessage {
                     message_type: original_content.msgtype.try_into()?,
                     in_reply_to_event_id,
@@ -230,13 +253,19 @@ impl TryFrom<AnySyncMessageLikeEvent> for MessageLikeEventContent {
             AnySyncMessageLikeEvent::RoomRedaction(c) => {
                 let (redacted_event_id, reason) = match c {
                     SyncRoomRedactionEvent::Original(o) => {
-                        let id =
-                            if o.content.redacts.is_some() { o.content.redacts } else { o.redacts };
+                        let id = if o.content.redacts.is_some() {
+                            o.content.redacts
+                        } else {
+                            o.redacts
+                        };
                         (id.map(|id| id.to_string()), o.content.reason)
                     }
                     SyncRoomRedactionEvent::Redacted(_) => (None, None),
                 };
-                MessageLikeEventContent::RoomRedaction { redacted_event_id, reason }
+                MessageLikeEventContent::RoomRedaction {
+                    redacted_event_id,
+                    reason,
+                }
             }
             AnySyncMessageLikeEvent::Sticker(_) => MessageLikeEventContent::Sticker,
             _ => bail!("Unsupported Event Type: {:?}", value.event_type()),
@@ -250,8 +279,11 @@ where
     C: StaticStateEventContent + RedactContent + Clone,
     <C as RedactContent>::Redacted: RedactedStateEventContent<StateKey = C::StateKey>,
 {
-    let original_content =
-        event.as_original().context("Failed to get original content")?.content.clone();
+    let original_content = event
+        .as_original()
+        .context("Failed to get original content")?
+        .content
+        .clone();
     Ok(original_content)
 }
 
@@ -260,8 +292,11 @@ where
     C: RumaMessageLikeEventContent + RedactContent + Clone,
     <C as ruma::events::RedactContent>::Redacted: ruma::events::RedactedMessageLikeEventContent,
 {
-    let original_content =
-        event.as_original().context("Failed to get original content")?.content.clone();
+    let original_content = event
+        .as_original()
+        .context("Failed to get original content")?
+        .content
+        .clone();
     Ok(original_content)
 }
 
@@ -425,11 +460,13 @@ pub enum EventOrTransactionId {
 impl From<TimelineEventItemId> for EventOrTransactionId {
     fn from(value: TimelineEventItemId) -> Self {
         match value {
-            TimelineEventItemId::EventId(event_id) => {
-                EventOrTransactionId::EventId { event_id: event_id.to_string() }
-            }
+            TimelineEventItemId::EventId(event_id) => EventOrTransactionId::EventId {
+                event_id: event_id.to_string(),
+            },
             TimelineEventItemId::TransactionId(transaction_id) => {
-                EventOrTransactionId::TransactionId { transaction_id: transaction_id.to_string() }
+                EventOrTransactionId::TransactionId {
+                    transaction_id: transaction_id.to_string(),
+                }
             }
         }
     }

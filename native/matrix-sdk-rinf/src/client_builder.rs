@@ -86,25 +86,33 @@ impl From<MatrixClientBuildError> for ClientBuildError {
 
 impl From<IdParseError> for ClientBuildError {
     fn from(e: IdParseError) -> ClientBuildError {
-        ClientBuildError::Generic { message: format!("{e:#}") }
+        ClientBuildError::Generic {
+            message: format!("{e:#}"),
+        }
     }
 }
 
 impl From<std::io::Error> for ClientBuildError {
     fn from(e: std::io::Error) -> ClientBuildError {
-        ClientBuildError::Generic { message: format!("{e:#}") }
+        ClientBuildError::Generic {
+            message: format!("{e:#}"),
+        }
     }
 }
 
 impl From<url::ParseError> for ClientBuildError {
     fn from(e: url::ParseError) -> ClientBuildError {
-        ClientBuildError::Generic { message: format!("{e:#}") }
+        ClientBuildError::Generic {
+            message: format!("{e:#}"),
+        }
     }
 }
 
 impl From<ClientError> for ClientBuildError {
     fn from(e: ClientError) -> ClientBuildError {
-        ClientBuildError::Generic { message: format!("{e:#}") }
+        ClientBuildError::Generic {
+            message: format!("{e:#}"),
+        }
     }
 }
 
@@ -212,7 +220,10 @@ impl ClientBuilder {
     /// Leaving this unset tells the client to use an in-memory data store.
     pub fn session_paths(self: Arc<Self>, data_path: String, cache_path: String) -> Arc<Self> {
         let mut builder = unwrap_or_clone_arc(self);
-        builder.session_paths = Some(SessionPaths { data_path, cache_path });
+        builder.session_paths = Some(SessionPaths {
+            data_path,
+            cache_path,
+        });
         Arc::new(builder)
     }
 
@@ -235,8 +246,10 @@ impl ClientBuilder {
     /// See [`SqliteStoreConfig::pool_max_size`] to learn more.
     pub fn session_pool_max_size(self: Arc<Self>, pool_max_size: Option<u32>) -> Arc<Self> {
         let mut builder = unwrap_or_clone_arc(self);
-        builder.session_pool_max_size = pool_max_size
-            .map(|size| size.try_into().expect("`pool_max_size` is too large to fit in `usize`"));
+        builder.session_pool_max_size = pool_max_size.map(|size| {
+            size.try_into()
+                .expect("`pool_max_size` is too large to fit in `usize`")
+        });
         Arc::new(builder)
     }
 

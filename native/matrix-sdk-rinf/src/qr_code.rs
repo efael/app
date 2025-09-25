@@ -21,7 +21,10 @@ impl QrCodeData {
     ///
     /// The slice of bytes would generally be returned by a QR code decoder.
     pub fn from_bytes(bytes: Vec<u8>) -> Result<Arc<Self>, QrCodeDecodeError> {
-        Ok(Self { inner: qrcode::QrCodeData::from_bytes(&bytes)? }.into())
+        Ok(Self {
+            inner: qrcode::QrCodeData::from_bytes(&bytes)?,
+        }
+        .into())
     }
 
     /// The server name contained within the scanned QR code data.

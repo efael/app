@@ -45,20 +45,29 @@ fn setup_x86_64_android_workaround() {
 
 /// Run the clang binary at `clang_path`, and return its major version number
 fn get_clang_major_version(clang_path: &Path) -> String {
-    let clang_output =
-        Command::new(clang_path).arg("-dumpversion").output().expect("failed to start clang");
+    let clang_output = Command::new(clang_path)
+        .arg("-dumpversion")
+        .output()
+        .expect("failed to start clang");
 
     if !clang_output.status.success() {
-        panic!("failed to run clang: {}", String::from_utf8_lossy(&clang_output.stderr));
+        panic!(
+            "failed to run clang: {}",
+            String::from_utf8_lossy(&clang_output.stderr)
+        );
     }
 
     let clang_version = String::from_utf8(clang_output.stdout).expect("clang output is not utf8");
-    clang_version.split('.').next().expect("could not parse clang output").to_owned()
+    clang_version
+        .split('.')
+        .next()
+        .expect("could not parse clang output")
+        .to_owned()
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // setup_x86_64_android_workaround();
+    setup_x86_64_android_workaround();
     // uniffi::generate_scaffolding("./src/api.udl").expect("Building the UDL file failed");
-    // EmitBuilder::builder().git_sha(true).emit()?;
+    EmitBuilder::builder().git_sha(true).emit()?;
     Ok(())
 }

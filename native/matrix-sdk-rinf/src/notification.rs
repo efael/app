@@ -52,12 +52,12 @@ pub struct NotificationItem {
 impl NotificationItem {
     fn from_inner(item: SdkNotificationItem) -> Self {
         let event = match item.event {
-            SdkNotificationEvent::Timeline(event) => {
-                NotificationEvent::Timeline { event: Arc::new(TimelineEvent(event)) }
-            }
-            SdkNotificationEvent::Invite(event) => {
-                NotificationEvent::Invite { sender: event.sender.to_string() }
-            }
+            SdkNotificationEvent::Timeline(event) => NotificationEvent::Timeline {
+                event: Arc::new(TimelineEvent(event)),
+            },
+            SdkNotificationEvent::Invite(event) => NotificationEvent::Invite {
+                sender: event.sender.to_string(),
+            },
         };
         Self {
             event,
@@ -71,7 +71,12 @@ impl NotificationItem {
                 avatar_url: item.room_avatar_url,
                 canonical_alias: item.room_canonical_alias,
                 topic: item.room_topic,
-                join_rule: item.room_join_rule.map(TryInto::try_into).transpose().ok().flatten(),
+                join_rule: item
+                    .room_join_rule
+                    .map(TryInto::try_into)
+                    .transpose()
+                    .ok()
+                    .flatten(),
                 joined_members_count: item.joined_members_count,
                 is_encrypted: item.is_room_encrypted,
                 is_direct: item.is_direct_message_room,
@@ -98,9 +103,9 @@ pub enum NotificationStatus {
 impl From<SdkNotificationStatus> for NotificationStatus {
     fn from(item: SdkNotificationStatus) -> Self {
         match item {
-            SdkNotificationStatus::Event(item) => {
-                NotificationStatus::Event { item: NotificationItem::from_inner(*item) }
-            }
+            SdkNotificationStatus::Event(item) => NotificationStatus::Event {
+                item: NotificationItem::from_inner(*item),
+            },
             SdkNotificationStatus::EventNotFound => NotificationStatus::EventNotFound,
             SdkNotificationStatus::EventFilteredOut => NotificationStatus::EventFilteredOut,
         }
@@ -119,14 +124,14 @@ pub enum BatchNotificationResult {
 }
 
 pub struct NotificationClient {
-    pub(crate) inner: SdkNotificationClient,
+    pub inner: SdkNotificationClient,
 
     /// A reference to the FFI client.
     ///
     /// Note: we do this to make it so that the FFI `NotificationClient` keeps
     /// the FFI `Client` and thus the SDK `Client` alive. Otherwise, we
     /// would need to repeat the hack done in the FFI `Client::drop` method.
-    pub(crate) client: Arc<Client>,
+    pub client: Arc<Client>,
 }
 
 impl NotificationClient {
@@ -158,8 +163,11 @@ impl NotificationClient {
         let room_id = RoomId::parse(room_id)?;
         let event_id = EventId::parse(event_id)?;
 
-        let item =
-            self.inner.get_notification(&room_id, &event_id).await.map_err(ClientError::from)?;
+        let item = self
+            .inner
+            .get_notification(&room_id, &event_id)
+            .await
+            .map_err(ClientError::from)?;
 
         Ok(item.into())
     }
@@ -175,16 +183,22 @@ impl NotificationClient {
         &self,
         requests: Vec<NotificationItemsRequest>,
     ) -> Result<HashMap<String, BatchNotificationResult>, ClientError> {
-        let requests =
-            requests.into_iter().map(TryInto::try_into).collect::<Result<Vec<_>, _>>()?;
+        let requests = requests
+            .into_iter()
+            .map(TryInto::try_into)
+            .collect::<Result<Vec<_>, _>>()?;
 
         let items = self.inner.get_notifications(&requests).await?;
 
         let mut batch_result = HashMap::new();
         for (key, value) in items.into_iter() {
             let result = match value {
-                Ok(status) => BatchNotificationResult::Ok { status: status.into() },
-                Err(error) => BatchNotificationResult::Error { message: error.to_string() },
+                Ok(status) => BatchNotificationResult::Ok {
+                    status: status.into(),
+                },
+                Err(error) => BatchNotificationResult::Error {
+                    message: error.to_string(),
+                },
             };
             batch_result.insert(key.to_string(), result);
         }
@@ -219,6 +233,9 @@ impl TryFrom<NotificationItemsRequest>
 {
     type Error = ClientError;
     fn try_from(value: NotificationItemsRequest) -> Result<Self, Self::Error> {
-        Ok(Self { room_id: value.room_id()?, event_ids: value.event_ids()? })
+        Ok(Self {
+            room_id: value.room_id()?,
+            event_ids: value.event_ids()?,
+        })
     }
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{fmt::Debug, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
 use matrix_sdk::crypto::types::events::UtdCause;
 use matrix_sdk_common::{SendOutsideWasm, SyncOutsideWasm};
@@ -53,7 +53,7 @@ impl UnableToDecryptHook for UtdHook {
 
 pub struct UnableToDecryptInfo {
     /// The identifier of the event that couldn't get decrypted.
-    event_id: String,
+    pub event_id: String,
 
     /// If the event could be decrypted late (that is, the event was encrypted
     /// at first, but could be decrypted later on), then this indicates the

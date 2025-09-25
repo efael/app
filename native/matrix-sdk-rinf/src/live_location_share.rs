@@ -24,7 +24,7 @@ pub struct LiveLocationShare {
     /// The user's last known location.
     pub last_location: LastLocation,
     /// The live status of the live location share.
-    pub(crate) is_live: bool,
+    pub is_live: bool,
     /// The user ID of the person sharing their live location.
     pub user_id: String,
 }

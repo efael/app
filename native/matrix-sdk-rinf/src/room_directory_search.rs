@@ -74,12 +74,14 @@ impl From<matrix_sdk::room_directory_search::RoomDescription> for RoomDescriptio
 /// 2. Start the room search with [`RoomDirectorySearch::search`].
 /// 3. To get more results, use [`RoomDirectorySearch::next_page`].
 pub struct RoomDirectorySearch {
-    pub(crate) inner: RwLock<SdkRoomDirectorySearch>,
+    pub inner: RwLock<SdkRoomDirectorySearch>,
 }
 
 impl RoomDirectorySearch {
     pub fn new(inner: SdkRoomDirectorySearch) -> Self {
-        Self { inner: RwLock::new(inner) }
+        Self {
+            inner: RwLock::new(inner),
+        }
     }
 }
 
@@ -168,25 +170,35 @@ impl From<VectorDiff<matrix_sdk::room_directory_search::RoomDescription>>
 {
     fn from(diff: VectorDiff<matrix_sdk::room_directory_search::RoomDescription>) -> Self {
         match diff {
-            VectorDiff::Append { values } => {
-                Self::Append { values: values.into_iter().map(|v| v.into()).collect() }
-            }
+            VectorDiff::Append { values } => Self::Append {
+                values: values.into_iter().map(|v| v.into()).collect(),
+            },
             VectorDiff::Clear => Self::Clear,
-            VectorDiff::PushFront { value } => Self::PushFront { value: value.into() },
-            VectorDiff::PushBack { value } => Self::PushBack { value: value.into() },
+            VectorDiff::PushFront { value } => Self::PushFront {
+                value: value.into(),
+            },
+            VectorDiff::PushBack { value } => Self::PushBack {
+                value: value.into(),
+            },
             VectorDiff::PopFront => Self::PopFront,
             VectorDiff::PopBack => Self::PopBack,
-            VectorDiff::Insert { index, value } => {
-                Self::Insert { index: index as u32, value: value.into() }
-            }
-            VectorDiff::Set { index, value } => {
-                Self::Set { index: index as u32, value: value.into() }
-            }
-            VectorDiff::Remove { index } => Self::Remove { index: index as u32 },
-            VectorDiff::Truncate { length } => Self::Truncate { length: length as u32 },
-            VectorDiff::Reset { values } => {
-                Self::Reset { values: values.into_iter().map(|v| v.into()).collect() }
-            }
+            VectorDiff::Insert { index, value } => Self::Insert {
+                index: index as u32,
+                value: value.into(),
+            },
+            VectorDiff::Set { index, value } => Self::Set {
+                index: index as u32,
+                value: value.into(),
+            },
+            VectorDiff::Remove { index } => Self::Remove {
+                index: index as u32,
+            },
+            VectorDiff::Truncate { length } => Self::Truncate {
+                length: length as u32,
+            },
+            VectorDiff::Reset { values } => Self::Reset {
+                values: values.into_iter().map(|v| v.into()).collect(),
+            },
         }
     }
 }

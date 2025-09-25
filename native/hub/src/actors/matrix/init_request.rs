@@ -1,13 +1,16 @@
 use std::{fs, path::PathBuf};
 
 use async_trait::async_trait;
+use matrix_sdk_rinf::{
+    client::{Client, Session},
+    error::ClientError,
+};
 use messages::prelude::{Context, Notifiable};
 use rinf::{RustSignal, debug_print};
-use matrix_sdk_rinf::{client::{Client, Session}, error::ClientError};
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixInitRequest, MatrixInitResponse, MatrixProcessSyncResponseRequest, MatrixSyncRequest, MatrixSyncServiceRequest},
+    signals::{MatrixInitRequest, MatrixInitResponse, MatrixSyncServiceRequest},
 };
 
 #[async_trait]
@@ -51,11 +54,12 @@ impl Notifiable<MatrixInitRequest> for Matrix {
                         homeserver_login_details,
                         is_active: client.is_active(),
                         is_logged_in: true,
-                    }.send_signal_to_dart();
+                    }
+                    .send_signal_to_dart();
 
                     self.emit(MatrixSyncServiceRequest::Start).await;
                     return;
-                },
+                }
                 Err(err) => {
                     debug_print!("[init] error: {err:?}");
                 }
@@ -81,17 +85,20 @@ async fn restore_session(client: &Client, session: Session) -> Result<(), Client
     debug_print!("  - device_id: {}", &session.device_id);
     debug_print!("  - homeserver_url: {}", &session.homeserver_url);
     debug_print!("  - oidc_data: {:?}", &session.oidc_data);
-    debug_print!("  - sliding_sync_version: {:?}", &session.sliding_sync_version);
+    debug_print!(
+        "  - sliding_sync_version: {:?}",
+        &session.sliding_sync_version
+    );
 
-    client
-        .restore_session(session)
-        .await
-        .unwrap();
+    client.restore_session(session).await.unwrap();
 
     client
         .refresh_access_token()
         .await
-        .map_err(|error| ClientError::Generic { msg: error.to_string(), details: None })?;
+        .map_err(|error| ClientError::Generic {
+            msg: error.to_string(),
+            details: None,
+        })?;
 
     if client.is_server_accepts_session().await {
         debug_print!("MatrixInitRequest: session was restored successfully");
@@ -100,11 +107,14 @@ async fn restore_session(client: &Client, session: Session) -> Result<(), Client
 
     // session = client.session().unwrap();
     client.logout().await.unwrap();
-    Err(ClientError::Generic { msg: String::from("cannot restore session"), details: None })
+    Err(ClientError::Generic {
+        msg: String::from("cannot restore session"),
+        details: None,
+    })
 }
 
 fn retreive_session_file(mut dir: PathBuf) -> Option<Result<Session, ClientError>> {
-    dir.push(format!("./session.json"));
+    dir.push("./session.json");
     if !dir.exists() {
         return None;
     }
@@ -113,9 +123,9 @@ fn retreive_session_file(mut dir: PathBuf) -> Option<Result<Session, ClientError
         Ok(Ok(session)) => {
             debug_print!("# Session found: {:?}", session.user_id);
             Some(Ok(session))
-        },
+        }
         Ok(Err(err)) => Some(Err(ClientError::Generic {
-            msg: format!("Failed to parse a file"),
+            msg: "Failed to parse a file".to_string(),
             details: Some(err.to_string()),
         })),
         Err(err) => Some(Err(ClientError::Generic {

@@ -20,13 +20,17 @@ impl TimelineEventTypeFilter {
     pub fn include(event_types: Vec<FilterTimelineEventType>) -> Arc<Self> {
         let event_types: Vec<TimelineEventType> =
             event_types.iter().map(|t| t.clone().into()).collect();
-        Arc::new(Self { inner: InnerTimelineEventTypeFilter::Include(event_types) })
+        Arc::new(Self {
+            inner: InnerTimelineEventTypeFilter::Include(event_types),
+        })
     }
 
     pub fn exclude(event_types: Vec<FilterTimelineEventType>) -> Arc<Self> {
         let event_types: Vec<TimelineEventType> =
             event_types.iter().map(|t| t.clone().into()).collect();
-        Arc::new(Self { inner: InnerTimelineEventTypeFilter::Exclude(event_types) })
+        Arc::new(Self {
+            inner: InnerTimelineEventTypeFilter::Exclude(event_types),
+        })
     }
 }
 
@@ -88,8 +92,16 @@ impl TryFrom<TimelineFocus> for matrix_sdk_ui::timeline::TimelineFocus {
         value: TimelineFocus,
     ) -> Result<matrix_sdk_ui::timeline::TimelineFocus, Self::Error> {
         match value {
-            TimelineFocus::Live { hide_threaded_events } => Ok(Self::Live { hide_threaded_events }),
-            TimelineFocus::Event { event_id, num_context_events, hide_threaded_events } => {
+            TimelineFocus::Live {
+                hide_threaded_events,
+            } => Ok(Self::Live {
+                hide_threaded_events,
+            }),
+            TimelineFocus::Event {
+                event_id,
+                num_context_events,
+                hide_threaded_events,
+            } => {
                 let parsed_event_id =
                     EventId::parse(&event_id).map_err(|err| FocusEventError::InvalidEventId {
                         event_id: event_id.clone(),
@@ -110,11 +122,17 @@ impl TryFrom<TimelineFocus> for matrix_sdk_ui::timeline::TimelineFocus {
                     }
                 })?;
 
-                Ok(Self::Thread { root_event_id: parsed_root_event_id })
+                Ok(Self::Thread {
+                    root_event_id: parsed_root_event_id,
+                })
             }
-            TimelineFocus::PinnedEvents { max_events_to_load, max_concurrent_requests } => {
-                Ok(Self::PinnedEvents { max_events_to_load, max_concurrent_requests })
-            }
+            TimelineFocus::PinnedEvents {
+                max_events_to_load,
+                max_concurrent_requests,
+            } => Ok(Self::PinnedEvents {
+                max_events_to_load,
+                max_concurrent_requests,
+            }),
         }
     }
 }
@@ -145,7 +163,9 @@ pub enum TimelineFilter {
         types: Vec<RoomMessageEventMessageType>,
     },
     /// Show only events which match this filter.
-    EventTypeFilter { filter: Arc<TimelineEventTypeFilter> },
+    EventTypeFilter {
+        filter: Arc<TimelineEventTypeFilter>,
+    },
 }
 
 /// Various options used to configure the timeline's behavior.

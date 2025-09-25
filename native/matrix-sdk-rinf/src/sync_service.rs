@@ -22,7 +22,7 @@ use matrix_sdk_ui::{
         State as MatrixSyncServiceState, SyncService as MatrixSyncService,
         SyncServiceBuilder as MatrixSyncServiceBuilder,
     },
-    unable_to_decrypt_hook::UtdHookManager
+    unable_to_decrypt_hook::UtdHookManager,
 };
 
 use crate::{
@@ -56,7 +56,7 @@ pub trait SyncServiceStateObserver: SendOutsideWasm + SyncOutsideWasm + Debug {
 }
 
 pub struct SyncService {
-    pub(crate) inner: Arc<MatrixSyncService>,
+    pub inner: Arc<MatrixSyncService>,
     utd_hook: Option<Arc<UtdHookManager>>,
 }
 
@@ -77,10 +77,7 @@ impl SyncService {
     }
 
     pub fn next_state(&self) -> SyncServiceState {
-        self.inner
-            .state()
-            .next_now()
-            .into()
+        self.inner.state().next_now().into()
     }
 
     pub fn state(&self, listener: Box<dyn SyncServiceStateObserver>) -> Arc<TaskHandle> {
@@ -103,8 +100,11 @@ pub struct SyncServiceBuilder {
 }
 
 impl SyncServiceBuilder {
-    pub(crate) fn new(client: Client, utd_hook: Option<Arc<UtdHookManager>>) -> Arc<Self> {
-        Arc::new(Self { builder: MatrixSyncService::builder(client), utd_hook })
+    pub fn new(client: Client, utd_hook: Option<Arc<UtdHookManager>>) -> Arc<Self> {
+        Arc::new(Self {
+            builder: MatrixSyncService::builder(client),
+            utd_hook,
+        })
     }
 }
 

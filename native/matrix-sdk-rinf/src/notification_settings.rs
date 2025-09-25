@@ -124,7 +124,10 @@ pub enum PushCondition {
     ContainsDisplayName,
 
     /// Matches the current number of members in the room.
-    RoomMemberCount { prefix: ComparisonOperator, count: u64 },
+    RoomMemberCount {
+        prefix: ComparisonOperator,
+        count: u64,
+    },
 
     /// Takes into account the current power levels in the room, ensuring the
     /// sender of the event has high enough power to trigger the
@@ -168,18 +171,21 @@ impl TryFrom<SdkPushCondition> for PushCondition {
         Ok(match value {
             SdkPushCondition::EventMatch { key, pattern } => Self::EventMatch { key, pattern },
             SdkPushCondition::ContainsDisplayName => Self::ContainsDisplayName,
-            SdkPushCondition::RoomMemberCount { is } => {
-                Self::RoomMemberCount { prefix: is.prefix.into(), count: is.count.into() }
-            }
+            SdkPushCondition::RoomMemberCount { is } => Self::RoomMemberCount {
+                prefix: is.prefix.into(),
+                count: is.count.into(),
+            },
             SdkPushCondition::SenderNotificationPermission { key } => {
                 Self::SenderNotificationPermission { key }
             }
-            SdkPushCondition::EventPropertyIs { key, value } => {
-                Self::EventPropertyIs { key, value: value.into() }
-            }
-            SdkPushCondition::EventPropertyContains { key, value } => {
-                Self::EventPropertyContains { key, value: value.into() }
-            }
+            SdkPushCondition::EventPropertyIs { key, value } => Self::EventPropertyIs {
+                key,
+                value: value.into(),
+            },
+            SdkPushCondition::EventPropertyContains { key, value } => Self::EventPropertyContains {
+                key,
+                value: value.into(),
+            },
             _ => return Err("Unsupported condition type".to_owned()),
         })
     }
@@ -199,12 +205,14 @@ impl From<PushCondition> for SdkPushCondition {
             PushCondition::SenderNotificationPermission { key } => {
                 Self::SenderNotificationPermission { key }
             }
-            PushCondition::EventPropertyIs { key, value } => {
-                Self::EventPropertyIs { key, value: value.into() }
-            }
-            PushCondition::EventPropertyContains { key, value } => {
-                Self::EventPropertyContains { key, value: value.into() }
-            }
+            PushCondition::EventPropertyIs { key, value } => Self::EventPropertyIs {
+                key,
+                value: value.into(),
+            },
+            PushCondition::EventPropertyContains { key, value } => Self::EventPropertyContains {
+                key,
+                value: value.into(),
+            },
         }
     }
 }
@@ -239,8 +247,12 @@ impl From<SdkRuleKind> for RuleKind {
             SdkRuleKind::Sender => Self::Sender,
             SdkRuleKind::Room => Self::Room,
             SdkRuleKind::Content => Self::Content,
-            SdkRuleKind::_Custom(_) => Self::Custom { value: value.as_str().to_owned() },
-            _ => Self::Custom { value: value.to_string() },
+            SdkRuleKind::_Custom(_) => Self::Custom {
+                value: value.as_str().to_owned(),
+            },
+            _ => Self::Custom {
+                value: value.to_string(),
+            },
         }
     }
 }
@@ -293,7 +305,10 @@ impl TryFrom<SdkTweak> for Tweak {
                 let json_string = serde_json::to_string(&value)
                     .map_err(|e| format!("Failed to serialize custom tweak value: {e}"))?;
 
-                Self::Custom { name, value: json_string }
+                Self::Custom {
+                    name,
+                    value: json_string,
+                }
             }
             _ => return Err("Unsupported tweak type".to_owned()),
         })
@@ -335,7 +350,9 @@ impl TryFrom<SdkAction> for Action {
         Ok(match value {
             SdkAction::Notify => Self::Notify,
             SdkAction::SetTweak(tweak) => Self::SetTweak {
-                value: tweak.try_into().map_err(|e| format!("Failed to convert tweak: {e}"))?,
+                value: tweak
+                    .try_into()
+                    .map_err(|e| format!("Failed to convert tweak: {e}"))?,
             },
             _ => return Err("Unsupported action type".to_owned()),
         })
@@ -349,7 +366,9 @@ impl TryFrom<Action> for SdkAction {
         Ok(match value {
             Action::Notify => Self::Notify,
             Action::SetTweak { value } => Self::SetTweak(
-                value.try_into().map_err(|e| format!("Failed to convert tweak: {e}"))?,
+                value
+                    .try_into()
+                    .map_err(|e| format!("Failed to convert tweak: {e}"))?,
             ),
         })
     }
@@ -395,9 +414,9 @@ pub trait NotificationSettingsDelegate: SyncOutsideWasm + SendOutsideWasm {
 #[derive(Clone)]
 pub struct RoomNotificationSettings {
     /// The room notification mode
-    mode: RoomNotificationMode,
+    pub mode: RoomNotificationMode,
     /// Whether the mode is the default one
-    is_default: bool,
+    pub is_default: bool,
 }
 
 impl RoomNotificationSettings {
@@ -414,7 +433,7 @@ pub struct NotificationSettings {
 }
 
 impl NotificationSettings {
-    pub(crate) fn new(
+    pub fn new(
         sdk_client: MatrixClient,
         sdk_notification_settings: SdkNotificationSettings,
     ) -> Self {
@@ -442,9 +461,10 @@ impl NotificationSettings {
 
             // Add an event handler to listen to `PushRulesEvent`
             let event_handler =
-                self.sdk_client.add_event_handler(move |_: PushRulesEvent| async move {
-                    delegate.settings_did_change();
-                });
+                self.sdk_client
+                    .add_event_handler(move |_: PushRulesEvent| async move {
+                        delegate.settings_did_change();
+                    });
 
             *self.pushrules_event_handler.write().unwrap() = Some(event_handler);
         } else {
@@ -477,8 +497,9 @@ impl NotificationSettings {
         let notification_settings = self.sdk_notification_settings.read().await;
 
         // Get the current user defined mode for this room
-        if let Some(mode) =
-            notification_settings.get_user_defined_room_notification_mode(&parsed_room_id).await
+        if let Some(mode) = notification_settings
+            .get_user_defined_room_notification_mode(&parsed_room_id)
+            .await
         {
             return Ok(RoomNotificationSettings::new(mode.into(), false));
         }
@@ -519,8 +540,9 @@ impl NotificationSettings {
         let parsed_room_id = RoomId::parse(&room_id)
             .map_err(|_e| NotificationSettingsError::InvalidRoomId { room_id })?;
         // Get the current user defined mode for this room
-        if let Some(mode) =
-            notification_settings.get_user_defined_room_notification_mode(&parsed_room_id).await
+        if let Some(mode) = notification_settings
+            .get_user_defined_room_notification_mode(&parsed_room_id)
+            .await
         {
             Ok(Some(mode.into()))
         } else {
@@ -583,14 +605,18 @@ impl NotificationSettings {
         let notification_settings = self.sdk_notification_settings.read().await;
         let parsed_room_id = RoomId::parse(&room_id)
             .map_err(|_e| NotificationSettingsError::InvalidRoomId { room_id })?;
-        notification_settings.delete_user_defined_room_rules(&parsed_room_id).await?;
+        notification_settings
+            .delete_user_defined_room_rules(&parsed_room_id)
+            .await?;
         Ok(())
     }
 
     /// Get all room IDs for which a user-defined rule exists.
     pub async fn get_rooms_with_user_defined_rules(&self, enabled: Option<bool>) -> Vec<String> {
         let notification_settings = self.sdk_notification_settings.read().await;
-        notification_settings.get_rooms_with_user_defined_rules(enabled).await
+        notification_settings
+            .get_rooms_with_user_defined_rules(enabled)
+            .await
     }
 
     /// Get whether some enabled keyword rules exist.
@@ -603,7 +629,10 @@ impl NotificationSettings {
     pub async fn is_room_mention_enabled(&self) -> Result<bool, NotificationSettingsError> {
         let notification_settings = self.sdk_notification_settings.read().await;
         let enabled = notification_settings
-            .is_push_rule_enabled(SdkRuleKind::Override, PredefinedOverrideRuleId::IsRoomMention)
+            .is_push_rule_enabled(
+                SdkRuleKind::Override,
+                PredefinedOverrideRuleId::IsRoomMention,
+            )
             .await?;
         Ok(enabled)
     }
@@ -628,7 +657,10 @@ impl NotificationSettings {
     pub async fn is_user_mention_enabled(&self) -> Result<bool, NotificationSettingsError> {
         let notification_settings = self.sdk_notification_settings.read().await;
         let enabled = notification_settings
-            .is_push_rule_enabled(SdkRuleKind::Override, PredefinedOverrideRuleId::IsUserMention)
+            .is_push_rule_enabled(
+                SdkRuleKind::Override,
+                PredefinedOverrideRuleId::IsUserMention,
+            )
             .await?;
         Ok(enabled)
     }
@@ -657,7 +689,10 @@ impl NotificationSettings {
     ///
     /// [rule]: https://github.com/matrix-org/matrix-spec-proposals/blob/giomfo/push_encrypted_events/proposals/4028-push-all-encrypted-events-except-for-muted-rooms.md
     pub async fn can_homeserver_push_encrypted_event_to_device(&self) -> bool {
-        self.sdk_client.can_homeserver_push_encrypted_event_to_device().await.unwrap()
+        self.sdk_client
+            .can_homeserver_push_encrypted_event_to_device()
+            .await
+            .unwrap()
     }
 
     /// Set whether user mentions are enabled.
@@ -689,7 +724,11 @@ impl NotificationSettings {
     pub async fn set_call_enabled(&self, enabled: bool) -> Result<(), NotificationSettingsError> {
         let notification_settings = self.sdk_notification_settings.read().await;
         notification_settings
-            .set_push_rule_enabled(SdkRuleKind::Underride, PredefinedUnderrideRuleId::Call, enabled)
+            .set_push_rule_enabled(
+                SdkRuleKind::Underride,
+                PredefinedUnderrideRuleId::Call,
+                enabled,
+            )
             .await?;
         Ok(())
     }
@@ -731,8 +770,10 @@ impl NotificationSettings {
         conditions: Vec<PushCondition>,
     ) -> Result<(), NotificationSettingsError> {
         let notification_settings = self.sdk_notification_settings.read().await;
-        let actions: Result<Vec<_>, _> =
-            actions.into_iter().map(|action| action.try_into()).collect();
+        let actions: Result<Vec<_>, _> = actions
+            .into_iter()
+            .map(|action| action.try_into())
+            .collect();
         let actions = actions.map_err(|e| NotificationSettingsError::Generic { msg: e })?;
 
         notification_settings
@@ -740,7 +781,10 @@ impl NotificationSettings {
                 rule_id,
                 rule_kind.into(),
                 actions,
-                conditions.into_iter().map(|condition| condition.into()).collect(),
+                conditions
+                    .into_iter()
+                    .map(|condition| condition.into())
+                    .collect(),
             )
             .await?;
         Ok(())

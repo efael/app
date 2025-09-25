@@ -33,15 +33,9 @@ pub mod utd;
 pub mod utils;
 pub mod widget;
 
-use matrix_sdk::ruma::events::room::message::RoomMessageEventContentWithoutRelation;
+use self::{error::ClientError, task_handle::TaskHandle};
 
-use self::{
-    error::ClientError,
-    ruma::{Mentions, RoomMessageEventContentWithoutRelationExt},
-    task_handle::TaskHandle,
-};
-
-fn sdk_git_sha() -> String {
+pub fn sdk_git_sha() -> String {
     // env!("VERGEN_GIT_SHA").to_owned()
     "".to_string()
 }

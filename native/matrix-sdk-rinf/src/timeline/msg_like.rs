@@ -33,7 +33,11 @@ pub enum MsgLikeKind {
     /// An `m.room.message` event or extensible event, including edits.
     Message { content: MessageContent },
     /// An `m.sticker` event.
-    Sticker { body: String, info: ImageInfo, source: Arc<MediaSource> },
+    Sticker {
+        body: String,
+        info: ImageInfo,
+        source: Arc<MediaSource>,
+    },
     /// An `m.poll.start` event.
     Poll {
         question: String,
@@ -156,7 +160,10 @@ impl TryFrom<matrix_sdk_ui::timeline::MsgLikeContent> for MsgLikeContent {
                         answers: results
                             .answers
                             .into_iter()
-                            .map(|i| PollAnswer { id: i.id, text: i.text })
+                            .map(|i| PollAnswer {
+                                id: i.id,
+                                text: i.text,
+                            })
                             .collect(),
                         votes: results.votes,
                         end_time: results.end_time.map(|t| t.into()),
@@ -176,7 +183,9 @@ impl TryFrom<matrix_sdk_ui::timeline::MsgLikeContent> for MsgLikeContent {
                 thread_summary,
             },
             Kind::UnableToDecrypt(msg) => Self {
-                kind: MsgLikeKind::UnableToDecrypt { msg: EncryptedMessage::new(&msg) },
+                kind: MsgLikeKind::UnableToDecrypt {
+                    msg: EncryptedMessage::new(&msg),
+                },
                 reactions,
                 in_reply_to,
                 thread_root,
@@ -215,7 +224,7 @@ pub enum EncryptedMessage {
 }
 
 impl EncryptedMessage {
-    pub(crate) fn new(msg: &matrix_sdk_ui::timeline::EncryptedMessage) -> Self {
+    pub fn new(msg: &matrix_sdk_ui::timeline::EncryptedMessage) -> Self {
         use matrix_sdk_ui::timeline::EncryptedMessage as Message;
 
         match msg {
@@ -223,9 +232,14 @@ impl EncryptedMessage {
                 let sender_key = sender_key.clone();
                 Self::OlmV1Curve25519AesSha2 { sender_key }
             }
-            Message::MegolmV1AesSha2 { session_id, cause, .. } => {
+            Message::MegolmV1AesSha2 {
+                session_id, cause, ..
+            } => {
                 let session_id = session_id.clone();
-                Self::MegolmV1AesSha2 { session_id, cause: *cause }
+                Self::MegolmV1AesSha2 {
+                    session_id,
+                    cause: *cause,
+                }
             }
             Message::Unknown => Self::Unknown,
         }

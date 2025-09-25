@@ -16,14 +16,14 @@ use crate::{
 };
 
 pub struct Encryption {
-    pub(crate) inner: matrix_sdk::encryption::Encryption,
+    pub inner: matrix_sdk::encryption::Encryption,
 
     /// A reference to the FFI client.
     ///
     /// Note: we do this to make it so that the FFI `NotificationClient` keeps
     /// the FFI `Client` and thus the SDK `Client` alive. Otherwise, we
     /// would need to repeat the hack done in the FFI `Client::drop` method.
-    pub(crate) _client: Arc<Client>,
+    pub _client: Arc<Client>,
 }
 
 pub trait BackupStateListener: SyncOutsideWasm + SendOutsideWasm {
@@ -44,7 +44,10 @@ pub trait VerificationStateListener: SyncOutsideWasm + SendOutsideWasm {
 
 pub enum BackupUploadState {
     Waiting,
-    Uploading { backed_up_count: u32, total_count: u32 },
+    Uploading {
+        backed_up_count: u32,
+        total_count: u32,
+    },
     Error,
     Done,
 }
@@ -81,10 +84,12 @@ impl From<matrix_sdk::encryption::recovery::RecoveryError> for RecoveryError {
     fn from(value: matrix_sdk::encryption::recovery::RecoveryError) -> Self {
         match value {
             recovery::RecoveryError::BackupExistsOnServer => Self::BackupExistsOnServer,
-            recovery::RecoveryError::Sdk(e) => Self::Client { source: ClientError::from(e) },
-            recovery::RecoveryError::SecretStorage(e) => {
-                Self::SecretStorage { error_message: e.to_string() }
-            }
+            recovery::RecoveryError::Sdk(e) => Self::Client {
+                source: ClientError::from(e),
+            },
+            recovery::RecoveryError::SecretStorage(e) => Self::SecretStorage {
+                error_message: e.to_string(),
+            },
         }
     }
 }
@@ -165,9 +170,14 @@ pub enum EnableRecoveryProgress {
     Starting,
     CreatingBackup,
     CreatingRecoveryKey,
-    BackingUp { backed_up_count: u32, total_count: u32 },
+    BackingUp {
+        backed_up_count: u32,
+        total_count: u32,
+    },
     RoomKeyUploadError,
-    Done { recovery_key: String },
+    Done {
+        recovery_key: String,
+    },
 }
 
 impl From<recovery::EnableProgress> for EnableRecoveryProgress {
@@ -181,9 +191,9 @@ impl From<recovery::EnableProgress> for EnableRecoveryProgress {
                 total_count: counts.backed_up.try_into().unwrap_or(u32::MAX),
             },
             recovery::EnableProgress::RoomKeyUploadError => Self::RoomKeyUploadError,
-            recovery::EnableProgress::Done { recovery_key } => {
-                Self::Done { recovery_key: recovery_key.to_owned() }
-            }
+            recovery::EnableProgress::Done { recovery_key } => Self::Done {
+                recovery_key: recovery_key.to_owned(),
+            },
         }
     }
 }
@@ -349,7 +359,11 @@ impl Encryption {
     }
 
     pub async fn recover_and_reset(&self, mut old_recovery_key: String) -> Result<String> {
-        let result = self.inner.recovery().recover_and_reset(&old_recovery_key).await;
+        let result = self
+            .inner
+            .recovery()
+            .recover_and_reset(&old_recovery_key)
+            .await;
 
         old_recovery_key.zeroize();
 
@@ -359,10 +373,16 @@ impl Encryption {
     /// Completely reset the current user's crypto identity: reset the cross
     /// signing keys, delete the existing backup and recovery key.
     pub async fn reset_identity(&self) -> Result<Option<Arc<IdentityResetHandle>>, ClientError> {
-        if let Some(reset_handle) =
-            self.inner.recovery().reset_identity().await.map_err(ClientError::from_err)?
+        if let Some(reset_handle) = self
+            .inner
+            .recovery()
+            .reset_identity()
+            .await
+            .map_err(ClientError::from_err)?
         {
-            return Ok(Some(Arc::new(IdentityResetHandle { inner: reset_handle })));
+            return Ok(Some(Arc::new(IdentityResetHandle {
+                inner: reset_handle,
+            })));
         }
 
         Ok(None)
@@ -419,7 +439,11 @@ impl Encryption {
         &self,
         user_id: String,
     ) -> Result<Option<Arc<UserIdentity>>, ClientError> {
-        match self.inner.get_user_identity(user_id.as_str().try_into()?).await {
+        match self
+            .inner
+            .get_user_identity(user_id.as_str().try_into()?)
+            .await
+        {
             Ok(Some(identity)) => {
                 return Ok(Some(Arc::new(UserIdentity { inner: identity })));
             }
@@ -433,7 +457,10 @@ impl Encryption {
 
         info!("Requesting identity from the server.");
 
-        let identity = self.inner.request_user_identity(user_id.as_str().try_into()?).await?;
+        let identity = self
+            .inner
+            .request_user_identity(user_id.as_str().try_into()?)
+            .await?;
         Ok(identity.map(|identity| Arc::new(UserIdentity { inner: identity })))
     }
 }
@@ -458,7 +485,7 @@ impl UserIdentity {
     ///
     /// UIs should display a warning to the user when encountering an identity
     /// which is not verified and is in pin violation.
-    pub(crate) async fn pin(&self) -> Result<(), ClientError> {
+    pub async fn pin(&self) -> Result<(), ClientError> {
         Ok(self.inner.pin().await?)
     }
 
@@ -468,8 +495,11 @@ impl UserIdentity {
     /// the identity.
     ///
     /// Returns None if the master key does not actually contain any keys.
-    pub(crate) fn master_key(&self) -> Option<String> {
-        self.inner.master_key().get_first_key().map(|k| k.to_base64())
+    pub fn master_key(&self) -> Option<String> {
+        self.inner
+            .master_key()
+            .get_first_key()
+            .map(|k| k.to_base64())
     }
 
     /// Is the user identity considered to be verified.
@@ -493,7 +523,7 @@ impl UserIdentity {
     /// If an identity was previously verified and is not anymore it will be
     /// reported to the user. In order to remove this notice users have to
     /// verify again or to withdraw the verification requirement.
-    pub(crate) async fn withdraw_verification(&self) -> Result<(), ClientError> {
+    pub async fn withdraw_verification(&self) -> Result<(), ClientError> {
         Ok(self.inner.withdraw_verification().await?)
     }
 
@@ -504,7 +534,7 @@ impl UserIdentity {
 }
 
 pub struct IdentityResetHandle {
-    pub(crate) inner: matrix_sdk::encryption::recovery::IdentityResetHandle,
+    pub inner: matrix_sdk::encryption::recovery::IdentityResetHandle,
 }
 
 impl IdentityResetHandle {
@@ -523,7 +553,10 @@ impl IdentityResetHandle {
     /// 4. Finally, re-enable key backups only if they were enabled before
     pub async fn reset(&self, auth: Option<AuthData>) -> Result<(), ClientError> {
         if let Some(auth) = auth {
-            self.inner.reset(Some(auth.into())).await.map_err(ClientError::from_err)
+            self.inner
+                .reset(Some(auth.into()))
+                .await
+                .map_err(ClientError::from_err)
         } else {
             self.inner.reset(None).await.map_err(ClientError::from_err)
         }
@@ -560,6 +593,8 @@ pub struct OidcCrossSigningResetInfo {
 
 impl From<&matrix_sdk::encryption::OAuthCrossSigningResetInfo> for OidcCrossSigningResetInfo {
     fn from(value: &matrix_sdk::encryption::OAuthCrossSigningResetInfo) -> Self {
-        Self { approval_url: value.approval_url.to_string() }
+        Self {
+            approval_url: value.approval_url.to_string(),
+        }
     }
 }

@@ -34,18 +34,23 @@ impl SessionVerificationEmoji {
 }
 
 pub enum SessionVerificationData {
-    Emojis { emojis: Vec<Arc<SessionVerificationEmoji>>, indices: Vec<u8> },
-    Decimals { values: Vec<u16> },
+    Emojis {
+        emojis: Vec<Arc<SessionVerificationEmoji>>,
+        indices: Vec<u8>,
+    },
+    Decimals {
+        values: Vec<u16>,
+    },
 }
 
 /// Details about the incoming verification request
 pub struct SessionVerificationRequestDetails {
-    sender_profile: UserProfile,
-    flow_id: String,
-    device_id: String,
-    device_display_name: Option<String>,
+    pub sender_profile: UserProfile,
+    pub flow_id: String,
+    pub device_id: String,
+    pub device_display_name: Option<String>,
     /// First time this device was seen in milliseconds since epoch.
-    first_seen_timestamp: Timestamp,
+    pub first_seen_timestamp: Timestamp,
 }
 
 pub trait SessionVerificationControllerDelegate: SyncOutsideWasm + SendOutsideWasm {
@@ -90,7 +95,10 @@ impl SessionVerificationController {
             .encryption
             .get_verification_request(&sender_id, flow_id)
             .await
-            .ok_or(ClientError::from_str("Unknown session verification request", None))?;
+            .ok_or(ClientError::from_str(
+                "Unknown session verification request",
+                None,
+            ))?;
 
         self.set_ongoing_verification_request(verification_request)
     }
@@ -110,8 +118,10 @@ impl SessionVerificationController {
     /// Request verification for the current device
     pub async fn request_device_verification(&self) -> Result<(), ClientError> {
         let methods = vec![VerificationMethod::SasV1];
-        let verification_request =
-            self.user_identity.request_verification_with_methods(methods).await?;
+        let verification_request = self
+            .user_identity
+            .request_verification_with_methods(methods)
+            .await?;
 
         self.set_ongoing_verification_request(verification_request)
     }
@@ -132,7 +142,9 @@ impl SessionVerificationController {
 
         let methods = vec![VerificationMethod::SasV1];
 
-        let verification_request = user_identity.request_verification_with_methods(methods).await?;
+        let verification_request = user_identity
+            .request_verification_with_methods(methods)
+            .await?;
 
         self.set_ongoing_verification_request(verification_request)
     }
@@ -155,8 +167,10 @@ impl SessionVerificationController {
                 }
 
                 let delegate = self.delegate.clone();
-                get_runtime_handle()
-                    .spawn(Self::listen_to_sas_verification_changes(verification, delegate));
+                get_runtime_handle().spawn(Self::listen_to_sas_verification_changes(
+                    verification,
+                    delegate,
+                ));
             }
             _ => {
                 if let Some(delegate) = &*self.delegate.read().unwrap() {
@@ -203,11 +217,7 @@ impl SessionVerificationController {
 }
 
 impl SessionVerificationController {
-    pub(crate) fn new(
-        encryption: Encryption,
-        user_identity: UserIdentity,
-        account: Account,
-    ) -> Self {
+    pub fn new(encryption: Encryption, user_identity: UserIdentity, account: Account) -> Self {
         SessionVerificationController {
             encryption,
             user_identity,
@@ -221,7 +231,7 @@ impl SessionVerificationController {
     /// Ask the controller to process an incoming request based on the sender
     /// and flow identifier. It will fetch the request, verify that it's in the
     /// correct state and then and notify the delegate.
-    pub(crate) async fn process_incoming_verification_request(
+    pub async fn process_incoming_verification_request(
         &self,
         sender: &UserId,
         flow_id: impl AsRef<str>,
@@ -238,12 +248,19 @@ impl SessionVerificationController {
             }
         }
 
-        let Some(request) = self.encryption.get_verification_request(sender, flow_id).await else {
+        let Some(request) = self
+            .encryption
+            .get_verification_request(sender, flow_id)
+            .await
+        else {
             error!("Failed retrieving verification request");
             return;
         };
 
-        let VerificationRequestState::Requested { other_device_data, .. } = request.state() else {
+        let VerificationRequestState::Requested {
+            other_device_data, ..
+        } = request.state()
+        else {
             error!("Received verification request event but the request is in the wrong state.");
             return;
         };
@@ -258,7 +275,10 @@ impl SessionVerificationController {
                 sender_profile: UserProfile {
                     user_id: request.other_user_id().to_string(),
                     display_name: sender_profile.displayname,
-                    avatar_url: sender_profile.avatar_url.as_ref().map(|url| url.to_string()),
+                    avatar_url: sender_profile
+                        .avatar_url
+                        .as_ref()
+                        .map(|url| url.to_string()),
                 },
                 flow_id: request.flow_id().into(),
                 device_id: other_device_data.device_id().into(),

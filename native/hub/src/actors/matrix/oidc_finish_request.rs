@@ -7,7 +7,9 @@ use std::{fs, path::PathBuf};
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncServiceRequest},
+    signals::{
+        MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncServiceRequest,
+    },
 };
 
 #[async_trait]
@@ -37,7 +39,10 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
             }
         };
 
-        debug_print!("# before login = session: {:?}", client.session().map(|a| a.user_id));
+        debug_print!(
+            "# before login = session: {:?}",
+            client.session().map(|a| a.user_id)
+        );
         debug_print!("# before login = device id: {:?}", client.device_id());
 
         match client.login_with_oidc_callback(url.into()).await {
@@ -65,16 +70,16 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
                 .send_signal_to_dart();
             }
         };
-    }    
+    }
 }
 
 fn save_session(session: Session, mut dir: PathBuf) {
     dir.push(format!("./session.json"));
     debug_print!("# save session file: {:?}", dir);
 
-    serde_json::
-        to_string::<Session>(&session)
+    serde_json::to_string::<Session>(&session)
         .map(|session| fs::write(dir, session))
         .unwrap()
         .unwrap();
 }
+

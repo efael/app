@@ -84,13 +84,15 @@ impl From<matrix_sdk_ui::timeline::TimelineItemContent> for TimelineItemContent 
                 }
             }
 
-            Content::FailedToParseState { event_type, state_key, error } => {
-                TimelineItemContent::FailedToParseState {
-                    event_type: event_type.to_string(),
-                    state_key,
-                    error: error.to_string(),
-                }
-            }
+            Content::FailedToParseState {
+                event_type,
+                state_key,
+                error,
+            } => TimelineItemContent::FailedToParseState {
+                event_type: event_type.to_string(),
+                state_key,
+                error: error.to_string(),
+            },
         }
     }
 }
@@ -201,23 +203,38 @@ pub enum OtherState {
     PolicyRuleServer,
     PolicyRuleUser,
     RoomAliases,
-    RoomAvatar { url: Option<String> },
+    RoomAvatar {
+        url: Option<String>,
+    },
     RoomCanonicalAlias,
     RoomCreate,
     RoomEncryption,
     RoomGuestAccess,
     RoomHistoryVisibility,
     RoomJoinRules,
-    RoomName { name: Option<String> },
-    RoomPinnedEvents { change: RoomPinnedEventsChange },
-    RoomPowerLevels { users: HashMap<String, i64>, previous: Option<HashMap<String, i64>> },
+    RoomName {
+        name: Option<String>,
+    },
+    RoomPinnedEvents {
+        change: RoomPinnedEventsChange,
+    },
+    RoomPowerLevels {
+        users: HashMap<String, i64>,
+        previous: Option<HashMap<String, i64>>,
+    },
     RoomServerAcl,
-    RoomThirdPartyInvite { display_name: Option<String> },
+    RoomThirdPartyInvite {
+        display_name: Option<String>,
+    },
     RoomTombstone,
-    RoomTopic { topic: Option<String> },
+    RoomTopic {
+        topic: Option<String>,
+    },
     SpaceChild,
     SpaceParent,
-    Custom { event_type: String },
+    Custom {
+        event_type: String,
+    },
 }
 
 impl From<&matrix_sdk_ui::timeline::AnyOtherFullStateEventContent> for OtherState {
@@ -254,18 +271,26 @@ impl From<&matrix_sdk_ui::timeline::AnyOtherFullStateEventContent> for OtherStat
             }
             Content::RoomPinnedEvents(c) => Self::RoomPinnedEvents { change: c.into() },
             Content::RoomPowerLevels(c) => match c {
-                FullContent::Original { content, prev_content } => Self::RoomPowerLevels {
+                FullContent::Original {
+                    content,
+                    prev_content,
+                } => Self::RoomPowerLevels {
                     users: power_level_user_changes(content, prev_content)
                         .iter()
                         .map(|(k, v)| (k.to_string(), *v))
                         .collect(),
                     previous: prev_content.as_ref().map(|prev_content| {
-                        prev_content.users.iter().map(|(k, &v)| (k.to_string(), v.into())).collect()
+                        prev_content
+                            .users
+                            .iter()
+                            .map(|(k, &v)| (k.to_string(), v.into()))
+                            .collect()
                     }),
                 },
-                FullContent::Redacted(_) => {
-                    Self::RoomPowerLevels { users: Default::default(), previous: None }
-                }
+                FullContent::Redacted(_) => Self::RoomPowerLevels {
+                    users: Default::default(),
+                    previous: None,
+                },
             },
             Content::RoomServerAcl(_) => Self::RoomServerAcl,
             Content::RoomThirdPartyInvite(c) => {
@@ -285,7 +310,9 @@ impl From<&matrix_sdk_ui::timeline::AnyOtherFullStateEventContent> for OtherStat
             }
             Content::SpaceChild(_) => Self::SpaceChild,
             Content::SpaceParent(_) => Self::SpaceParent,
-            Content::_Custom { event_type, .. } => Self::Custom { event_type: event_type.clone() },
+            Content::_Custom { event_type, .. } => Self::Custom {
+                event_type: event_type.clone(),
+            },
         }
     }
 }
