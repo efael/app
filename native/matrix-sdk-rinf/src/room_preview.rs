@@ -8,14 +8,13 @@ use crate::{
     error::ClientError,
     room::{Membership, RoomHero},
     room_member::{RoomMember, RoomMemberWithSenderInfo},
-    utils::AsyncRuntimeDropped,
 };
 
 /// A room preview for a room. It's intended to be used to represent rooms that
 /// aren't joined yet.
 pub struct RoomPreview {
     inner: SdkRoomPreview,
-    client: AsyncRuntimeDropped<Client>,
+    client: Client,
 }
 
 impl RoomPreview {
@@ -55,8 +54,10 @@ impl RoomPreview {
     ///
     /// Will return an error otherwise.
     pub async fn leave(&self) -> Result<(), ClientError> {
-        let room =
-            self.client.get_room(&self.inner.room_id).context("missing room for a room preview")?;
+        let room = self
+            .client
+            .get_room(&self.inner.room_id)
+            .context("missing room for a room preview")?;
 
         Ok(room.leave().await?)
     }
@@ -70,8 +71,10 @@ impl RoomPreview {
 
     /// Forget the room if we had access to it, and it was left or banned.
     pub async fn forget(&self) -> Result<(), ClientError> {
-        let room =
-            self.client.get_room(&self.inner.room_id).context("missing room for a room preview")?;
+        let room = self
+            .client
+            .get_room(&self.inner.room_id)
+            .context("missing room for a room preview")?;
         room.forget().await?;
         Ok(())
     }
@@ -79,12 +82,16 @@ impl RoomPreview {
     /// Get the membership details for the current user.
     pub async fn own_membership_details(&self) -> Option<RoomMemberWithSenderInfo> {
         let room = self.client.get_room(&self.inner.room_id)?;
-        room.member_with_sender_info(self.client.user_id()?).await.ok()?.try_into().ok()
+        room.member_with_sender_info(self.client.user_id()?)
+            .await
+            .ok()?
+            .try_into()
+            .ok()
     }
 }
 
 impl RoomPreview {
-    pub(crate) fn new(client: AsyncRuntimeDropped<Client>, inner: SdkRoomPreview) -> Self {
+    pub fn new(client: Client, inner: SdkRoomPreview) -> Self {
         Self { client, inner }
     }
 }
@@ -130,7 +137,9 @@ impl TryFrom<&SpaceRoomJoinRule> for JoinRule {
             SpaceRoomJoinRule::Restricted => JoinRule::Restricted { rules: Vec::new() },
             SpaceRoomJoinRule::KnockRestricted => JoinRule::KnockRestricted { rules: Vec::new() },
             SpaceRoomJoinRule::Public => JoinRule::Public,
-            SpaceRoomJoinRule::_Custom(_) => JoinRule::Custom { repr: join_rule.to_string() },
+            SpaceRoomJoinRule::_Custom(_) => JoinRule::Custom {
+                repr: join_rule.to_string(),
+            },
             _ => {
                 warn!("unhandled SpaceRoomJoinRule: {join_rule}");
                 return Err(());

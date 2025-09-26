@@ -11,7 +11,13 @@ pub struct ChunkIterator<T> {
 
 impl<T> ChunkIterator<T> {
     pub fn new(items: Vec<T>) -> Self {
-        Self { items: RwLock::new(items) }
+        Self {
+            items: RwLock::new(items),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn len(&self) -> u32 {

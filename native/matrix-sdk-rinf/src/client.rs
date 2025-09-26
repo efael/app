@@ -39,7 +39,7 @@ use matrix_sdk::{
     },
     sliding_sync::Version as SdkSlidingSyncVersion,
     store::RoomLoadSettings as SdkRoomLoadSettings,
-    AuthApi, AuthSession, Client as MatrixClient, SessionChange, SessionTokens,
+    AuthApi, AuthSession, Client as MatrixClient, RefreshTokenError, SessionChange, SessionTokens,
     STATE_STORE_DATABASE_NAME,
 };
 use matrix_sdk_common::{stream::StreamExt, SendOutsideWasm, SyncOutsideWasm};
@@ -51,7 +51,7 @@ use matrix_sdk_ui::{
     unable_to_decrypt_hook::UtdHookManager,
 };
 use mime::Mime;
-use rinf::SignalPiece;
+use rinf::{debug_print, SignalPiece};
 use ruma::{
     api::client::{alias::get_alias, error::ErrorKind, uiaa::UserIdentifier},
     events::{
@@ -108,7 +108,6 @@ use crate::{
     sync_service::{SyncService, SyncServiceBuilder},
     task_handle::TaskHandle,
     utd::{UnableToDecryptDelegate, UtdHook},
-    utils::AsyncRuntimeDropped,
     ClientError,
 };
 
@@ -220,7 +219,8 @@ impl From<matrix_sdk::TransmissionProgress> for TransmissionProgress {
 }
 
 pub struct Client {
-    pub(crate) inner: AsyncRuntimeDropped<MatrixClient>,
+    // pub(crate) inner: AsyncRuntimeDropped<MatrixClient>,
+    pub inner: MatrixClient,
     delegate: OnceLock<Arc<dyn ClientDelegate>>,
     pub utd_hook_manager: OnceLock<Arc<UtdHookManager>>,
     session_verification_controller:
@@ -266,11 +266,12 @@ impl Client {
             }
         });
 
-        let cross_process_store_locks_holder_name =
-            sdk_client.cross_process_store_locks_holder_name().to_owned();
+        let cross_process_store_locks_holder_name = sdk_client
+            .cross_process_store_locks_holder_name()
+            .to_owned();
 
         let client = Client {
-            inner: AsyncRuntimeDropped::new(sdk_client.clone()),
+            inner: sdk_client,
             delegate: OnceLock::new(),
             utd_hook_manager: OnceLock::new(),
             session_verification_controller,
@@ -321,8 +322,11 @@ impl Client {
         let oauth = self.inner.oauth();
         let (supports_oidc_login, supported_oidc_prompts) = match oauth.server_metadata().await {
             Ok(metadata) => {
-                let prompts =
-                    metadata.prompt_values_supported.into_iter().map(Into::into).collect();
+                let prompts = metadata
+                    .prompt_values_supported
+                    .into_iter()
+                    .map(Into::into)
+                    .collect();
 
                 (true, prompts)
             }
@@ -352,7 +356,10 @@ impl Client {
         initial_device_name: Option<String>,
         device_id: Option<String>,
     ) -> Result<(), ClientError> {
-        let mut builder = self.inner.matrix_auth().login_username(&username, &password);
+        let mut builder = self
+            .inner
+            .matrix_auth()
+            .login_username(&username, &password);
         if let Some(initial_device_name) = initial_device_name.as_ref() {
             builder = builder.initial_device_display_name(initial_device_name);
         }
@@ -374,7 +381,10 @@ impl Client {
     ) -> Result<(), ClientError> {
         let data = json!({ "token": jwt }).as_object().unwrap().clone();
 
-        let mut builder = self.inner.matrix_auth().login_custom("org.matrix.login.jwt", data)?;
+        let mut builder = self
+            .inner
+            .matrix_auth()
+            .login_custom("org.matrix.login.jwt", data)?;
 
         if let Some(initial_device_name) = initial_device_name.as_ref() {
             builder = builder.initial_device_display_name(initial_device_name);
@@ -424,8 +434,13 @@ impl Client {
         let url = auth
             .get_sso_login_url(redirect_url.as_str(), idp_id.as_deref())
             .await
-            .map_err(|e| SsoError::Generic { message: e.to_string() })?;
-        Ok(Arc::new(SsoHandler { client: Arc::clone(self), url }))
+            .map_err(|e| SsoError::Generic {
+                message: e.to_string(),
+            })?;
+        Ok(Arc::new(SsoHandler {
+            client: Arc::clone(self),
+            url,
+        }))
     }
 
     /// Requests the URL needed for opening a web view using OIDC. Once the web
@@ -458,7 +473,10 @@ impl Client {
         let registration_data = oidc_configuration.registration_data()?;
         let redirect_uri = oidc_configuration.redirect_uri()?;
 
-        let mut url_builder = self.inner.oauth().login(redirect_uri, None, Some(registration_data));
+        let mut url_builder = self
+            .inner
+            .oauth()
+            .login(redirect_uri, None, Some(registration_data));
 
         if let Some(prompt) = prompt {
             url_builder = url_builder.prompt(vec![prompt.into()]);
@@ -475,7 +493,10 @@ impl Client {
     /// Aborts an existing OIDC login operation that might have been cancelled,
     /// failed etc.
     pub async fn abort_oidc_auth(&self, authorization_data: Arc<OAuthAuthorizationData>) {
-        self.inner.oauth().abort_login(&authorization_data.state).await;
+        self.inner
+            .oauth()
+            .abort_login(&authorization_data.state)
+            .await;
     }
 
     /// Completes the OIDC login process.
@@ -494,7 +515,8 @@ impl Client {
     /// If you want to control the amount of rooms to reloads, check
     /// [`Client::restore_session_with`].
     pub async fn restore_session(&self, session: Session) -> Result<(), ClientError> {
-        self.restore_session_with(session, RoomLoadSettings::All).await
+        self.restore_session_with(session, RoomLoadSettings::All)
+            .await
     }
 
     /// Restores the client from a `Session`.
@@ -516,7 +538,8 @@ impl Client {
                     .map_err(|error| ClientError::from_str(error, None))?,
             )
             .await?;
-        self.inner.set_sliding_sync_version(sliding_sync_version.try_into()?);
+        self.inner
+            .set_sliding_sync_version(sliding_sync_version.try_into()?);
 
         Ok(())
     }
@@ -551,8 +574,10 @@ impl Client {
 
             loop {
                 match subscriber.recv().await {
-                    Ok(report) => listener
-                        .on_error(report.room_id.to_string(), ClientError::from_err(report.error)),
+                    Ok(report) => listener.on_error(
+                        report.room_id.to_string(),
+                        ClientError::from_err(report.error),
+                    ),
                     Err(err) => {
                         error!("error when listening to the send queue error reporter: {err}");
                     }
@@ -574,8 +599,10 @@ impl Client {
         macro_rules! observe {
             ($t:ty, $cb: expr) => {{
                 // Using an Arc here is mandatory or else the subscriber will never trigger
-                let observer =
-                    Arc::new(self.inner.observe_events::<RumaGlobalAccountDataEvent<$t>, ()>());
+                let observer = Arc::new(
+                    self.inner
+                        .observe_events::<RumaGlobalAccountDataEvent<$t>, ()>(),
+                );
 
                 Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
                     let mut subscriber = observer.subscribe();
@@ -605,28 +632,30 @@ impl Client {
                 observe!(IgnoredUserListEventContent)
             }
             AccountDataEventType::PushRules => {
-                observe!(PushRulesEventContent, |event: RumaGlobalAccountDataEvent<
+                observe!(
                     PushRulesEventContent,
-                >| {
-                    if let Ok(event) = event.try_into() {
-                        listener.on_change(event);
+                    |event: RumaGlobalAccountDataEvent<PushRulesEventContent>| {
+                        if let Ok(event) = event.try_into() {
+                            listener.on_change(event);
+                        }
                     }
-                })
+                )
             }
             AccountDataEventType::SecretStorageDefaultKey => {
                 observe!(SecretStorageDefaultKeyEventContent)
             }
             AccountDataEventType::SecretStorageKey { key_id } => {
-                observe!(SecretStorageKeyEventContent, |event: RumaGlobalAccountDataEvent<
+                observe!(
                     SecretStorageKeyEventContent,
-                >| {
-                    if event.content.key_id != key_id {
-                        return;
+                    |event: RumaGlobalAccountDataEvent<SecretStorageKeyEventContent>| {
+                        if event.content.key_id != key_id {
+                            return;
+                        }
+                        if let Ok(event) = event.try_into() {
+                            listener.on_change(event);
+                        }
                     }
-                    if let Ok(event) = event.try_into() {
-                        listener.on_change(event);
-                    }
-                })
+                )
             }
         }
     }
@@ -645,19 +674,23 @@ impl Client {
         macro_rules! observe {
             ($t:ty, $cb: expr) => {{
                 // Using an Arc here is mandatory or else the subscriber will never trigger
-                let observer =
-                    Arc::new(self.inner.observe_room_events::<RumaRoomAccountDataEvent<$t>, ()>(
-                        &RoomId::parse(&room_id)?,
-                    ));
+                let observer = Arc::new(
+                    self.inner
+                        .observe_room_events::<RumaRoomAccountDataEvent<$t>, ()>(&RoomId::parse(
+                            &room_id,
+                        )?),
+                );
 
-                Ok(Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
-                    let mut subscriber = observer.subscribe();
-                    loop {
-                        if let Some(next) = subscriber.next().await {
-                            $cb(next.0);
+                Ok(Arc::new(TaskHandle::new(get_runtime_handle().spawn(
+                    async move {
+                        let mut subscriber = observer.subscribe();
+                        loop {
+                            if let Some(next) = subscriber.next().await {
+                                $cb(next.0);
+                            }
                         }
-                    }
-                }))))
+                    },
+                ))))
             }};
 
             ($t:ty) => {{
@@ -675,7 +708,9 @@ impl Client {
                 observe!(MarkedUnreadEventContent)
             }
             RoomAccountDataEventType::Tag => {
-                observe!(TagEventContent, |event: RumaRoomAccountDataEvent<TagEventContent>| {
+                observe!(TagEventContent, |event: RumaRoomAccountDataEvent<
+                    TagEventContent,
+                >| {
                     if let Ok(event) = event.try_into() {
                         listener.on_change(event, room_id.clone());
                     }
@@ -710,6 +745,19 @@ impl Client {
     pub fn is_authorized(&self) -> bool {
         self.inner.auth_api().is_some()
     }
+
+    pub async fn whoami(&self) {
+        debug_print!("@ whoami: {:?}", self.inner.whoami().await.unwrap())
+    }
+
+    pub async fn is_server_accepts_session(&self) -> bool {
+        let whoami = self.inner.whoami().await;
+        whoami.is_ok()
+    }
+
+    pub async fn refresh_access_token(&self) -> Result<(), RefreshTokenError> {
+        self.inner.refresh_access_token().await
+    }
 }
 
 #[cfg(not(target_family = "wasm"))]
@@ -732,7 +780,10 @@ impl Client {
             .inner
             .media()
             .get_media_file(
-                &MediaRequestParameters { source: source.media_source, format: MediaFormat::File },
+                &MediaRequestParameters {
+                    source: source.media_source,
+                    format: MediaFormat::File,
+                },
                 filename,
                 &mime_type,
                 use_cache,
@@ -770,7 +821,12 @@ impl Client {
     /// If `.well-known` or `/versions` is unreachable, it will simply move
     /// potential sliding sync versions aside. No error will be reported.
     pub async fn available_sliding_sync_versions(&self) -> Vec<SlidingSyncVersion> {
-        self.inner.available_sliding_sync_versions().await.into_iter().map(Into::into).collect()
+        self.inner
+            .available_sliding_sync_versions()
+            .await
+            .into_iter()
+            .map(Into::into)
+            .collect()
     }
 
     /// Sets the [ClientDelegate] which will inform about authentication errors.
@@ -826,8 +882,10 @@ impl Client {
         const UTD_HOOK_GRACE_PERIOD: Duration = Duration::from_secs(60);
 
         let mut utd_hook_manager = UtdHookManager::new(
-            Arc::new(UtdHook { delegate: utd_delegate.into() }),
-            (*self.inner).clone(),
+            Arc::new(UtdHook {
+                delegate: utd_delegate.into(),
+            }),
+            self.inner.clone(),
         )
         .with_max_delay(UTD_HOOK_GRACE_PERIOD);
 
@@ -837,13 +895,14 @@ impl Client {
             // because the UTD hook failed to load its data.
         }
 
-        self.utd_hook_manager.get_or_init(|| Arc::new(utd_hook_manager));
+        self.utd_hook_manager
+            .get_or_init(|| Arc::new(utd_hook_manager));
 
         Ok(())
     }
 
     pub fn session(&self) -> Result<Session, ClientError> {
-        Self::session_inner((*self.inner).clone())
+        Self::session_inner(self.inner.clone())
     }
 
     pub async fn account_url(
@@ -882,8 +941,12 @@ impl Client {
     }
 
     pub async fn display_name(&self) -> Result<String, ClientError> {
-        let display_name =
-            self.inner.account().get_display_name().await?.context("No User ID found")?;
+        let display_name = self
+            .inner
+            .account()
+            .get_display_name()
+            .await?
+            .context("No User ID found")?;
         Ok(display_name)
     }
 
@@ -917,7 +980,12 @@ impl Client {
 
     /// Retrieves an avatar cached from a previous call to [`Self::avatar_url`].
     pub async fn cached_avatar_url(&self) -> Result<Option<String>, ClientError> {
-        Ok(self.inner.account().get_cached_avatar_url().await?.map(Into::into))
+        Ok(self
+            .inner
+            .account()
+            .get_cached_avatar_url()
+            .await?
+            .map(Into::into))
     }
 
     pub fn device_id(&self) -> Result<String, ClientError> {
@@ -935,7 +1003,11 @@ impl Client {
     ///
     /// It will be returned as a JSON string.
     pub async fn account_data(&self, event_type: String) -> Result<Option<String>, ClientError> {
-        let event = self.inner.account().account_data_raw(event_type.into()).await?;
+        let event = self
+            .inner
+            .account()
+            .account_data_raw(event_type.into())
+            .await?;
         Ok(event.map(|e| e.json().get().to_owned()))
     }
 
@@ -948,7 +1020,10 @@ impl Client {
         content: String,
     ) -> Result<(), ClientError> {
         let raw_content = Raw::from_json_string(content)?;
-        self.inner.account().set_account_data_raw(event_type.into(), raw_content).await?;
+        self.inner
+            .account()
+            .set_account_data_raw(event_type.into(), raw_content)
+            .await?;
         Ok(())
     }
 
@@ -985,7 +1060,13 @@ impl Client {
         Ok(self
             .inner
             .media()
-            .get_media_content(&MediaRequestParameters { source, format: MediaFormat::File }, true)
+            .get_media_content(
+                &MediaRequestParameters {
+                    source,
+                    format: MediaFormat::File,
+                },
+                true,
+            )
             .await?)
     }
 
@@ -1022,7 +1103,10 @@ impl Client {
         {
             return Ok(Arc::new(session_verification_controller.clone()));
         }
-        let user_id = self.inner.user_id().context("Failed retrieving current user_id")?;
+        let user_id = self
+            .inner
+            .user_id()
+            .context("Failed retrieving current user_id")?;
         let user_identity = self
             .inner
             .encryption()
@@ -1145,7 +1229,11 @@ impl Client {
     pub async fn get_profile(&self, user_id: String) -> Result<UserProfile, ClientError> {
         let owned_user_id = UserId::parse(user_id.clone())?;
 
-        let response = self.inner.account().fetch_user_profile_of(&owned_user_id).await?;
+        let response = self
+            .inner
+            .account()
+            .fetch_user_profile_of(&owned_user_id)
+            .await?;
 
         Ok(UserProfile {
             user_id,
@@ -1159,24 +1247,26 @@ impl Client {
         process_setup: NotificationProcessSetup,
     ) -> Result<Arc<NotificationClient>, ClientError> {
         Ok(Arc::new(NotificationClient {
-            inner: MatrixNotificationClient::new((*self.inner).clone(), process_setup.into())
-                .await?,
+            inner: MatrixNotificationClient::new(self.inner.clone(), process_setup.into()).await?,
             client: self.clone(),
         }))
     }
 
     pub fn sync_service(&self) -> Arc<SyncServiceBuilder> {
-        SyncServiceBuilder::new((*self.inner).clone(), self.utd_hook_manager.get().cloned())
+        SyncServiceBuilder::new(self.inner.clone(), self.utd_hook_manager.get().cloned())
     }
 
     pub async fn get_notification_settings(&self) -> Arc<NotificationSettings> {
         let inner = self.inner.notification_settings().await;
 
-        Arc::new(NotificationSettings::new((*self.inner).clone(), inner))
+        Arc::new(NotificationSettings::new(self.inner.clone(), inner))
     }
 
     pub fn encryption(self: Arc<Self>) -> Arc<Encryption> {
-        Arc::new(Encryption { inner: self.inner.encryption(), _client: self.clone() })
+        Arc::new(Encryption {
+            inner: self.inner.encryption(),
+            _client: self.clone(),
+        })
     }
 
     // Ignored users
@@ -1189,8 +1279,11 @@ impl Client {
             .await?
         {
             let content = raw_content.deserialize_as::<IgnoredUserListEventContent>()?;
-            let user_ids: Vec<String> =
-                content.ignored_users.keys().map(|id| id.to_string()).collect();
+            let user_ids: Vec<String> = content
+                .ignored_users
+                .keys()
+                .map(|id| id.to_string())
+                .collect();
 
             return Ok(user_ids);
         }
@@ -1224,7 +1317,7 @@ impl Client {
 
     pub fn room_directory_search(&self) -> Arc<RoomDirectorySearch> {
         Arc::new(RoomDirectorySearch::new(
-            matrix_sdk::room_directory_search::RoomDirectorySearch::new((*self.inner).clone()),
+            matrix_sdk::room_directory_search::RoomDirectorySearch::new(self.inner.clone()),
         ))
     }
 
@@ -1236,7 +1329,10 @@ impl Client {
     pub async fn join_room_by_id(&self, room_id: String) -> Result<Arc<Room>, ClientError> {
         let room_id = RoomId::parse(room_id)?;
         let room = self.inner.join_room_by_id(room_id.as_ref()).await?;
-        Ok(Arc::new(Room::new(room, self.utd_hook_manager.get().cloned())))
+        Ok(Arc::new(Room::new(
+            room,
+            self.utd_hook_manager.get().cloned(),
+        )))
     }
 
     /// Join a room by its ID or alias.
@@ -1255,9 +1351,14 @@ impl Client {
             .iter()
             .map(|name| OwnedServerName::try_from(name.as_str()))
             .collect::<Result<Vec<_>, _>>()?;
-        let room =
-            self.inner.join_room_by_id_or_alias(room_id.as_ref(), server_names.as_ref()).await?;
-        Ok(Arc::new(Room::new(room, self.utd_hook_manager.get().cloned())))
+        let room = self
+            .inner
+            .join_room_by_id_or_alias(room_id.as_ref(), server_names.as_ref())
+            .await?;
+        Ok(Arc::new(Room::new(
+            room,
+            self.utd_hook_manager.get().cloned(),
+        )))
     }
 
     /// Knock on a room to join it using its ID or alias.
@@ -1268,10 +1369,15 @@ impl Client {
         server_names: Vec<String>,
     ) -> Result<Arc<Room>, ClientError> {
         let room_id = RoomOrAliasId::parse(&room_id_or_alias)?;
-        let server_names =
-            server_names.iter().map(ServerName::parse).collect::<Result<Vec<_>, _>>()?;
+        let server_names = server_names
+            .iter()
+            .map(ServerName::parse)
+            .collect::<Result<Vec<_>, _>>()?;
         let room = self.inner.knock(room_id, reason, server_names).await?;
-        Ok(Arc::new(Room::new(room, self.utd_hook_manager.get().cloned())))
+        Ok(Arc::new(Room::new(
+            room,
+            self.utd_hook_manager.get().cloned(),
+        )))
     }
 
     pub async fn get_recently_visited_rooms(&self) -> Result<Vec<String>, ClientError> {
@@ -1287,7 +1393,10 @@ impl Client {
 
     pub async fn track_recently_visited_room(&self, room: String) -> Result<(), ClientError> {
         let room_id = RoomId::parse(room)?;
-        self.inner.account().track_recently_visited_room(room_id).await?;
+        self.inner
+            .account()
+            .track_recently_visited_room(room_id)
+            .await?;
         Ok(())
     }
 
@@ -1311,7 +1420,9 @@ impl Client {
 
     /// Checks if a room alias exists in the current homeserver.
     pub async fn room_alias_exists(&self, room_alias: String) -> Result<bool, ClientError> {
-        self.resolve_room_alias(room_alias).await.map(|ret| ret.is_some())
+        self.resolve_room_alias(room_alias)
+            .await
+            .map(|ret| ret.is_some())
     }
 
     /// Given a room id, get the preview of a room, to interact with it.
@@ -1336,7 +1447,10 @@ impl Client {
         // rustc win that one fight.
         let room_id: &RoomId = &room_id;
 
-        let room_preview = self.inner.get_room_preview(room_id.into(), via_servers).await?;
+        let room_preview = self
+            .inner
+            .get_room_preview(room_id.into(), via_servers)
+            .await?;
 
         Ok(Arc::new(RoomPreview::new(self.inner.clone(), room_preview)))
     }
@@ -1353,7 +1467,10 @@ impl Client {
         // rustc win that one fight.
         let room_alias: &RoomAliasId = &room_alias;
 
-        let room_preview = self.inner.get_room_preview(room_alias.into(), Vec::new()).await?;
+        let room_preview = self
+            .inner
+            .get_room_preview(room_alias.into(), Vec::new())
+            .await?;
 
         Ok(Arc::new(RoomPreview::new(self.inner.clone(), room_preview)))
     }
@@ -1393,9 +1510,17 @@ impl Client {
         erase_data: bool,
     ) -> Result<(), ClientError> {
         if let Some(auth_data) = auth_data {
-            _ = self.inner.account().deactivate(None, Some(auth_data.into()), erase_data).await?;
+            _ = self
+                .inner
+                .account()
+                .deactivate(None, Some(auth_data.into()), erase_data)
+                .await?;
         } else {
-            _ = self.inner.account().deactivate(None, None, erase_data).await?;
+            _ = self
+                .inner
+                .account()
+                .deactivate(None, None, erase_data)
+                .await?;
         }
 
         Ok(())
@@ -1410,7 +1535,10 @@ impl Client {
     /// - An `Err` otherwise.
     pub async fn is_room_alias_available(&self, alias: String) -> Result<bool, ClientError> {
         let alias = RoomAliasId::parse(alias)?;
-        self.inner.is_room_alias_available(&alias).await.map_err(Into::into)
+        self.inner
+            .is_room_alias_available(&alias)
+            .await
+            .map_err(Into::into)
     }
 
     /// Set the media retention policy.
@@ -1518,7 +1646,11 @@ impl Client {
 
     /// Checks if the server supports the report room API.
     pub async fn is_report_room_api_supported(&self) -> Result<bool, ClientError> {
-        Ok(self.inner.server_versions().await?.contains(&ruma::api::MatrixVersion::V1_13))
+        Ok(self
+            .inner
+            .server_versions()
+            .await?
+            .contains(&ruma::api::MatrixVersion::V1_13))
     }
 
     /// Checks if the server supports the LiveKit RTC focus for placing calls.
@@ -1537,15 +1669,17 @@ impl Client {
         listener: Box<dyn MediaPreviewConfigListener>,
     ) -> Result<Arc<TaskHandle>, ClientError> {
         let (initial_value, stream) = self.inner.account().observe_media_preview_config().await?;
-        Ok(Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
-            // Send the initial value to the listener.
-            listener.on_change(initial_value.map(|config| config.into()));
-            // Listen for changes and notify the listener.
-            pin_mut!(stream);
-            while let Some(media_preview_config) = stream.next().await {
-                listener.on_change(Some(media_preview_config.into()));
-            }
-        }))))
+        Ok(Arc::new(TaskHandle::new(get_runtime_handle().spawn(
+            async move {
+                // Send the initial value to the listener.
+                listener.on_change(initial_value.map(|config| config.into()));
+                // Listen for changes and notify the listener.
+                pin_mut!(stream);
+                while let Some(media_preview_config) = stream.next().await {
+                    listener.on_change(Some(media_preview_config.into()));
+                }
+            },
+        ))))
     }
 
     /// Set the media previews timeline display policy
@@ -1553,7 +1687,10 @@ impl Client {
         &self,
         policy: MediaPreviews,
     ) -> Result<(), ClientError> {
-        self.inner.account().set_media_previews_display_policy(policy.into()).await?;
+        self.inner
+            .account()
+            .set_media_previews_display_policy(policy.into())
+            .await?;
         Ok(())
     }
 
@@ -1562,7 +1699,11 @@ impl Client {
     pub async fn get_media_preview_display_policy(
         &self,
     ) -> Result<Option<MediaPreviews>, ClientError> {
-        let configuration = self.inner.account().get_media_preview_config_event_content().await?;
+        let configuration = self
+            .inner
+            .account()
+            .get_media_preview_config_event_content()
+            .await?;
         match configuration {
             Some(configuration) => Ok(Some(configuration.media_previews.into())),
             None => Ok(None),
@@ -1574,7 +1715,10 @@ impl Client {
         &self,
         policy: InviteAvatars,
     ) -> Result<(), ClientError> {
-        self.inner.account().set_invite_avatars_display_policy(policy.into()).await?;
+        self.inner
+            .account()
+            .set_invite_avatars_display_policy(policy.into())
+            .await?;
         Ok(())
     }
 
@@ -1583,7 +1727,11 @@ impl Client {
     pub async fn get_invite_avatars_display_policy(
         &self,
     ) -> Result<Option<InviteAvatars>, ClientError> {
-        let configuration = self.inner.account().get_media_preview_config_event_content().await?;
+        let configuration = self
+            .inner
+            .account()
+            .get_media_preview_config_event_content()
+            .await?;
         match configuration {
             Some(configuration) => Ok(Some(configuration.invite_avatars.into())),
             None => Ok(None),
@@ -1594,7 +1742,12 @@ impl Client {
     pub async fn fetch_media_preview_config(
         &self,
     ) -> Result<Option<MediaPreviewConfig>, ClientError> {
-        Ok(self.inner.account().fetch_media_preview_config_event_content().await?.map(Into::into))
+        Ok(self
+            .inner
+            .account()
+            .fetch_media_preview_config_event_content()
+            .await?
+            .map(Into::into))
     }
 
     /// Gets the `max_upload_size` value from the homeserver, which controls the
@@ -1701,7 +1854,10 @@ pub struct SearchUsersResults {
 impl From<search_users::v3::Response> for SearchUsersResults {
     fn from(value: search_users::v3::Response) -> Self {
         let results: Vec<UserProfile> = value.results.iter().map(UserProfile::from).collect();
-        SearchUsersResults { results, limited: value.limited }
+        SearchUsersResults {
+            results,
+            limited: value.limited,
+        }
     }
 }
 
@@ -1742,7 +1898,9 @@ impl Client {
         session_delegate: Arc<dyn ClientSessionDelegate>,
         user_id: &UserId,
     ) -> anyhow::Result<SessionTokens> {
-        Ok(session_delegate.retrieve_session_from_keychain(user_id.to_string())?.into_tokens())
+        Ok(session_delegate
+            .retrieve_session_from_keychain(user_id.to_string())?
+            .into_tokens())
     }
 
     fn session_inner(client: matrix_sdk::Client) -> Result<Session, ClientError> {
@@ -1984,7 +2142,9 @@ impl From<Visibility> for RoomVisibility {
         match value {
             Visibility::Public => Self::Public,
             Visibility::Private => Self::Private,
-            _ => Self::Custom { value: value.as_str().to_owned() },
+            _ => Self::Custom {
+                value: value.as_str().to_owned(),
+            },
         }
     }
 }
@@ -2020,7 +2180,7 @@ pub struct Session {
     /// The access token used for this session.
     pub access_token: String,
     /// The token used for [refreshing the access token], if any.
-    ///
+    ///a
     /// [refreshing the access token]: https://spec.matrix.org/v1.3/client-server-api/#refreshing-access-tokens
     pub refresh_token: Option<String>,
     /// The user the access token was issued for.
@@ -2049,7 +2209,11 @@ impl Session {
             AuthApi::Matrix(a) => {
                 let matrix_sdk::authentication::matrix::MatrixSession {
                     meta: matrix_sdk::SessionMeta { user_id, device_id },
-                    tokens: matrix_sdk::SessionTokens { access_token, refresh_token },
+                    tokens:
+                        matrix_sdk::SessionTokens {
+                            access_token,
+                            refresh_token,
+                        },
                 } = a.session().context("Missing session")?;
 
                 Ok(Session {
@@ -2066,9 +2230,16 @@ impl Session {
             AuthApi::OAuth(api) => {
                 let matrix_sdk::authentication::oauth::UserSession {
                     meta: matrix_sdk::SessionMeta { user_id, device_id },
-                    tokens: matrix_sdk::SessionTokens { access_token, refresh_token },
+                    tokens:
+                        matrix_sdk::SessionTokens {
+                            access_token,
+                            refresh_token,
+                        },
                 } = api.user_session().context("Missing session")?;
-                let client_id = api.client_id().context("OIDC client ID is missing.")?.clone();
+                let client_id = api
+                    .client_id()
+                    .context("OIDC client ID is missing.")?
+                    .clone();
                 let oidc_data = OidcSessionData { client_id };
 
                 let oidc_data = serde_json::to_string(&oidc_data).ok();
@@ -2087,7 +2258,10 @@ impl Session {
     }
 
     fn into_tokens(self) -> matrix_sdk::SessionTokens {
-        SessionTokens { access_token: self.access_token, refresh_token: self.refresh_token }
+        SessionTokens {
+            access_token: self.access_token,
+            refresh_token: self.refresh_token,
+        }
     }
 }
 
@@ -2113,10 +2287,16 @@ impl TryFrom<Session> for AuthSession {
                     user_id: user_id.try_into()?,
                     device_id: device_id.into(),
                 },
-                tokens: matrix_sdk::SessionTokens { access_token, refresh_token },
+                tokens: matrix_sdk::SessionTokens {
+                    access_token,
+                    refresh_token,
+                },
             };
 
-            let session = OAuthSession { client_id: oidc_data.client_id, user: user_session };
+            let session = OAuthSession {
+                client_id: oidc_data.client_id,
+                user: user_session,
+            };
 
             Ok(AuthSession::OAuth(session.into()))
         } else {
@@ -2126,7 +2306,10 @@ impl TryFrom<Session> for AuthSession {
                     user_id: user_id.try_into()?,
                     device_id: device_id.into(),
                 },
-                tokens: matrix_sdk::SessionTokens { access_token, refresh_token },
+                tokens: matrix_sdk::SessionTokens {
+                    access_token,
+                    refresh_token,
+                },
             };
 
             Ok(AuthSession::Matrix(session))
@@ -2155,19 +2338,19 @@ impl From<AccountManagementAction> for AccountManagementActionFull {
         match value {
             AccountManagementAction::Profile => Self::Profile,
             AccountManagementAction::SessionsList => Self::SessionsList,
-            AccountManagementAction::SessionView { device_id } => {
-                Self::SessionView { device_id: device_id.into() }
-            }
-            AccountManagementAction::SessionEnd { device_id } => {
-                Self::SessionEnd { device_id: device_id.into() }
-            }
+            AccountManagementAction::SessionView { device_id } => Self::SessionView {
+                device_id: device_id.into(),
+            },
+            AccountManagementAction::SessionEnd { device_id } => Self::SessionEnd {
+                device_id: device_id.into(),
+            },
             AccountManagementAction::AccountDeactivate => Self::AccountDeactivate,
             AccountManagementAction::CrossSigningReset => Self::CrossSigningReset,
         }
     }
 }
 
-fn gen_transaction_id() -> String {
+pub fn gen_transaction_id() -> String {
     TransactionId::new().to_string()
 }
 
@@ -2181,7 +2364,9 @@ pub struct MediaFileHandle {
 #[cfg(not(target_family = "wasm"))]
 impl MediaFileHandle {
     fn new(handle: SdkMediaFileHandle) -> Self {
-        Self { inner: std::sync::RwLock::new(Some(handle)) }
+        Self {
+            inner: std::sync::RwLock::new(Some(handle)),
+        }
     }
 }
 
@@ -2272,7 +2457,9 @@ impl From<RumaOidcPrompt> for OidcPrompt {
             value => match value.as_str() {
                 "consent" => Self::Consent,
                 "login" => Self::Login,
-                _ => Self::Unknown { value: value.to_string() },
+                _ => Self::Unknown {
+                    value: value.to_string(),
+                },
             },
         }
     }
@@ -2347,11 +2534,15 @@ impl TryFrom<JoinRule> for RumaJoinRule {
             JoinRule::Private => Ok(Self::Private),
             JoinRule::Restricted { rules } => {
                 let rules = ruma_allow_rules_from_ffi(rules)?;
-                Ok(Self::Restricted(ruma::events::room::join_rules::Restricted::new(rules)))
+                Ok(Self::Restricted(
+                    ruma::events::room::join_rules::Restricted::new(rules),
+                ))
             }
             JoinRule::KnockRestricted { rules } => {
                 let rules = ruma_allow_rules_from_ffi(rules)?;
-                Ok(Self::KnockRestricted(ruma::events::room::join_rules::Restricted::new(rules)))
+                Ok(Self::KnockRestricted(
+                    ruma::events::room::join_rules::Restricted::new(rules),
+                ))
             }
             JoinRule::Custom { repr } => Ok(serde_json::from_str(&repr)?),
         }
@@ -2377,9 +2568,9 @@ impl TryFrom<AllowRule> for RumaAllowRule {
         match value {
             AllowRule::RoomMembership { room_id } => {
                 let room_id = RoomId::parse(room_id)?;
-                Ok(Self::RoomMembership(ruma::events::room::join_rules::RoomMembership::new(
-                    room_id,
-                )))
+                Ok(Self::RoomMembership(
+                    ruma::events::room::join_rules::RoomMembership::new(room_id),
+                ))
             }
             AllowRule::Custom { json } => Ok(Self::_Custom(Box::new(serde_json::from_str(&json)?))),
         }
@@ -2394,23 +2585,25 @@ impl TryFrom<RumaJoinRule> for JoinRule {
             RumaJoinRule::Public => Ok(JoinRule::Public),
             RumaJoinRule::Private => Ok(JoinRule::Private),
             RumaJoinRule::KnockRestricted(restricted) => {
-                let rules = restricted.allow.into_iter().map(TryInto::try_into).collect::<Result<
-                    Vec<_>,
-                    Self::Error,
-                >>(
-                )?;
+                let rules = restricted
+                    .allow
+                    .into_iter()
+                    .map(TryInto::try_into)
+                    .collect::<Result<Vec<_>, Self::Error>>()?;
                 Ok(JoinRule::KnockRestricted { rules })
             }
             RumaJoinRule::Restricted(restricted) => {
-                let rules = restricted.allow.into_iter().map(TryInto::try_into).collect::<Result<
-                    Vec<_>,
-                    Self::Error,
-                >>(
-                )?;
+                let rules = restricted
+                    .allow
+                    .into_iter()
+                    .map(TryInto::try_into)
+                    .collect::<Result<Vec<_>, Self::Error>>()?;
                 Ok(JoinRule::Restricted { rules })
             }
             RumaJoinRule::Invite => Ok(JoinRule::Invite),
-            RumaJoinRule::_Custom(_) => Ok(JoinRule::Custom { repr: value.as_str().to_owned() }),
+            RumaJoinRule::_Custom(_) => Ok(JoinRule::Custom {
+                repr: value.as_str().to_owned(),
+            }),
             _ => Err(format!("Unknown JoinRule: {value:?}")),
         }
     }
@@ -2420,9 +2613,9 @@ impl TryFrom<RumaAllowRule> for AllowRule {
     type Error = String;
     fn try_from(value: RumaAllowRule) -> Result<Self, Self::Error> {
         match value {
-            RumaAllowRule::RoomMembership(membership) => {
-                Ok(AllowRule::RoomMembership { room_id: membership.room_id.to_string() })
-            }
+            RumaAllowRule::RoomMembership(membership) => Ok(AllowRule::RoomMembership {
+                room_id: membership.room_id.to_string(),
+            }),
             RumaAllowRule::_Custom(repr) => {
                 let json = serde_json::to_string(&repr)
                     .map_err(|e| format!("Couldn't serialize custom AllowRule: {e:?}"))?;

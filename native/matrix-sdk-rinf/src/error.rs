@@ -36,7 +36,7 @@ pub enum ClientError {
 }
 
 impl ClientError {
-    pub(crate) fn from_str<E: Display>(error: E, details: Option<String>) -> Self {
+    pub fn from_str<E: Display>(error: E, details: Option<String>) -> Self {
         warn!("Error: {error}");
         Self::Generic {
             msg: error.to_string(),
@@ -44,7 +44,7 @@ impl ClientError {
         }
     }
 
-    pub(crate) fn from_err<E: Error>(e: E) -> Self {
+    pub fn from_err<E: Error>(e: E) -> Self {
         let details = Some(format!("{e:?}"));
         Self::from_str(e, details)
     }

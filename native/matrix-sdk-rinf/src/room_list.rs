@@ -21,6 +21,7 @@ use matrix_sdk_ui::{
     },
     unable_to_decrypt_hook::UtdHookManager,
 };
+use rinf::debug_print;
 
 use crate::{
     room::{Membership, Room},
@@ -46,7 +47,10 @@ pub enum RoomListError {
         "The requested room doesn't match the membership requirements {expected:?}, \
          observed {actual:?}"
     )]
-    IncorrectRoomMembership { expected: Vec<Membership>, actual: Membership },
+    IncorrectRoomMembership {
+        expected: Vec<Membership>,
+        actual: Membership,
+    },
 }
 
 impl From<matrix_sdk_ui::room_list_service::Error> for RoomListError {
@@ -54,27 +58,35 @@ impl From<matrix_sdk_ui::room_list_service::Error> for RoomListError {
         use matrix_sdk_ui::room_list_service::Error::*;
 
         match value {
-            SlidingSync(error) => Self::SlidingSync { error: error.to_string() },
+            SlidingSync(error) => Self::SlidingSync {
+                error: error.to_string(),
+            },
             UnknownList(list_name) => Self::UnknownList { list_name },
-            RoomNotFound(room_id) => Self::RoomNotFound { room_name: room_id.to_string() },
-            EventCache(error) => Self::EventCache { error: error.to_string() },
+            RoomNotFound(room_id) => Self::RoomNotFound {
+                room_name: room_id.to_string(),
+            },
+            EventCache(error) => Self::EventCache {
+                error: error.to_string(),
+            },
         }
     }
 }
 
 impl From<ruma::IdParseError> for RoomListError {
     fn from(value: ruma::IdParseError) -> Self {
-        Self::InvalidRoomId { error: value.to_string() }
+        Self::InvalidRoomId {
+            error: value.to_string(),
+        }
     }
 }
 
 pub struct RoomListService {
-    pub(crate) inner: Arc<matrix_sdk_ui::RoomListService>,
-    pub(crate) utd_hook: Option<Arc<UtdHookManager>>,
+    pub inner: Arc<matrix_sdk_ui::RoomListService>,
+    pub utd_hook: Option<Arc<UtdHookManager>>,
 }
 
 impl RoomListService {
-    fn state(&self, listener: Box<dyn RoomListServiceStateListener>) -> Arc<TaskHandle> {
+    pub fn state(&self, listener: Box<dyn RoomListServiceStateListener>) -> Arc<TaskHandle> {
         let state_stream = self.inner.state();
 
         Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
@@ -86,20 +98,23 @@ impl RoomListService {
         })))
     }
 
-    fn room(&self, room_id: String) -> Result<Arc<Room>, RoomListError> {
+    pub fn room(&self, room_id: String) -> Result<Arc<Room>, RoomListError> {
         let room_id = <&RoomId>::try_from(room_id.as_str()).map_err(RoomListError::from)?;
 
-        Ok(Arc::new(Room::new(self.inner.room(room_id)?, self.utd_hook.clone())))
+        Ok(Arc::new(Room::new(
+            self.inner.room(room_id)?,
+            self.utd_hook.clone(),
+        )))
     }
 
-    async fn all_rooms(self: Arc<Self>) -> Result<Arc<RoomList>, RoomListError> {
+    pub async fn all_rooms(self: Arc<Self>) -> Result<Arc<RoomList>, RoomListError> {
         Ok(Arc::new(RoomList {
             room_list_service: self.clone(),
             inner: Arc::new(self.inner.all_rooms().await.map_err(RoomListError::from)?),
         }))
     }
 
-    fn sync_indicator(
+    pub fn sync_indicator(
         &self,
         delay_before_showing_in_ms: u32,
         delay_before_hiding_in_ms: u32,
@@ -119,7 +134,7 @@ impl RoomListService {
         })))
     }
 
-    async fn subscribe_to_rooms(&self, room_ids: Vec<String>) -> Result<(), RoomListError> {
+    pub async fn subscribe_to_rooms(&self, room_ids: Vec<String>) -> Result<(), RoomListError> {
         let room_ids = room_ids
             .into_iter()
             .map(|room_id| {
@@ -141,7 +156,7 @@ pub struct RoomList {
 }
 
 impl RoomList {
-    fn loading_state(
+    pub fn loading_state(
         &self,
         listener: Box<dyn RoomListLoadingStateListener>,
     ) -> Result<RoomListLoadingStateResult, RoomListError> {
@@ -159,7 +174,7 @@ impl RoomList {
         })
     }
 
-    fn entries_with_dynamic_adapters(
+    pub fn entries_with_dynamic_adapters(
         self: Arc<Self>,
         page_size: u32,
         listener: Box<dyn RoomListEntriesListener>,
@@ -210,25 +225,32 @@ impl RoomList {
         // Now we can create `entries_stream` and `dynamic_entries_controller` by
         // borrowing `this`, which is going to live long enough since it will live as
         // long as `entries_stream` and `dynamic_entries_controller`.
-        let (entries_stream, dynamic_entries_controller) =
-            this.inner.entries_with_dynamic_adapters(page_size.try_into().unwrap());
+        let (entries_stream, dynamic_entries_controller) = this
+            .inner
+            .entries_with_dynamic_adapters(page_size.try_into().unwrap());
 
         // FFI dance to make those values consumable by foreign language, nothing fancy
         // here, that's the real code for this method.
-        let dynamic_entries_controller =
-            Arc::new(RoomListDynamicEntriesController::new(dynamic_entries_controller));
+        let dynamic_entries_controller = Arc::new(RoomListDynamicEntriesController::new(
+            dynamic_entries_controller,
+        ));
 
         let utd_hook = this.room_list_service.utd_hook.clone();
+
+        debug_print!("@ before creating handle");
         let entries_stream = Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
             pin_mut!(entries_stream);
 
+            debug_print!("@ looping through entities_stream");
             while let Some(diffs) = entries_stream.next().await {
-                listener.on_update(
-                    diffs
-                        .into_iter()
-                        .map(|room| RoomListEntriesUpdate::from(utd_hook.clone(), room))
-                        .collect(),
-                );
+                debug_print!("@ got diff, triggering update: {}", diffs.len());
+                let mapped = diffs
+                    .into_iter()
+                    .map(|room| RoomListEntriesUpdate::from(utd_hook.clone(), room))
+                    .collect();
+
+                debug_print!("@ mapped, trying on_update");
+                listener.on_update(mapped);
             }
         })));
 
@@ -253,7 +275,7 @@ impl RoomList {
         Arc::new(unsafe { result.assume_init() })
     }
 
-    fn room(&self, room_id: String) -> Result<Arc<Room>, RoomListError> {
+    pub fn room(&self, room_id: String) -> Result<Arc<Room>, RoomListError> {
         self.room_list_service.room(room_id)
     }
 }
@@ -265,11 +287,11 @@ pub struct RoomListEntriesWithDynamicAdaptersResult {
 }
 
 impl RoomListEntriesWithDynamicAdaptersResult {
-    fn controller(&self) -> Arc<RoomListDynamicEntriesController> {
+    pub fn controller(&self) -> Arc<RoomListDynamicEntriesController> {
         self.controller.clone()
     }
 
-    fn entries_stream(&self) -> Arc<TaskHandle> {
+    pub fn entries_stream(&self) -> Arc<TaskHandle> {
         self.entries_stream.clone()
     }
 }
@@ -279,6 +301,7 @@ pub struct RoomListLoadingStateResult {
     pub state_stream: Arc<TaskHandle>,
 }
 
+#[derive(Debug)]
 pub enum RoomListServiceState {
     // Name it `Initial` instead of `Init`, otherwise it creates a keyword conflict in Swift
     // as of 2023-08-21.
@@ -323,7 +346,9 @@ impl From<matrix_sdk_ui::room_list_service::SyncIndicator> for RoomListServiceSy
 
 pub enum RoomListLoadingState {
     NotLoaded,
-    Loaded { maximum_number_of_rooms: Option<u32> },
+    Loaded {
+        maximum_number_of_rooms: Option<u32>,
+    },
 }
 
 impl From<matrix_sdk_ui::room_list_service::RoomListLoadingState> for RoomListLoadingState {
@@ -332,7 +357,11 @@ impl From<matrix_sdk_ui::room_list_service::RoomListLoadingState> for RoomListLo
 
         match value {
             LS::NotLoaded => Self::NotLoaded,
-            LS::Loaded { maximum_number_of_rooms } => Self::Loaded { maximum_number_of_rooms },
+            LS::Loaded {
+                maximum_number_of_rooms,
+            } => Self::Loaded {
+                maximum_number_of_rooms,
+            },
         }
     }
 }
@@ -373,12 +402,12 @@ impl RoomListEntriesUpdate {
                     .collect(),
             },
             VectorDiff::Clear => Self::Clear,
-            VectorDiff::PushFront { value } => {
-                Self::PushFront { value: Arc::new(Room::new(value, utd_hook)) }
-            }
-            VectorDiff::PushBack { value } => {
-                Self::PushBack { value: Arc::new(Room::new(value, utd_hook)) }
-            }
+            VectorDiff::PushFront { value } => Self::PushFront {
+                value: Arc::new(Room::new(value, utd_hook)),
+            },
+            VectorDiff::PushBack { value } => Self::PushBack {
+                value: Arc::new(Room::new(value, utd_hook)),
+            },
             VectorDiff::PopFront => Self::PopFront,
             VectorDiff::PopBack => Self::PopBack,
             VectorDiff::Insert { index, value } => Self::Insert {
@@ -389,10 +418,12 @@ impl RoomListEntriesUpdate {
                 index: u32::try_from(index).unwrap(),
                 value: Arc::new(Room::new(value, utd_hook)),
             },
-            VectorDiff::Remove { index } => Self::Remove { index: u32::try_from(index).unwrap() },
-            VectorDiff::Truncate { length } => {
-                Self::Truncate { length: u32::try_from(length).unwrap() }
-            }
+            VectorDiff::Remove { index } => Self::Remove {
+                index: u32::try_from(index).unwrap(),
+            },
+            VectorDiff::Truncate { length } => Self::Truncate {
+                length: u32::try_from(length).unwrap(),
+            },
             VectorDiff::Reset { values } => Self::Reset {
                 values: values
                     .into_iter()
@@ -415,36 +446,48 @@ impl RoomListDynamicEntriesController {
     fn new(
         dynamic_entries_controller: matrix_sdk_ui::room_list_service::RoomListDynamicEntriesController,
     ) -> Self {
-        Self { inner: dynamic_entries_controller }
+        Self {
+            inner: dynamic_entries_controller,
+        }
     }
 }
 
 impl RoomListDynamicEntriesController {
-    fn set_filter(&self, kind: RoomListEntriesDynamicFilterKind) -> bool {
+    pub fn set_filter(&self, kind: RoomListEntriesDynamicFilterKind) -> bool {
         self.inner.set_filter(kind.into())
     }
 
-    fn add_one_page(&self) {
+    pub fn add_one_page(&self) {
         self.inner.add_one_page();
     }
 
-    fn reset_to_one_page(&self) {
+    pub fn reset_to_one_page(&self) {
         self.inner.reset_to_one_page();
     }
 }
 
 pub enum RoomListEntriesDynamicFilterKind {
-    All { filters: Vec<RoomListEntriesDynamicFilterKind> },
-    Any { filters: Vec<RoomListEntriesDynamicFilterKind> },
+    All {
+        filters: Vec<RoomListEntriesDynamicFilterKind>,
+    },
+    Any {
+        filters: Vec<RoomListEntriesDynamicFilterKind>,
+    },
     NonLeft,
     Joined,
     Unread,
     Favourite,
     Invite,
-    Category { expect: RoomListFilterCategory },
+    Category {
+        expect: RoomListFilterCategory,
+    },
     None,
-    NormalizedMatchRoomName { pattern: String },
-    FuzzyMatchRoomName { pattern: String },
+    NormalizedMatchRoomName {
+        pattern: String,
+    },
+    FuzzyMatchRoomName {
+        pattern: String,
+    },
     DeduplicateVersions,
 }
 
@@ -468,10 +511,16 @@ impl From<RoomListEntriesDynamicFilterKind> for BoxedFilterFn {
 
         match value {
             Kind::All { filters } => Box::new(new_filter_all(
-                filters.into_iter().map(|filter| BoxedFilterFn::from(filter)).collect(),
+                filters
+                    .into_iter()
+                    .map(|filter| BoxedFilterFn::from(filter))
+                    .collect(),
             )),
             Kind::Any { filters } => Box::new(new_filter_any(
-                filters.into_iter().map(|filter| BoxedFilterFn::from(filter)).collect(),
+                filters
+                    .into_iter()
+                    .map(|filter| BoxedFilterFn::from(filter))
+                    .collect(),
             )),
             Kind::NonLeft => Box::new(new_filter_non_left()),
             Kind::Joined => Box::new(new_filter_joined()),
@@ -492,20 +541,20 @@ impl From<RoomListEntriesDynamicFilterKind> for BoxedFilterFn {
 }
 
 pub struct UnreadNotificationsCount {
-    highlight_count: u32,
-    notification_count: u32,
+    pub highlight_count: u32,
+    pub notification_count: u32,
 }
 
 impl UnreadNotificationsCount {
-    fn highlight_count(&self) -> u32 {
+    pub fn highlight_count(&self) -> u32 {
         self.highlight_count
     }
 
-    fn notification_count(&self) -> u32 {
+    pub fn notification_count(&self) -> u32 {
         self.notification_count
     }
 
-    fn has_notifications(&self) -> bool {
+    pub fn has_notifications(&self) -> bool {
         self.notification_count != 0 || self.highlight_count != 0
     }
 }

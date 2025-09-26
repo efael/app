@@ -24,7 +24,7 @@ pub struct InReplyToDetails {
 }
 
 impl InReplyToDetails {
-    pub(crate) fn new(event_id: String, event: EmbeddedEventDetails) -> Self {
+    pub fn new(event_id: String, event: EmbeddedEventDetails) -> Self {
         Self { event_id, event }
     }
 }
@@ -41,7 +41,10 @@ impl InReplyToDetails {
 
 impl From<matrix_sdk_ui::timeline::InReplyToDetails> for InReplyToDetails {
     fn from(inner: matrix_sdk_ui::timeline::InReplyToDetails) -> Self {
-        Self { event_id: inner.event_id.to_string(), event: inner.event.into() }
+        Self {
+            event_id: inner.event_id.to_string(),
+            event: inner.event.into(),
+        }
     }
 }
 
@@ -74,7 +77,9 @@ impl From<TimelineDetails<Box<EmbeddedEvent>>> for EmbeddedEventDetails {
                 timestamp: event.timestamp.into(),
                 event_or_transaction_id: event.identifier.into(),
             },
-            TimelineDetails::Error(err) => EmbeddedEventDetails::Error { message: err.to_string() },
+            TimelineDetails::Error(err) => EmbeddedEventDetails::Error {
+                message: err.to_string(),
+            },
         }
     }
 }

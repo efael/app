@@ -17,11 +17,11 @@
 //! both Wasm and non-Wasm platforms. It also provides corresponding types
 //! that can be used in place of tokio's `Handle` and `Runtime` types.
 
+use once_cell::sync::Lazy;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::thread;
-use once_cell::sync::Lazy;
 
 static TOKIO1: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
     thread::Builder::new()
@@ -46,8 +46,8 @@ impl Future for Pending {
 
 #[cfg(not(target_family = "wasm"))]
 mod sys {
-    pub use tokio::runtime::Handle;
     use super::TOKIO1;
+    pub use tokio::runtime::Handle;
 
     /// Get a runtime handle appropriate for the current target platform.
     ///

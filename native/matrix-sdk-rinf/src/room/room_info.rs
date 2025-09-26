@@ -14,73 +14,77 @@ use crate::{
 };
 
 pub struct RoomInfo {
-    id: String,
-    encryption_state: EncryptionState,
-    creator: Option<String>,
+    pub id: String,
+    pub encryption_state: EncryptionState,
+    pub creator: Option<String>,
     /// The room's name from the room state event if received from sync, or one
     /// that's been computed otherwise.
-    display_name: Option<String>,
+    pub display_name: Option<String>,
     /// Room name as defined by the room state event only.
-    raw_name: Option<String>,
-    topic: Option<String>,
-    avatar_url: Option<String>,
-    is_direct: bool,
+    pub raw_name: Option<String>,
+    pub topic: Option<String>,
+    pub avatar_url: Option<String>,
+    pub is_direct: bool,
     /// Whether the room is public or not, based on the join rules.
     ///
     /// Can be `None` if the join rules state event is not available for this
     /// room.
-    is_public: Option<bool>,
-    is_space: bool,
+    pub is_public: Option<bool>,
+    pub is_space: bool,
     /// If present, it means the room has been archived/upgraded.
-    successor_room: Option<SuccessorRoom>,
-    is_favourite: bool,
-    canonical_alias: Option<String>,
-    alternative_aliases: Vec<String>,
-    membership: Membership,
+    pub successor_room: Option<SuccessorRoom>,
+    pub is_favourite: bool,
+    pub canonical_alias: Option<String>,
+    pub alternative_aliases: Vec<String>,
+    pub membership: Membership,
     /// Member who invited the current user to a room that's in the invited
     /// state.
     ///
     /// Can be missing if the room membership invite event is missing from the
     /// store.
-    inviter: Option<RoomMember>,
-    heroes: Vec<RoomHero>,
-    active_members_count: u64,
-    invited_members_count: u64,
-    joined_members_count: u64,
-    highlight_count: u64,
-    notification_count: u64,
-    cached_user_defined_notification_mode: Option<RoomNotificationMode>,
-    has_room_call: bool,
-    active_room_call_participants: Vec<String>,
+    pub inviter: Option<RoomMember>,
+    pub heroes: Vec<RoomHero>,
+    pub active_members_count: u64,
+    pub invited_members_count: u64,
+    pub joined_members_count: u64,
+    pub highlight_count: u64,
+    pub notification_count: u64,
+    pub cached_user_defined_notification_mode: Option<RoomNotificationMode>,
+    pub has_room_call: bool,
+    pub active_room_call_participants: Vec<String>,
     /// Whether this room has been explicitly marked as unread
-    is_marked_unread: bool,
+    pub is_marked_unread: bool,
     /// "Interesting" messages received in that room, independently of the
     /// notification settings.
-    num_unread_messages: u64,
+    pub num_unread_messages: u64,
     /// Events that will notify the user, according to their
     /// notification settings.
-    num_unread_notifications: u64,
+    pub num_unread_notifications: u64,
     /// Events causing mentions/highlights for the user, according to their
     /// notification settings.
-    num_unread_mentions: u64,
+    pub num_unread_mentions: u64,
     /// The currently pinned event ids.
-    pinned_event_ids: Vec<String>,
+    pub pinned_event_ids: Vec<String>,
     /// The join rule for this room, if known.
-    join_rule: Option<JoinRule>,
+    pub join_rule: Option<JoinRule>,
     /// The history visibility for this room, if known.
-    history_visibility: RoomHistoryVisibility,
+    pub history_visibility: RoomHistoryVisibility,
     /// This room's current power levels.
     ///
     /// Can be missing if the room power levels event is missing from the store.
-    power_levels: Option<Arc<RoomPowerLevels>>,
+    pub power_levels: Option<Arc<RoomPowerLevels>>,
 }
 
 impl RoomInfo {
-    pub(crate) async fn new(room: &matrix_sdk::Room) -> Result<Self, ClientError> {
+    pub async fn new(room: &matrix_sdk::Room) -> Result<Self, ClientError> {
         let unread_notification_counts = room.unread_notification_counts();
 
-        let pinned_event_ids =
-            room.pinned_event_ids().unwrap_or_default().iter().map(|id| id.to_string()).collect();
+        let pinned_event_ids = room
+            .pinned_event_ids()
+            .unwrap_or_default()
+            .iter()
+            .map(|id| id.to_string())
+            .collect();
 
         let join_rule = room
             .join_rule()

@@ -7,6 +7,8 @@ use matrix_sdk_rinf::authentication::{HomeserverLoginDetails, OidcConfiguration}
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
+use crate::signals::room::Room;
+
 #[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixInitRequest {
     pub application_support_directory: String,
@@ -90,6 +92,18 @@ pub struct MatrixListChatsRequest {
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixListChatsResponse {
-    Ok,
+    Ok { rooms: Vec<Room> },
     Err { message: String },
+}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixRoomListUpdate {
+    List { rooms: Vec<Room> },
+    Remove { indices: Vec<u32> },
+}
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub enum MatrixSyncServiceRequest {
+    Loop,
+    Stop,
 }

@@ -19,11 +19,23 @@ use tracing_core::{identify_callsite, metadata::Kind as MetadataKind};
 /// level + target) it is called with. Please make sure that the number of
 /// different combinations of those parameters this can be called with is
 /// constant in the final executable.
-fn log_event(file: String, line: Option<u32>, level: LogLevel, target: String, message: String) {
+pub fn log_event(
+    file: String,
+    line: Option<u32>,
+    level: LogLevel,
+    target: String,
+    message: String,
+) {
     static CALLSITES: Mutex<BTreeMap<MetadataId, &'static DefaultCallsite>> =
         Mutex::new(BTreeMap::new());
 
-    let id = MetadataId { file, line, level, target, name: None };
+    let id = MetadataId {
+        file,
+        line,
+        level,
+        target,
+        name: None,
+    };
     let callsite = get_or_init_metadata(&CALLSITES, id, &["message"], MetadataKind::EVENT);
 
     if span_or_event_enabled(callsite) {
@@ -70,7 +82,10 @@ fn get_or_init_metadata(
             FieldSet::new(field_names, identify_callsite!(callsite)),
             meta_kind,
         )));
-        callsite.0.try_insert(DefaultCallsite::new(metadata)).expect("callsite was not set before")
+        callsite
+            .0
+            .try_insert(DefaultCallsite::new(metadata))
+            .expect("callsite was not set before")
     })
 }
 
@@ -92,7 +107,7 @@ fn span_or_event_enabled(callsite: &'static DefaultCallsite) -> bool {
     }
 }
 
-pub struct Span(tracing::Span);
+pub struct Span(pub tracing::Span);
 
 impl Span {
     /// Create a span originating at the given callsite (file, line and column).
@@ -129,7 +144,13 @@ impl Span {
         static CALLSITES: Mutex<BTreeMap<MetadataId, &'static DefaultCallsite>> =
             Mutex::new(BTreeMap::new());
 
-        let loc = MetadataId { file, line, level, target, name: Some(name) };
+        let loc = MetadataId {
+            file,
+            line,
+            level,
+            target,
+            name: Some(name),
+        };
         let callsite = get_or_init_metadata(&CALLSITES, loc, &[], MetadataKind::SPAN);
         let metadata = callsite.metadata();
 
@@ -148,15 +169,15 @@ impl Span {
         Arc::new(Self(tracing::Span::current()))
     }
 
-    fn enter(&self) {
+    pub fn enter(&self) {
         self.0.with_subscriber(|(id, dispatch)| dispatch.enter(id));
     }
 
-    fn exit(&self) {
+    pub fn exit(&self) {
         self.0.with_subscriber(|(id, dispatch)| dispatch.exit(id));
     }
 
-    fn is_none(&self) -> bool {
+    pub fn is_none(&self) -> bool {
         self.0.is_none()
     }
 }
@@ -181,7 +202,7 @@ impl LogLevel {
         }
     }
 
-    pub(crate) fn as_str(&self) -> &'static str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             LogLevel::Error => "error",
             LogLevel::Warn => "warn",
@@ -212,6 +233,9 @@ impl Callsite for LateInitCallsite {
     }
 
     fn metadata(&self) -> &tracing::Metadata<'_> {
-        self.0.get().expect("Callsite impl must not be used before initialization").metadata()
+        self.0
+            .get()
+            .expect("Callsite impl must not be used before initialization")
+            .metadata()
     }
 }

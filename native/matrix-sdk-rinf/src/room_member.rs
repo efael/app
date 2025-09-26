@@ -47,7 +47,9 @@ impl TryFrom<matrix_sdk::ruma::events::room::member::MembershipState> for Member
                 Ok(MembershipState::Leave)
             }
             matrix_sdk::ruma::events::room::member::MembershipState::_Custom(_) => {
-                Ok(MembershipState::Custom { value: m.to_string() })
+                Ok(MembershipState::Custom {
+                    value: m.to_string(),
+                })
             }
             _ => {
                 tracing::warn!("Other membership state change not yet implemented");
@@ -111,10 +113,10 @@ impl TryFrom<SdkRoomMember> for RoomMember {
 #[derive(Clone)]
 pub struct RoomMemberWithSenderInfo {
     /// The room member.
-    room_member: RoomMember,
+    pub room_member: RoomMember,
     /// The info of the sender of the event `room_member` is based on, if
     /// available.
-    sender_info: Option<RoomMember>,
+    pub sender_info: Option<RoomMember>,
 }
 
 impl TryFrom<matrix_sdk::room::RoomMemberWithSenderInfo> for RoomMemberWithSenderInfo {
@@ -123,7 +125,10 @@ impl TryFrom<matrix_sdk::room::RoomMemberWithSenderInfo> for RoomMemberWithSende
     fn try_from(value: matrix_sdk::room::RoomMemberWithSenderInfo) -> Result<Self, Self::Error> {
         Ok(Self {
             room_member: value.room_member.try_into()?,
-            sender_info: value.sender_info.map(|member| member.try_into()).transpose()?,
+            sender_info: value
+                .sender_info
+                .map(|member| member.try_into())
+                .transpose()?,
         })
     }
 }

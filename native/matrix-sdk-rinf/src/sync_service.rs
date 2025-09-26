@@ -30,6 +30,7 @@ use crate::{
     runtime::get_runtime_handle, TaskHandle,
 };
 
+#[derive(Debug)]
 pub enum SyncServiceState {
     Idle,
     Running,
@@ -55,7 +56,7 @@ pub trait SyncServiceStateObserver: SendOutsideWasm + SyncOutsideWasm + Debug {
 }
 
 pub struct SyncService {
-    pub(crate) inner: Arc<MatrixSyncService>,
+    pub inner: Arc<MatrixSyncService>,
     utd_hook: Option<Arc<UtdHookManager>>,
 }
 
@@ -75,16 +76,20 @@ impl SyncService {
         self.inner.stop().await
     }
 
-    pub fn state(&self, listener: Box<dyn SyncServiceStateObserver>) -> Arc<TaskHandle> {
+    pub fn next_state(&self) -> SyncServiceState {
+        self.inner.state().next_now().into()
+    }
+
+    pub fn state(&self, listener: Box<dyn SyncServiceStateObserver>) -> TaskHandle {
         let state_stream = self.inner.state();
 
-        Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
+        TaskHandle::new(get_runtime_handle().spawn(async move {
             pin_mut!(state_stream);
 
             while let Some(state) = state_stream.next().await {
                 listener.on_update(state.into());
             }
-        })))
+        }))
     }
 }
 
@@ -95,8 +100,11 @@ pub struct SyncServiceBuilder {
 }
 
 impl SyncServiceBuilder {
-    pub(crate) fn new(client: Client, utd_hook: Option<Arc<UtdHookManager>>) -> Arc<Self> {
-        Arc::new(Self { builder: MatrixSyncService::builder(client), utd_hook })
+    pub fn new(client: Client, utd_hook: Option<Arc<UtdHookManager>>) -> Arc<Self> {
+        Arc::new(Self {
+            builder: MatrixSyncService::builder(client),
+            utd_hook,
+        })
     }
 }
 

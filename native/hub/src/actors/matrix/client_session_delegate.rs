@@ -1,4 +1,5 @@
 use std::{fs, path::PathBuf};
+use rinf::{RustSignal, debug_print};
 
 use matrix_sdk_rinf::{
     client::{ClientSessionDelegate, Session},
@@ -21,10 +22,14 @@ impl ClientSessionDelegate for ClientSessionDelegateImplementation {
         user_id: String,
     ) -> Result<matrix_sdk_rinf::client::Session, matrix_sdk_rinf::error::ClientError> {
         let mut session_file = self.dir.clone();
-        session_file.push(format!("./{user_id}.json"));
+        session_file.push(format!("./session.json"));
+        debug_print!("[delegate] retreive session file: {:?}", session_file);
 
         match fs::read_to_string(&session_file).map(|file| serde_json::from_str::<Session>(&file)) {
-            Ok(Ok(session)) => Ok(session),
+            Ok(Ok(session)) => {
+                debug_print!("[delegate] session found: {:?}", session.user_id);
+                Ok(session)
+            },
             Ok(Err(err)) => Err(ClientError::Generic {
                 msg: format!("Failed to parse a file"),
                 details: Some(err.to_string()),
@@ -38,7 +43,13 @@ impl ClientSessionDelegate for ClientSessionDelegateImplementation {
 
     fn save_session_in_keychain(&self, session: matrix_sdk_rinf::client::Session) {
         let mut session_file = self.dir.clone();
-        session_file.push(format!("./{}.json", &session.user_id));
-        serde_json::to_string::<Session>(&session).map(|session| fs::write(session_file, session));
+        session_file.push(format!("./session.json"));
+        debug_print!("[delegate] save session file: {:?}", session_file);
+
+        serde_json::
+            to_string::<Session>(&session)
+            .map(|session| fs::write(session_file, session))
+            .unwrap()
+            .unwrap();
     }
 }

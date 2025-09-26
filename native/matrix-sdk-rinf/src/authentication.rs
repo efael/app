@@ -77,8 +77,9 @@ impl SsoHandler {
     pub async fn finish(&self, callback_url: String) -> Result<(), SsoError> {
         let auth = self.client.inner.matrix_auth();
         let url = Url::parse(&callback_url).map_err(|_| SsoError::CallbackUrlInvalid)?;
-        let builder =
-            auth.login_with_sso_callback(url).map_err(|_| SsoError::CallbackUrlInvalid)?;
+        let builder = auth
+            .login_with_sso_callback(url)
+            .map_err(|_| SsoError::CallbackUrlInvalid)?;
         builder.await.map_err(|_| SsoError::LoginWithTokenFailed)?;
         Ok(())
     }
@@ -86,7 +87,9 @@ impl SsoHandler {
 
 impl Debug for SsoHandler {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        fmt.debug_struct("SsoHandler").field("url", &self.url).finish_non_exhaustive()
+        fmt.debug_struct("SsoHandler")
+            .field("url", &self.url)
+            .finish_non_exhaustive()
     }
 }
 
@@ -133,7 +136,10 @@ impl OidcConfiguration {
 
     pub fn client_metadata(&self) -> Result<Raw<ClientMetadata>, OidcError> {
         let redirect_uri = self.redirect_uri()?;
-        let client_name = self.client_name.as_ref().map(|n| Localized::new(n.to_owned(), []));
+        let client_name = self
+            .client_name
+            .as_ref()
+            .map(|n| Localized::new(n.to_owned(), []));
         let client_uri = self.client_uri.localized_url()?;
         let logo_uri = self.logo_uri.localized_url()?;
         let policy_uri = self.policy_uri.localized_url()?;
@@ -148,7 +154,9 @@ impl OidcConfiguration {
             ..ClientMetadata::new(
                 ApplicationType::Native,
                 vec![
-                    OAuthGrantType::AuthorizationCode { redirect_uris: vec![redirect_uri] },
+                    OAuthGrantType::AuthorizationCode {
+                        redirect_uris: vec![redirect_uri],
+                    },
                     OAuthGrantType::DeviceCode,
                 ],
                 client_uri,
@@ -211,7 +219,9 @@ impl From<SdkOAuthError> for OidcError {
             SdkOAuthError::AuthorizationCode(OAuthAuthorizationCodeError::Cancelled) => {
                 OidcError::Cancelled
             }
-            _ => OidcError::Generic { message: e.to_string() },
+            _ => OidcError::Generic {
+                message: e.to_string(),
+            },
         }
     }
 }
@@ -220,7 +230,9 @@ impl From<Error> for OidcError {
     fn from(e: Error) -> OidcError {
         match e {
             Error::OAuth(e) => (*e).into(),
-            _ => OidcError::Generic { message: e.to_string() },
+            _ => OidcError::Generic {
+                message: e.to_string(),
+            },
         }
     }
 }
@@ -247,6 +259,9 @@ trait StrExt {
 
 impl StrExt for str {
     fn localized_url(&self) -> Result<Localized<Url>, OidcError> {
-        Ok(Localized::new(Url::parse(self).map_err(|_| OidcError::MetadataInvalid)?, []))
+        Ok(Localized::new(
+            Url::parse(self).map_err(|_| OidcError::MetadataInvalid)?,
+            [],
+        ))
     }
 }

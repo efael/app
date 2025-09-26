@@ -31,13 +31,19 @@ struct EventFormatter {
 
 impl EventFormatter {
     fn new() -> Self {
-        Self { display_timestamp: true, display_level: true }
+        Self {
+            display_timestamp: true,
+            display_level: true,
+        }
     }
 
     #[cfg(target_os = "android")]
     fn for_logcat() -> Self {
         // Level and time are already captured by logcat separately
-        Self { display_timestamp: false, display_level: false }
+        Self {
+            display_timestamp: false,
+            display_level: false,
+        }
     }
 
     fn format_timestamp(&self, writer: &mut fmt::format::Writer<'_>) -> std::fmt::Result {
@@ -156,7 +162,10 @@ type ReloadHandle = Handle<
 
 fn text_layers(
     config: TracingConfiguration,
-) -> (impl Layer<Layered<EnvFilter, Registry>>, Option<ReloadHandle>) {
+) -> (
+    impl Layer<Layered<EnvFilter, Registry>>,
+    Option<ReloadHandle>,
+) {
     let (file_layer, reload_handle) = config
         .write_to_files
         .map(|c| {
@@ -227,8 +236,9 @@ fn make_file_layer(
         builder = builder.filename_suffix(file_suffix)
     }
 
-    let writer =
-        builder.build(&file_configuration.path).expect("Failed to create a rolling file appender.");
+    let writer = builder
+        .build(&file_configuration.path)
+        .expect("Failed to create a rolling file appender.");
 
     fmt::layer()
         .fmt_fields(FieldsFormatterForFiles::default())
@@ -484,7 +494,10 @@ impl TracingConfiguration {
 
                     (
                         Some(sentry_layer),
-                        Some(SentryLoggingCtx { _guard: sentry_guard, enabled: sentry_enabled }),
+                        Some(SentryLoggingCtx {
+                            _guard: sentry_guard,
+                            enabled: sentry_enabled,
+                        }),
                     )
                 } else {
                     (None, None)
@@ -496,7 +509,10 @@ impl TracingConfiguration {
                 .with(text_layers)
                 .with(sentry_layer)
                 .init();
-            logging_ctx = LoggingCtx { reload_handle, sentry: sentry_logging_ctx };
+            logging_ctx = LoggingCtx {
+                reload_handle,
+                sentry: sentry_logging_ctx,
+            };
         }
         #[cfg(not(feature = "sentry"))]
         {
@@ -524,23 +540,29 @@ fn build_tracing_filter(config: &TracingConfiguration) -> String {
 
     let global_level = config.log_level;
 
-    DEFAULT_TARGET_LOG_LEVELS.iter().for_each(|(target, default_level)| {
-        let level = if IMMUTABLE_LOG_TARGETS.contains(target) {
-            // If the target is immutable, keep the log level.
-            *default_level
-        } else if config.trace_log_packs.iter().any(|pack| pack.targets().contains(target)) {
-            // If a log pack includes that target, set the associated log level to TRACE.
-            LogLevel::Trace
-        } else if *default_level > global_level {
-            // If the default level is more verbose than the global level, keep the default.
-            *default_level
-        } else {
-            // Otherwise, use the global level.
-            global_level
-        };
+    DEFAULT_TARGET_LOG_LEVELS
+        .iter()
+        .for_each(|(target, default_level)| {
+            let level = if IMMUTABLE_LOG_TARGETS.contains(target) {
+                // If the target is immutable, keep the log level.
+                *default_level
+            } else if config
+                .trace_log_packs
+                .iter()
+                .any(|pack| pack.targets().contains(target))
+            {
+                // If a log pack includes that target, set the associated log level to TRACE.
+                LogLevel::Trace
+            } else if *default_level > global_level {
+                // If the default level is more verbose than the global level, keep the default.
+                *default_level
+            } else {
+                // Otherwise, use the global level.
+                global_level
+            };
 
-        filters.push(format!("{}={}", target.as_str(), level.as_str()));
-    });
+            filters.push(format!("{}={}", target.as_str(), level.as_str()));
+        });
 
     // Finally append the extra targets requested by the client.
     for target in &config.extra_targets {
@@ -566,10 +588,12 @@ pub fn init_platform(
     }
     #[cfg(not(target_family = "wasm"))]
     {
-        LOGGING.set(config.build()).map_err(|_| ClientError::Generic {
-            msg: "logger already initialized".to_owned(),
-            details: None,
-        })?;
+        LOGGING
+            .set(config.build())
+            .map_err(|_| ClientError::Generic {
+                msg: "logger already initialized".to_owned(),
+                details: None,
+            })?;
 
         if use_lightweight_tokio_runtime {
             setup_lightweight_tokio_runtime();
@@ -587,7 +611,9 @@ pub fn init_platform(
 pub fn enable_sentry_logging(enabled: bool) {
     if let Some(ctx) = LOGGING.get() {
         if let Some(sentry_ctx) = &ctx.sentry {
-            sentry_ctx.enabled.store(enabled, std::sync::atomic::Ordering::SeqCst);
+            sentry_ctx
+                .enabled
+                .store(enabled, std::sync::atomic::Ordering::SeqCst);
         } else {
             warn!("Sentry logging is not enabled");
         }
@@ -620,10 +646,12 @@ pub fn reload_tracing_file_writer(
     };
 
     let layer = make_file_layer(configuration);
-    reload_handle.reload(layer).map_err(|error| ClientError::Generic {
-        msg: format!("Failed to reload file config: {error}"),
-        details: None,
-    })
+    reload_handle
+        .reload(layer)
+        .map_err(|error| ClientError::Generic {
+            msg: format!("Failed to reload file config: {error}"),
+            details: None,
+        })
 }
 
 #[cfg(not(target_family = "wasm"))]

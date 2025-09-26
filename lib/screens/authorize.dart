@@ -41,7 +41,7 @@ class _AuthorizeScreenState extends State<AuthorizeScreen> {
             //     : AppConfig.appOpenUrlScheme,
             callbackUrlScheme: AppConfig.appOpenUrlScheme,
             options: const FlutterWebAuth2Options(
-              intentFlags: ephemeralIntentFlags,
+              intentFlags: defaultIntentFlags,
             ),
           );
 

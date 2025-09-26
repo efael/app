@@ -12,7 +12,7 @@ edition = "2024"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [lints.clippy]
-unwrap_used = "deny"
+# unwrap_used = "deny"
 wildcard_imports = "deny"
 
 [dependencies]
@@ -23,14 +23,28 @@ async-trait = { workspace = true }
 messages = "0.3.1"
 thiserror = { workspace = true }
 serde_json = { workspace = true }
-matrix-sdk = { workspace = true, features = ["rustls-tls"] }
-# matrix-sdk = { git = "https://github.com/efael/matrix-rust-sdk", branch = "matrix-sdk-0.13.0", features = [
-#   "native-tls",
-# ] }
-matrix-sdk-rinf = { path = "../matrix-sdk-rinf", features = ["rustls-tls"] }
-# matrix-sdk-rinf = { git = "https://github.com/efael/matrix-rust-sdk", branch = "matrix-sdk-0.13.0", features = [
-#   "native-tls",
-# ] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+matrix-sdk = { workspace = true, default-features = false, features = [
+  "automatic-room-key-forwarding",
+  "e2e-encryption",
+  "rustls-tls",
+  "bundled-sqlite",
+] }
+matrix-sdk-rinf = { workspace = true, default-features = false, features = [
+  "rustls-tls",
+] }
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+matrix-sdk = { workspace = true, default-features = false, features = [
+  "automatic-room-key-forwarding",
+  "e2e-encryption",
+  "native-tls",
+  "sqlite",
+] }
+matrix-sdk-rinf = { workspace = true, default-features = false, features = [
+  "native-tls",
+] }
 
 # Uncomment below to target the web.
 # tokio_with_wasm = { version = "0.8.5", features = ["rt", "macros", "time"] }

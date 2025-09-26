@@ -96,7 +96,9 @@ use crate::{
 
 pub enum AuthData {
     /// Password-based authentication (`m.login.password`).
-    Password { password_details: AuthDataPasswordDetails },
+    Password {
+        password_details: AuthDataPasswordDetails,
+    },
 }
 
 pub struct AuthDataPasswordDetails {
@@ -135,7 +137,11 @@ pub fn parse_matrix_entity_from(uri: String) -> Option<MatrixEntity> {
     if let Ok(matrix_to_uri) = MatrixToUri::parse(&uri) {
         return Some(MatrixEntity {
             id: matrix_to_uri.id().into(),
-            via: matrix_to_uri.via().iter().map(|via| via.to_string()).collect(),
+            via: matrix_to_uri
+                .via()
+                .iter()
+                .map(|via| via.to_string())
+                .collect(),
         });
     }
 
@@ -145,8 +151,8 @@ pub fn parse_matrix_entity_from(uri: String) -> Option<MatrixEntity> {
 /// A Matrix entity that can be a room, room alias, user, or event, and a list
 /// of via servers.
 pub struct MatrixEntity {
-    id: MatrixId,
-    via: Vec<String>,
+    pub id: MatrixId,
+    pub via: Vec<String>,
 }
 
 /// A Matrix ID that can be a room, room alias, user, or event.
@@ -164,7 +170,9 @@ impl From<&RumaMatrixId> for MatrixId {
         match value {
             RumaMatrixId::User(id) => MatrixId::User { id: id.to_string() },
             RumaMatrixId::Room(id) => MatrixId::Room { id: id.to_string() },
-            RumaMatrixId::RoomAlias(id) => MatrixId::RoomAlias { alias: id.to_string() },
+            RumaMatrixId::RoomAlias(id) => MatrixId::RoomAlias {
+                alias: id.to_string(),
+            },
 
             RumaMatrixId::Event(room_id_or_alias, event_id) => {
                 if room_id_or_alias.is_room_id() {
@@ -189,42 +197,48 @@ impl From<&RumaMatrixId> for MatrixId {
 pub fn message_event_content_new(
     msgtype: MessageType,
 ) -> Result<Arc<RoomMessageEventContentWithoutRelation>, ClientError> {
-    Ok(Arc::new(RoomMessageEventContentWithoutRelation::new(msgtype.try_into()?)))
+    Ok(Arc::new(RoomMessageEventContentWithoutRelation::new(
+        msgtype.try_into()?,
+    )))
 }
 
 pub fn message_event_content_from_markdown(
     md: String,
 ) -> Arc<RoomMessageEventContentWithoutRelation> {
-    Arc::new(RoomMessageEventContentWithoutRelation::new(RumaMessageType::text_markdown(md)))
+    Arc::new(RoomMessageEventContentWithoutRelation::new(
+        RumaMessageType::text_markdown(md),
+    ))
 }
 
 pub fn message_event_content_from_markdown_as_emote(
     md: String,
 ) -> Arc<RoomMessageEventContentWithoutRelation> {
-    Arc::new(RoomMessageEventContentWithoutRelation::new(RumaMessageType::emote_markdown(md)))
+    Arc::new(RoomMessageEventContentWithoutRelation::new(
+        RumaMessageType::emote_markdown(md),
+    ))
 }
 
 pub fn message_event_content_from_html(
     body: String,
     html_body: String,
 ) -> Arc<RoomMessageEventContentWithoutRelation> {
-    Arc::new(RoomMessageEventContentWithoutRelation::new(RumaMessageType::text_html(
-        body, html_body,
-    )))
+    Arc::new(RoomMessageEventContentWithoutRelation::new(
+        RumaMessageType::text_html(body, html_body),
+    ))
 }
 
 pub fn message_event_content_from_html_as_emote(
     body: String,
     html_body: String,
 ) -> Arc<RoomMessageEventContentWithoutRelation> {
-    Arc::new(RoomMessageEventContentWithoutRelation::new(RumaMessageType::emote_html(
-        body, html_body,
-    )))
+    Arc::new(RoomMessageEventContentWithoutRelation::new(
+        RumaMessageType::emote_html(body, html_body),
+    ))
 }
 
 #[derive(Clone)]
 pub struct MediaSource {
-    pub(crate) media_source: RumaMediaSource,
+    pub media_source: RumaMediaSource,
 }
 
 impl MediaSource {
@@ -259,7 +273,9 @@ impl TryFrom<RumaMediaSource> for MediaSource {
 
     fn try_from(value: RumaMediaSource) -> Result<Self, Self::Error> {
         value.verify()?;
-        Ok(Self { media_source: value })
+        Ok(Self {
+            media_source: value,
+        })
     }
 }
 
@@ -268,7 +284,9 @@ impl TryFrom<&RumaMediaSource> for MediaSource {
 
     fn try_from(value: &RumaMediaSource) -> Result<Self, Self::Error> {
         value.verify()?;
-        Ok(Self { media_source: value.clone() })
+        Ok(Self {
+            media_source: value.clone(),
+        })
     }
 }
 
@@ -279,7 +297,7 @@ impl From<MediaSource> for RumaMediaSource {
 }
 
 #[extension_trait]
-pub(crate) impl MediaSourceExt for RumaMediaSource {
+pub impl MediaSourceExt for RumaMediaSource {
     fn verify(&self) -> Result<(), ClientError> {
         match self {
             RumaMediaSource::Plain(url) => {
@@ -400,19 +418,19 @@ impl TryFrom<MessageType> for RumaMessageType {
             MessageType::File { content } => Self::File(content.into()),
             #[cfg(feature = "unstable-msc4274")]
             MessageType::Gallery { content } => Self::Gallery(content.try_into()?),
-            MessageType::Notice { content } => {
-                Self::Notice(assign!(RumaNoticeMessageEventContent::plain(content.body), {
+            MessageType::Notice { content } => Self::Notice(
+                assign!(RumaNoticeMessageEventContent::plain(content.body), {
                     formatted: content.formatted.map(Into::into),
-                }))
-            }
+                }),
+            ),
             MessageType::Text { content } => {
                 Self::Text(assign!(RumaTextMessageEventContent::plain(content.body), {
                     formatted: content.formatted.map(Into::into),
                 }))
             }
-            MessageType::Location { content } => {
-                Self::Location(RumaLocationMessageEventContent::new(content.body, content.geo_uri))
-            }
+            MessageType::Location { content } => Self::Location(
+                RumaLocationMessageEventContent::new(content.body, content.geo_uri),
+            ),
             MessageType::Other { msgtype, body } => {
                 Self::new(&msgtype, body, JsonObject::default())?
             }
@@ -431,12 +449,22 @@ impl TryFrom<RumaMessageType> for MessageType {
                     formatted: c.formatted.as_ref().map(Into::into),
                 },
             },
-            RumaMessageType::Image(c) => MessageType::Image { content: c.try_into()? },
-            RumaMessageType::Audio(c) => MessageType::Audio { content: c.try_into()? },
-            RumaMessageType::Video(c) => MessageType::Video { content: c.try_into()? },
-            RumaMessageType::File(c) => MessageType::File { content: c.try_into()? },
+            RumaMessageType::Image(c) => MessageType::Image {
+                content: c.try_into()?,
+            },
+            RumaMessageType::Audio(c) => MessageType::Audio {
+                content: c.try_into()?,
+            },
+            RumaMessageType::Video(c) => MessageType::Video {
+                content: c.try_into()?,
+            },
+            RumaMessageType::File(c) => MessageType::File {
+                content: c.try_into()?,
+            },
             #[cfg(feature = "unstable-msc4274")]
-            RumaMessageType::Gallery(c) => MessageType::Gallery { content: c.try_into()? },
+            RumaMessageType::Gallery(c) => MessageType::Gallery {
+                content: c.try_into()?,
+            },
             RumaMessageType::Notice(c) => MessageType::Notice {
                 content: NoticeMessageContent {
                     body: c.body.clone(),
@@ -450,8 +478,10 @@ impl TryFrom<RumaMessageType> for MessageType {
                 },
             },
             RumaMessageType::Location(c) => {
-                let (description, zoom_level) =
-                    c.location.map(|loc| (loc.description, loc.zoom_level)).unwrap_or((None, None));
+                let (description, zoom_level) = c
+                    .location
+                    .map(|loc| (loc.description, loc.zoom_level))
+                    .unwrap_or((None, None));
                 MessageType::Location {
                     content: LocationContent {
                         body: c.body,
@@ -724,7 +754,10 @@ impl TryFrom<&AudioInfo> for BaseAudioInfo {
         let size = UInt::try_from(value.size.ok_or(MediaInfoError::MissingField)?)
             .map_err(|_| MediaInfoError::InvalidField)?;
 
-        Ok(BaseAudioInfo { duration: Some(duration), size: Some(size) })
+        Ok(BaseAudioInfo {
+            duration: Some(duration),
+            size: Some(size),
+        })
     }
 }
 
@@ -751,7 +784,11 @@ impl From<UnstableAudioDetailsContent> for RumaUnstableAudioDetailsContentBlock 
     fn from(details: UnstableAudioDetailsContent) -> Self {
         Self::new(
             details.duration,
-            details.waveform.iter().map(|x| UnstableAmplitude::new(x.to_owned())).collect(),
+            details
+                .waveform
+                .iter()
+                .map(|x| UnstableAmplitude::new(x.to_owned()))
+                .collect(),
         )
     }
 }
@@ -929,7 +966,9 @@ impl From<&RumaFormattedBody> for FormattedBody {
         Self {
             format: match &f.format {
                 matrix_sdk::ruma::events::room::message::MessageFormat::Html => MessageFormat::Html,
-                _ => MessageFormat::Unknown { format: f.format.to_string() },
+                _ => MessageFormat::Unknown {
+                    format: f.format.to_string(),
+                },
             },
             body: f.body.clone(),
         }
@@ -1069,7 +1108,9 @@ pub fn content_without_relation_from_message(
     message: MessageContent,
 ) -> Result<Arc<RoomMessageEventContentWithoutRelation>, ClientError> {
     let msg_type = message.msg_type.try_into()?;
-    Ok(Arc::new(RoomMessageEventContentWithoutRelation::new(msg_type)))
+    Ok(Arc::new(RoomMessageEventContentWithoutRelation::new(
+        msg_type,
+    )))
 }
 
 /// Types of global account data events.
@@ -1271,7 +1312,11 @@ impl TryFrom<RumaRuleset> for Ruleset {
                 .into_iter()
                 .map(TryInto::try_into)
                 .collect::<Result<Vec<_>, _>>()?,
-            room: value.room.into_iter().map(TryInto::try_into).collect::<Result<Vec<_>, _>>()?,
+            room: value
+                .room
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<Vec<_>, _>>()?,
             sender: value
                 .sender
                 .into_iter()
@@ -1431,7 +1476,9 @@ pub enum SecretStorageEncryptionAlgorithm {
     ///
     /// Secrets using this method are encrypted using AES-CTR-256 and
     /// authenticated using HMAC-SHA-256.
-    V1AesHmacSha2 { properties: SecretStorageV1AesHmacSha2Properties },
+    V1AesHmacSha2 {
+        properties: SecretStorageV1AesHmacSha2Properties,
+    },
 }
 
 impl TryFrom<RumaSecretStorageEncryptionAlgorithm> for SecretStorageEncryptionAlgorithm {
@@ -1440,7 +1487,9 @@ impl TryFrom<RumaSecretStorageEncryptionAlgorithm> for SecretStorageEncryptionAl
     fn try_from(value: RumaSecretStorageEncryptionAlgorithm) -> Result<Self, Self::Error> {
         match value {
             RumaSecretStorageEncryptionAlgorithm::V1AesHmacSha2(properties) => {
-                Ok(Self::V1AesHmacSha2 { properties: properties.into() })
+                Ok(Self::V1AesHmacSha2 {
+                    properties: properties.into(),
+                })
             }
             _ => Err("Unsupported encryption algorithm".to_owned()),
         }
@@ -1547,7 +1596,10 @@ impl From<RumaGlobalAccountDataEvent<DirectEventContent>> for AccountDataEvent {
                 .0
                 .into_iter()
                 .map(|(user_id, room_ids)| {
-                    (user_id.to_string(), room_ids.iter().map(ToString::to_string).collect())
+                    (
+                        user_id.to_string(),
+                        room_ids.iter().map(ToString::to_string).collect(),
+                    )
                 })
                 .collect(),
         }
@@ -1556,7 +1608,9 @@ impl From<RumaGlobalAccountDataEvent<DirectEventContent>> for AccountDataEvent {
 
 impl From<RumaGlobalAccountDataEvent<IdentityServerEventContent>> for AccountDataEvent {
     fn from(value: RumaGlobalAccountDataEvent<IdentityServerEventContent>) -> Self {
-        Self::IdentityServer { base_url: value.content.base_url.into_option() }
+        Self::IdentityServer {
+            base_url: value.content.base_url.into_option(),
+        }
     }
 }
 
@@ -1581,13 +1635,17 @@ impl TryFrom<RumaGlobalAccountDataEvent<PushRulesEventContent>> for AccountDataE
     fn try_from(
         value: RumaGlobalAccountDataEvent<PushRulesEventContent>,
     ) -> Result<Self, Self::Error> {
-        Ok(Self::PushRules { global: value.content.global.try_into()? })
+        Ok(Self::PushRules {
+            global: value.content.global.try_into()?,
+        })
     }
 }
 
 impl From<RumaGlobalAccountDataEvent<SecretStorageDefaultKeyEventContent>> for AccountDataEvent {
     fn from(value: RumaGlobalAccountDataEvent<SecretStorageDefaultKeyEventContent>) -> Self {
-        Self::SecretStorageDefaultKey { key_id: value.content.key_id }
+        Self::SecretStorageDefaultKey {
+            key_id: value.content.key_id,
+        }
     }
 }
 
@@ -1601,7 +1659,11 @@ impl TryFrom<RumaGlobalAccountDataEvent<SecretStorageKeyEventContent>> for Accou
             key_id: value.content.key_id,
             name: value.content.name,
             algorithm: value.content.algorithm.try_into()?,
-            passphrase: value.content.passphrase.map(TryInto::try_into).transpose()?,
+            passphrase: value
+                .content
+                .passphrase
+                .map(TryInto::try_into)
+                .transpose()?,
         })
     }
 }
@@ -1694,7 +1756,9 @@ pub struct UserTagName {
 
 impl From<RumaUserTagName> for UserTagName {
     fn from(value: RumaUserTagName) -> Self {
-        Self { name: value.as_ref().to_owned() }
+        Self {
+            name: value.as_ref().to_owned(),
+        }
     }
 }
 
@@ -1713,13 +1777,17 @@ impl From<RumaTagInfo> for TagInfo {
 
 impl From<RumaRoomAccountDataEvent<FullyReadEventContent>> for RoomAccountDataEvent {
     fn from(value: RumaRoomAccountDataEvent<FullyReadEventContent>) -> Self {
-        Self::FullyReadEvent { event_id: value.content.event_id.into() }
+        Self::FullyReadEvent {
+            event_id: value.content.event_id.into(),
+        }
     }
 }
 
 impl From<RumaRoomAccountDataEvent<MarkedUnreadEventContent>> for RoomAccountDataEvent {
     fn from(value: RumaRoomAccountDataEvent<MarkedUnreadEventContent>) -> Self {
-        Self::MarkedUnread { unread: value.content.unread }
+        Self::MarkedUnread {
+            unread: value.content.unread,
+        }
     }
 }
 
@@ -1740,7 +1808,9 @@ impl TryFrom<RumaRoomAccountDataEvent<TagEventContent>> for RoomAccountDataEvent
 
 impl From<RumaRoomAccountDataEvent<UnstableMarkedUnreadEventContent>> for RoomAccountDataEvent {
     fn from(value: RumaRoomAccountDataEvent<UnstableMarkedUnreadEventContent>) -> Self {
-        Self::UnstableMarkedUnread { unread: value.content.unread }
+        Self::UnstableMarkedUnread {
+            unread: value.content.unread,
+        }
     }
 }
 
@@ -1779,7 +1849,11 @@ mod galleries {
             Ok(Self::new(
                 value.body,
                 value.formatted.map(Into::into),
-                value.itemtypes.into_iter().map(TryInto::try_into).collect::<Result<_, _>>()?,
+                value
+                    .itemtypes
+                    .into_iter()
+                    .map(TryInto::try_into)
+                    .collect::<Result<_, _>>()?,
             ))
         }
     }
@@ -1830,10 +1904,18 @@ mod galleries {
 
         fn try_from(value: RumaGalleryItemType) -> Result<Self, Self::Error> {
             Ok(match value {
-                RumaGalleryItemType::Image(c) => GalleryItemType::Image { content: c.try_into()? },
-                RumaGalleryItemType::Audio(c) => GalleryItemType::Audio { content: c.try_into()? },
-                RumaGalleryItemType::Video(c) => GalleryItemType::Video { content: c.try_into()? },
-                RumaGalleryItemType::File(c) => GalleryItemType::File { content: c.try_into()? },
+                RumaGalleryItemType::Image(c) => GalleryItemType::Image {
+                    content: c.try_into()?,
+                },
+                RumaGalleryItemType::Audio(c) => GalleryItemType::Audio {
+                    content: c.try_into()?,
+                },
+                RumaGalleryItemType::Video(c) => GalleryItemType::Video {
+                    content: c.try_into()?,
+                },
+                RumaGalleryItemType::File(c) => GalleryItemType::File {
+                    content: c.try_into()?,
+                },
                 _ => GalleryItemType::Other {
                     itemtype: value.itemtype().to_owned(),
                     body: value.body().to_owned(),
