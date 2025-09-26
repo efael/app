@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:messenger/widgets/chat_item.dart';
+import 'package:messenger/widgets/badge.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
 
-@widgetbook.UseCase(name: 'Default', type: ChatItem)
+@widgetbook.UseCase(name: 'Default', type: BadgePin)
 Widget build(BuildContext context) {
-  return ChatItem(name: "Qobilbek");
+  return BadgePin();
 }

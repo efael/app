@@ -1,13 +1,13 @@
 pub mod init_client_error;
-pub mod room;
 pub mod save_session_error;
 
 use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_events};
-use matrix_sdk_rinf::authentication::{HomeserverLoginDetails, OidcConfiguration};
+use matrix_sdk_rinf::{
+    authentication::{HomeserverLoginDetails, OidcConfiguration},
+    room::room_info::RoomInfo,
+};
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
-
-use crate::signals::room::Room;
 
 #[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixInitRequest {
@@ -92,13 +92,13 @@ pub struct MatrixListChatsRequest {
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixListChatsResponse {
-    Ok { rooms: Vec<Room> },
+    Ok { rooms: Vec<RoomInfo> },
     Err { message: String },
 }
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixRoomListUpdate {
-    List { rooms: Vec<Room> },
+    List { rooms: Vec<RoomInfo> },
     Remove { indices: Vec<u32> },
 }
 

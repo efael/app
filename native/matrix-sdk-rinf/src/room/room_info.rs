@@ -1,6 +1,20 @@
 use std::sync::Arc;
 
-use matrix_sdk::{EncryptionState, RoomState};
+use matrix_sdk::{
+    deserialized_responses::{TimelineEvent, TimelineEventKind},
+    room::MessagesOptions,
+    EncryptionState, Room, RoomState,
+};
+use rinf::SignalPiece;
+use ruma::{
+    api::Direction,
+    events::{
+        room::message::{MessageType, RoomMessageEventContent},
+        AnyMessageLikeEvent, AnyTimelineEvent, MessageLikeEvent,
+    },
+    OwnedRoomId,
+};
+use serde::Serialize;
 use tracing::warn;
 
 use crate::{
@@ -13,8 +27,10 @@ use crate::{
     room_member::RoomMember,
 };
 
+#[derive(Serialize, SignalPiece, Debug)]
 pub struct RoomInfo {
     pub id: String,
+    #[serde(skip)]
     pub encryption_state: EncryptionState,
     pub creator: Option<String>,
     /// The room's name from the room state event if received from sync, or one
@@ -69,14 +85,18 @@ pub struct RoomInfo {
     pub join_rule: Option<JoinRule>,
     /// The history visibility for this room, if known.
     pub history_visibility: RoomHistoryVisibility,
+
+    pub last_message: Option<String>,
+
     /// This room's current power levels.
     ///
     /// Can be missing if the room power levels event is missing from the store.
+    #[serde(skip)]
     pub power_levels: Option<Arc<RoomPowerLevels>>,
 }
 
 impl RoomInfo {
-    pub async fn new(room: &matrix_sdk::Room) -> Result<Self, ClientError> {
+    pub async fn new(room: &Room) -> Result<Self, ClientError> {
         let unread_notification_counts = room.unread_notification_counts();
 
         let pinned_event_ids = room
@@ -101,6 +121,9 @@ impl RoomInfo {
             .await
             .ok()
             .map(|p| RoomPowerLevels::new(p, room.own_user_id().to_owned()));
+
+        // https://github.com/pkulak/matui/blob/d067a23fb1b693dc5ab14db6c4641bde6c194891/src/matrix/roomcache.rs#L170
+        let last_message = RoomInfo::get_last_message(room).await;
 
         Ok(Self {
             id: room.room_id().to_string(),
@@ -153,6 +176,64 @@ impl RoomInfo {
             join_rule,
             history_visibility: room.history_visibility_or_default().try_into()?,
             power_levels: power_levels.map(Arc::new),
+            last_message,
         })
+    }
+
+    fn deserialize_event(
+        event: &TimelineEvent,
+        room_id: OwnedRoomId,
+    ) -> anyhow::Result<AnyTimelineEvent> {
+        match &event.kind {
+            TimelineEventKind::Decrypted(decrypted) => Ok(decrypted.event.deserialize()?.into()),
+            TimelineEventKind::PlainText { event } => {
+                Ok(event.deserialize()?.into_full_event(room_id))
+            }
+            TimelineEventKind::UnableToDecrypt { event, .. } => {
+                Ok(event.deserialize()?.into_full_event(room_id))
+            }
+        }
+    }
+    pub fn get_room_message_event(
+        room: &Room,
+        event: &TimelineEvent,
+    ) -> Option<MessageLikeEvent<RoomMessageEventContent>> {
+        let Ok(event) = RoomInfo::deserialize_event(event, room.room_id().to_owned()) else {
+            return None;
+        };
+
+        let AnyTimelineEvent::MessageLike(AnyMessageLikeEvent::RoomMessage(event)) = event else {
+            return None;
+        };
+
+        Some(event)
+    }
+
+    async fn get_last_message(room: &Room) -> Option<String> {
+        let events = room
+            .messages(MessagesOptions::new(Direction::Backward))
+            .await
+            .ok()?
+            .chunk;
+
+        for e in &events {
+            let Some(event) = RoomInfo::get_room_message_event(room, e) else {
+                continue;
+            };
+
+            let (body, _og) = if let Some(og) = event.as_original() {
+                if let MessageType::Text(content) = &og.content.msgtype {
+                    (content.body.clone(), og)
+                } else {
+                    ("".to_string(), og)
+                }
+            } else {
+                continue;
+            };
+
+            return Some(body);
+        }
+
+        None
     }
 }

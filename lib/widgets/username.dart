@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:messenger/constants.dart';
 
 class Username extends StatelessWidget {
   const Username({
@@ -19,10 +20,10 @@ class Username extends StatelessWidget {
       children: [
         Text(
           name,
-          style: TextStyle(
-            color: secure ? Color.fromRGBO(42, 157, 99, 1) : Colors.white,
-            fontSize: 16.0,
-            fontWeight: FontWeight.w500,
+          style: consts.typography.text1.copyWith(
+            color: secure
+                ? consts.colors.accent.green
+                : consts.colors.content.highContrast,
           ),
         ),
       ],

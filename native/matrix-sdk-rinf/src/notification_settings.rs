@@ -10,6 +10,7 @@ use matrix_sdk::{
     Client as MatrixClient,
 };
 use matrix_sdk_common::{SendOutsideWasm, SyncOutsideWasm};
+use rinf::SignalPiece;
 use ruma::{
     push::{
         Action as SdkAction, ComparisonOperator as SdkComparisonOperator, PredefinedOverrideRuleId,
@@ -18,6 +19,7 @@ use ruma::{
     },
     Int, RoomId, UInt,
 };
+use serde::Serialize;
 use tokio::sync::RwLock as AsyncRwLock;
 
 use crate::error::NotificationSettingsError;
@@ -375,7 +377,7 @@ impl TryFrom<Action> for SdkAction {
 }
 
 /// Enum representing the push notification modes for a room.
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone, Debug)]
 pub enum RoomNotificationMode {
     /// Receive notifications for all messages.
     AllMessages,

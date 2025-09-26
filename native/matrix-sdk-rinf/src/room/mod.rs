@@ -18,6 +18,7 @@ use matrix_sdk_ui::{
     unable_to_decrypt_hook::UtdHookManager,
 };
 use mime::Mime;
+use rinf::SignalPiece;
 use ruma::{
     assign,
     events::{
@@ -33,6 +34,7 @@ use ruma::{
     EventId, Int, OwnedDeviceId, OwnedRoomOrAliasId, OwnedServerName, OwnedUserId, RoomAliasId,
     ServerName, UserId,
 };
+use serde::Serialize;
 use tracing::{error, warn};
 
 use self::{power_levels::RoomPowerLevels, room_info::RoomInfo};
@@ -57,7 +59,7 @@ use crate::{
 mod power_levels;
 pub mod room_info;
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, SignalPiece, Debug, Clone)]
 pub enum Membership {
     Invited,
     Joined,
@@ -79,7 +81,7 @@ impl From<RoomState> for Membership {
 }
 
 pub struct Room {
-    pub(super) inner: SdkRoom,
+    pub inner: SdkRoom,
     utd_hook_manager: Option<Arc<UtdHookManager>>,
 }
 
@@ -1367,6 +1369,7 @@ impl RoomMembersIterator {
 }
 
 /// Information about a member considered to be a room hero.
+#[derive(Serialize, SignalPiece, Debug)]
 pub struct RoomHero {
     /// The user ID of the hero.
     pub user_id: String,
@@ -1521,7 +1524,7 @@ impl TryFrom<ComposerDraftType> for SdkComposerDraftType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, SignalPiece, Debug, Clone)]
 pub enum RoomHistoryVisibility {
     /// Previous events are accessible to newly joined members from the point
     /// they were invited onwards.
@@ -1587,6 +1590,7 @@ impl TryFrom<RoomHistoryVisibility> for RumaHistoryVisibility {
 /// A room is tombstoned if it has received a [`m.room.tombstone`] state event.
 ///
 /// [`m.room.tombstone`]: https://spec.matrix.org/v1.14/client-server-api/#mroomtombstone
+#[derive(Serialize, SignalPiece, Debug)]
 pub struct SuccessorRoom {
     /// The ID of the replacement room.
     pub room_id: String,

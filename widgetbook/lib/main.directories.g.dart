@@ -11,8 +11,12 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
+import 'package:widgetbook_workspace/widgets/badge.dart'
+    as _widgetbook_workspace_widgets_badge;
 import 'package:widgetbook_workspace/widgets/chat_item.dart'
     as _widgetbook_workspace_widgets_chat_item;
+import 'package:widgetbook_workspace/widgets/header_status.dart'
+    as _widgetbook_workspace_widgets_header_status;
 import 'package:widgetbook_workspace/widgets/message_preview.dart'
     as _widgetbook_workspace_widgets_message_preview;
 import 'package:widgetbook_workspace/widgets/username.dart'
@@ -25,10 +29,24 @@ final directories = <_widgetbook.WidgetbookNode>[
     name: 'widgets',
     children: [
       _widgetbook.WidgetbookLeafComponent(
+        name: 'BadgePin',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder: _widgetbook_workspace_widgets_badge.build,
+        ),
+      ),
+      _widgetbook.WidgetbookLeafComponent(
         name: 'ChatItem',
         useCase: _widgetbook.WidgetbookUseCase(
           name: 'Default',
           builder: _widgetbook_workspace_widgets_chat_item.build,
+        ),
+      ),
+      _widgetbook.WidgetbookLeafComponent(
+        name: 'HeaderStatusTyping',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder: _widgetbook_workspace_widgets_header_status.build,
         ),
       ),
       _widgetbook.WidgetbookLeafComponent(
