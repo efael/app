@@ -118,7 +118,6 @@
         rustToolchain
         androidCustomPackage
         pinnedJDK
-        pkgs.cargo-ndk
       ];
     in {
       devShells.default =
