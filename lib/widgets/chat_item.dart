@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:messenger/constants.dart';
+import 'package:messenger/src/bindings/signals/signals.dart';
+import 'package:messenger/widgets/message_preview.dart';
 import 'package:messenger/widgets/username.dart';
 import 'package:messenger/widgets/userpic.dart';
 
 class ChatItem extends StatelessWidget {
-  final String name;
-  final String? message;
+  final RoomInfo roomInfo;
+  final EventTimelineItem? latestEvent;
 
-  const ChatItem({super.key, required this.name, this.message});
+  const ChatItem({super.key, required this.roomInfo, this.latestEvent});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class ChatItem extends StatelessWidget {
             child: Row(
               spacing: 12,
               children: [
-                Userpic(name: name),
+                Userpic(name: roomInfo.displayName ?? " "),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -35,11 +37,11 @@ class ChatItem extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Username(name: name),
+                          Username(name: roomInfo.displayName ?? "-"),
                           Text("08:28", style: consts.typography.text3),
                         ],
                       ),
-                      Text(message ?? "-", style: consts.typography.text2),
+                      MessagePreview(),
                     ],
                   ),
                 ),

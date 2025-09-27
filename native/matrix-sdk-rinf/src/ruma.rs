@@ -20,6 +20,7 @@ use std::{
 
 use extension_trait::extension_trait;
 use matrix_sdk::attachment::{BaseAudioInfo, BaseFileInfo, BaseImageInfo, BaseVideoInfo};
+use rinf::SignalPiece;
 use ruma::{
     assign,
     events::{
@@ -84,6 +85,7 @@ use ruma::{
     KeyDerivationAlgorithm as RumaKeyDerivationAlgorithm, MatrixToUri, MatrixUri as RumaMatrixUri,
     OwnedRoomId, OwnedUserId, UInt, UserId,
 };
+use serde::Serialize;
 use tracing::info;
 
 use crate::{
@@ -236,8 +238,10 @@ pub fn message_event_content_from_html_as_emote(
     ))
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct MediaSource {
+    // TODO: fix
+    #[serde(skip)]
     pub media_source: RumaMediaSource,
 }
 
@@ -328,7 +332,7 @@ pub impl RoomMessageEventContentWithoutRelationExt for RoomMessageEventContentWi
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct Mentions {
     pub user_ids: Vec<String>,
     pub room: bool,
@@ -349,7 +353,7 @@ impl From<Mentions> for ruma::events::Mentions {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum MessageType {
     Emote {
         content: EmoteMessageContent,
@@ -528,18 +532,20 @@ impl From<NotifyType> for RumaNotifyType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct EmoteMessageContent {
     pub body: String,
     pub formatted: Option<FormattedBody>,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct ImageMessageContent {
     /// The computed filename, for use in a client.
     pub filename: String,
     pub caption: Option<String>,
     pub formatted_caption: Option<FormattedBody>,
+    // TODO: fix
+    #[serde(skip)]
     pub source: Arc<MediaSource>,
     pub info: Option<ImageInfo>,
 }
@@ -569,12 +575,14 @@ impl TryFrom<RumaImageMessageEventContent> for ImageMessageContent {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct AudioMessageContent {
     /// The computed filename, for use in a client.
     pub filename: String,
     pub caption: Option<String>,
     pub formatted_caption: Option<FormattedBody>,
+    // TODO: fix
+    #[serde(skip)]
     pub source: Arc<MediaSource>,
     pub info: Option<AudioInfo>,
     pub audio: Option<UnstableAudioDetailsContent>,
@@ -610,12 +618,14 @@ impl TryFrom<RumaAudioMessageEventContent> for AudioMessageContent {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct VideoMessageContent {
     /// The computed filename, for use in a client.
     pub filename: String,
     pub caption: Option<String>,
     pub formatted_caption: Option<FormattedBody>,
+    // TODO: fix
+    #[serde(skip)]
     pub source: Arc<MediaSource>,
     pub info: Option<VideoInfo>,
 }
@@ -645,12 +655,14 @@ impl TryFrom<RumaVideoMessageEventContent> for VideoMessageContent {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct FileMessageContent {
     /// The computed filename, for use in a client.
     pub filename: String,
     pub caption: Option<String>,
     pub formatted_caption: Option<FormattedBody>,
+    // TODO: fix
+    #[serde(skip)]
     pub source: Arc<MediaSource>,
     pub info: Option<FileInfo>,
 }
@@ -680,13 +692,15 @@ impl TryFrom<RumaFileMessageEventContent> for FileMessageContent {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct ImageInfo {
     pub height: Option<u64>,
     pub width: Option<u64>,
     pub mimetype: Option<String>,
     pub size: Option<u64>,
     pub thumbnail_info: Option<ThumbnailInfo>,
+    // TODO: fix
+    #[serde(skip)]
     pub thumbnail_source: Option<Arc<MediaSource>>,
     pub blurhash: Option<String>,
     pub is_animated: Option<bool>,
@@ -729,8 +743,10 @@ impl TryFrom<&ImageInfo> for BaseImageInfo {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct AudioInfo {
+    // TODO: fix
+    #[serde(skip)]
     pub duration: Option<Duration>,
     pub size: Option<u64>,
     pub mimetype: Option<String>,
@@ -761,8 +777,10 @@ impl TryFrom<&AudioInfo> for BaseAudioInfo {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct UnstableAudioDetailsContent {
+    // TODO: fix
+    #[serde(skip)]
     pub duration: Duration,
     pub waveform: Vec<u16>,
 }
@@ -793,7 +811,7 @@ impl From<UnstableAudioDetailsContent> for RumaUnstableAudioDetailsContentBlock 
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct UnstableVoiceContent {}
 
 impl From<RumaUnstableVoiceContentBlock> for UnstableVoiceContent {
@@ -808,14 +826,18 @@ impl From<UnstableVoiceContent> for RumaUnstableVoiceContentBlock {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct VideoInfo {
+    // TODO: fix
+    #[serde(skip)]
     pub duration: Option<Duration>,
     pub height: Option<u64>,
     pub width: Option<u64>,
     pub mimetype: Option<String>,
     pub size: Option<u64>,
     pub thumbnail_info: Option<ThumbnailInfo>,
+    // TODO: fix
+    #[serde(skip)]
     pub thumbnail_source: Option<Arc<MediaSource>>,
     pub blurhash: Option<String>,
 }
@@ -858,11 +880,13 @@ impl TryFrom<&VideoInfo> for BaseVideoInfo {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct FileInfo {
     pub mimetype: Option<String>,
     pub size: Option<u64>,
     pub thumbnail_info: Option<ThumbnailInfo>,
+    // TODO: fix
+    #[serde(skip)]
     pub thumbnail_source: Option<Arc<MediaSource>>,
 }
 
@@ -888,7 +912,7 @@ impl TryFrom<&FileInfo> for BaseFileInfo {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct ThumbnailInfo {
     pub height: Option<u64>,
     pub width: Option<u64>,
@@ -907,19 +931,19 @@ impl From<ThumbnailInfo> for RumaThumbnailInfo {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct NoticeMessageContent {
     pub body: String,
     pub formatted: Option<FormattedBody>,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct TextMessageContent {
     pub body: String,
     pub formatted: Option<FormattedBody>,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct LocationContent {
     pub body: String,
     pub geo_uri: String,
@@ -928,7 +952,7 @@ pub struct LocationContent {
     pub asset: Option<AssetType>,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum AssetType {
     Sender,
     Pin,
@@ -943,7 +967,7 @@ impl From<AssetType> for RumaAssetType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct FormattedBody {
     pub format: MessageFormat,
     pub body: String,
@@ -975,7 +999,7 @@ impl From<&RumaFormattedBody> for FormattedBody {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum MessageFormat {
     Html,
     Unknown { format: String },
@@ -1074,7 +1098,7 @@ impl TryFrom<&RumaFileInfo> for FileInfo {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum PollKind {
     Disclosed,
     Undisclosed,
@@ -1819,6 +1843,7 @@ pub use galleries::*;
 
 #[cfg(feature = "unstable-msc4274")]
 mod galleries {
+    use rinf::SignalPiece;
     use ruma::{
         events::room::message::{
             GalleryItemType as RumaGalleryItemType,
@@ -1826,6 +1851,7 @@ mod galleries {
         },
         serde::JsonObject,
     };
+    use serde::Serialize;
 
     use crate::{
         error::ClientError,
@@ -1835,7 +1861,7 @@ mod galleries {
         },
     };
 
-    #[derive(Clone)]
+    #[derive(Serialize, SignalPiece, Clone)]
     pub struct GalleryMessageContent {
         pub body: String,
         pub formatted: Option<FormattedBody>,
@@ -1874,7 +1900,7 @@ mod galleries {
         }
     }
 
-    #[derive(Clone)]
+    #[derive(Serialize, SignalPiece, Clone)]
     pub enum GalleryItemType {
         Image { content: ImageMessageContent },
         Audio { content: AudioMessageContent },

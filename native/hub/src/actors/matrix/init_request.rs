@@ -38,7 +38,6 @@ impl Notifiable<MatrixInitRequest> for Matrix {
             return;
         }
 
-        
         let client = self
             .client
             .as_ref()

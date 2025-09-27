@@ -5,6 +5,7 @@ use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_eve
 use matrix_sdk_rinf::{
     authentication::{HomeserverLoginDetails, OidcConfiguration},
     room::room_info::RoomInfo,
+    timeline::EventTimelineItem,
 };
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
@@ -90,16 +91,24 @@ pub struct MatrixListChatsRequest {
     pub url: String,
 }
 
-#[derive(Serialize, RustSignal, Debug)]
+#[derive(Serialize, RustSignal)]
 pub enum MatrixListChatsResponse {
-    Ok { rooms: Vec<RoomInfo> },
-    Err { message: String },
+    Ok {
+        rooms: Vec<(RoomInfo, Option<EventTimelineItem>)>,
+    },
+    Err {
+        message: String,
+    },
 }
 
-#[derive(Serialize, RustSignal, Debug)]
+#[derive(Serialize, RustSignal)]
 pub enum MatrixRoomListUpdate {
-    List { rooms: Vec<RoomInfo> },
-    Remove { indices: Vec<u32> },
+    List {
+        rooms: Vec<(RoomInfo, Option<EventTimelineItem>)>,
+    },
+    Remove {
+        indices: Vec<u32>,
+    },
 }
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]

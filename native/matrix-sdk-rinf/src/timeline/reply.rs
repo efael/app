@@ -13,14 +13,16 @@
 // limitations under the License.
 
 use matrix_sdk_ui::timeline::{EmbeddedEvent, TimelineDetails};
+use rinf::SignalPiece;
+use serde::Serialize;
 
 use super::{content::TimelineItemContent, ProfileDetails};
 use crate::{event::EventOrTransactionId, utils::Timestamp};
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct InReplyToDetails {
-    event_id: String,
-    event: EmbeddedEventDetails,
+    pub event_id: String,
+    pub event: EmbeddedEventDetails,
 }
 
 impl InReplyToDetails {
@@ -48,7 +50,7 @@ impl From<matrix_sdk_ui::timeline::InReplyToDetails> for InReplyToDetails {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 #[allow(clippy::large_enum_variant)]
 pub enum EmbeddedEventDetails {
     Unavailable,

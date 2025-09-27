@@ -81,9 +81,12 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
 
         let mut set = JoinSet::new();
 
-        client.rooms().iter().for_each(|r| {
-            let room = r.inner.clone();
-            set.spawn(async move { RoomInfo::new(&room).await });
+        client.rooms().into_iter().for_each(|r| {
+            set.spawn(async move {
+                let info = r.room_info().await;
+                let latest_event = r.latest_event().await;
+                info.map(|info| (info, latest_event))
+            });
         });
 
         let rooms = set
@@ -110,9 +113,12 @@ impl RoomListEntriesListener for RoomListNotifier {
                     tokio::spawn(async move {
                         let mut set = JoinSet::new();
 
-                        values.iter().for_each(|r| {
-                            let room = r.inner.clone();
-                            set.spawn(async move { RoomInfo::new(&room).await });
+                        values.into_iter().for_each(|r| {
+                            set.spawn(async move {
+                                let info = r.room_info().await;
+                                let latest_event = r.latest_event().await;
+                                info.map(|info| (info, latest_event))
+                            });
                         });
 
                         let rooms = set
@@ -147,4 +153,3 @@ impl RoomListServiceStateListener for RoomStateListener {
         debug_print!("[room] room list state = {state:?}");
     }
 }
-

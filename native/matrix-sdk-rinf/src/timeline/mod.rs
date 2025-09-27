@@ -35,11 +35,12 @@ use matrix_sdk_common::{
     stream::StreamExt,
 };
 use matrix_sdk_ui::timeline::{
-    self, AttachmentSource, EventItemOrigin, Profile, TimelineDetails,
+    self, AttachmentSource, EventItemOrigin as SdkEventItemOrigin, Profile, TimelineDetails,
     TimelineUniqueId as SdkTimelineUniqueId,
 };
 use mime::Mime;
 use reply::{EmbeddedEventDetails, InReplyToDetails};
+use rinf::SignalPiece;
 use ruma::{
     events::{
         location::{AssetType as RumaAssetType, LocationContent, ZoomLevel},
@@ -59,6 +60,7 @@ use ruma::{
     },
     EventId, UInt,
 };
+use serde::Serialize;
 use tokio::sync::Mutex;
 use tracing::{error, warn};
 use uuid::Uuid;
@@ -1100,7 +1102,7 @@ impl TimelineItem {
 }
 
 /// This type represents the “send state” of a local event timeline item.
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum EventSendState {
     /// The local event has not been sent yet.
     NotSentYet,
@@ -1182,23 +1184,24 @@ impl From<SdkShieldState> for ShieldState {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct EventTimelineItem {
     /// Indicates that an event is remote.
-    is_remote: bool,
-    event_or_transaction_id: EventOrTransactionId,
-    sender: String,
-    sender_profile: ProfileDetails,
-    is_own: bool,
-    is_editable: bool,
-    content: TimelineItemContent,
-    timestamp: Timestamp,
-    local_send_state: Option<EventSendState>,
-    local_created_at: Option<u64>,
-    read_receipts: HashMap<String, Receipt>,
-    origin: Option<EventItemOrigin>,
-    can_be_replied_to: bool,
-    lazy_provider: Arc<LazyTimelineItemProvider>,
+    pub is_remote: bool,
+    pub event_or_transaction_id: EventOrTransactionId,
+    pub sender: String,
+    pub sender_profile: ProfileDetails,
+    pub is_own: bool,
+    pub is_editable: bool,
+    pub content: TimelineItemContent,
+    pub timestamp: Timestamp,
+    pub local_send_state: Option<EventSendState>,
+    pub local_created_at: Option<u64>,
+    pub read_receipts: HashMap<String, Receipt>,
+    pub origin: Option<EventItemOrigin>,
+    pub can_be_replied_to: bool,
+    #[serde(skip)]
+    pub lazy_provider: Arc<LazyTimelineItemProvider>,
 }
 
 impl From<matrix_sdk_ui::timeline::EventTimelineItem> for EventTimelineItem {
@@ -1222,14 +1225,38 @@ impl From<matrix_sdk_ui::timeline::EventTimelineItem> for EventTimelineItem {
             local_send_state: item.send_state().map(|s| s.into()),
             local_created_at: item.local_created_at().map(|t| t.0.into()),
             read_receipts,
-            origin: item.origin(),
+            origin: item.origin().map(Into::into),
             can_be_replied_to: item.can_be_replied_to(),
             lazy_provider,
         }
     }
 }
 
-#[derive(Clone)]
+/// Where this event came.
+#[derive(Serialize, SignalPiece, Clone, Copy, Debug)]
+pub enum EventItemOrigin {
+    /// The event was created locally.
+    Local,
+    /// The event came from a sync response.
+    Sync,
+    /// The event came from pagination.
+    Pagination,
+    /// The event came from a cache.
+    Cache,
+}
+
+impl From<SdkEventItemOrigin> for EventItemOrigin {
+    fn from(value: SdkEventItemOrigin) -> Self {
+        match value {
+            SdkEventItemOrigin::Local => Self::Local,
+            SdkEventItemOrigin::Sync => Self::Sync,
+            SdkEventItemOrigin::Pagination => Self::Pagination,
+            SdkEventItemOrigin::Cache => Self::Cache,
+        }
+    }
+}
+
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct Receipt {
     pub timestamp: Option<Timestamp>,
 }
@@ -1249,7 +1276,7 @@ pub struct EventTimelineItemDebugInfo {
     latest_edit_json: Option<String>,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum ProfileDetails {
     Unavailable,
     Pending,
