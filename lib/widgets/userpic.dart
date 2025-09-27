@@ -2,21 +2,25 @@ import 'package:flutter/material.dart';
 
 enum UserpicSize {
   small,
-  medium;
+  medium,
+  large;
 
   double get height => switch (this) {
     UserpicSize.small => 34.0,
-    UserpicSize.medium => 56.0,
+    UserpicSize.medium => 48.0,
+    UserpicSize.large => 56.0,
   };
 
   double get width => switch (this) {
     UserpicSize.small => 34.0,
-    UserpicSize.medium => 56.0,
+    UserpicSize.medium => 48.0,
+    UserpicSize.large => 56.0,
   };
 
   double get fontSize => switch (this) {
     UserpicSize.small => 12.0,
     UserpicSize.medium => 22.0,
+    UserpicSize.large => 56.0,
   };
 }
 

@@ -42,7 +42,7 @@ class _InitScreenState extends State<InitScreen> {
           case MatrixInitResponseOk(isLoggedIn: final isLoggedIn):
             if (isLoggedIn) {
               WidgetsBinding.instance.addPostFrameCallback(
-                (_) => context.go('/chat-list'),
+                (_) => context.go('/chats'),
               );
             } else {
               WidgetsBinding.instance.addPostFrameCallback(
