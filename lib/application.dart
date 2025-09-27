@@ -46,11 +46,11 @@ class _ApplicationState extends State<Application> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: AppConfig.appName,
       themeMode: ThemeMode.dark,
-      theme: appTheme,
-      home: MaterialApp.router(routerConfig: router),
+      darkTheme: appTheme,
+      routerConfig: router,
     );
   }
 }

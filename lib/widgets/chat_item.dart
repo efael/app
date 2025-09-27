@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:messenger/constants.dart';
 import 'package:messenger/src/bindings/signals/signals.dart';
+import 'package:messenger/utils.dart';
 import 'package:messenger/widgets/message_preview.dart';
 import 'package:messenger/widgets/username.dart';
 import 'package:messenger/widgets/userpic.dart';
@@ -13,6 +14,9 @@ class ChatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(roomInfo.displayName);
+    print(latestEvent);
+    print("====\n====\n====");
     return Container(
       color: consts.colors.dominant.bgHighContrast,
       height: 80,
@@ -38,10 +42,14 @@ class ChatItem extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Username(name: roomInfo.displayName ?? "-"),
-                          Text("08:28", style: consts.typography.text3),
+                          if (latestEvent != null)
+                            Text(
+                              formatTimestamp(latestEvent!.timestamp),
+                              style: consts.typography.text3,
+                            ),
                         ],
                       ),
-                      MessagePreview(),
+                      MessagePreview(event: latestEvent),
                     ],
                   ),
                 ),

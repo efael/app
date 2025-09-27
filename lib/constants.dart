@@ -40,7 +40,7 @@ final consts = (
     text3: TextStyle(
       fontSize: 13,
       fontWeight: FontWeight.w400,
-      color: _colors.content.mediumContrast.withValues(alpha: 0.8 * 255.0),
+      color: _colors.content.mediumContrast.withValues(alpha: 0.9 * 255.0),
     ),
   ),
 );
