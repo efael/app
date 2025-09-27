@@ -1,9 +1,11 @@
 use matrix_sdk::room::{RoomMember as SdkRoomMember, RoomMemberRole};
+use rinf::SignalPiece;
 use ruma::UserId;
+use serde::Serialize;
 
 use crate::error::{ClientError, NotYetImplemented};
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone, Debug)]
 pub enum MembershipState {
     /// The user is banned.
     Ban,
@@ -75,7 +77,27 @@ pub fn matrix_to_user_permalink(user_id: String) -> Result<String, ClientError> 
     Ok(user_id.matrix_to_uri().to_string())
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone, Debug)]
+pub enum RoomMemberRoleRinf {
+    /// The member is an administrator.
+    Administrator,
+    /// The member is a moderator.
+    Moderator,
+    /// The member is a regular user.
+    User,
+}
+
+impl From<RoomMemberRole> for RoomMemberRoleRinf {
+    fn from(value: RoomMemberRole) -> Self {
+        match value {
+            RoomMemberRole::Administrator => RoomMemberRoleRinf::Administrator,
+            RoomMemberRole::Moderator => RoomMemberRoleRinf::Moderator,
+            RoomMemberRole::User => RoomMemberRoleRinf::User,
+        }
+    }
+}
+
+#[derive(Serialize, SignalPiece, Clone, Debug)]
 pub struct RoomMember {
     pub user_id: String,
     pub display_name: Option<String>,
@@ -85,7 +107,7 @@ pub struct RoomMember {
     pub power_level: i64,
     pub normalized_power_level: i64,
     pub is_ignored: bool,
-    pub suggested_role_for_power_level: RoomMemberRole,
+    pub suggested_role_for_power_level: RoomMemberRoleRinf,
     pub membership_change_reason: Option<String>,
 }
 
@@ -102,7 +124,7 @@ impl TryFrom<SdkRoomMember> for RoomMember {
             power_level: m.power_level(),
             normalized_power_level: m.normalized_power_level(),
             is_ignored: m.is_ignored(),
-            suggested_role_for_power_level: m.suggested_role_for_power_level(),
+            suggested_role_for_power_level: m.suggested_role_for_power_level().into(),
             membership_change_reason: m.event().reason().map(|s| s.to_owned()),
         })
     }

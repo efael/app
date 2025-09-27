@@ -15,10 +15,14 @@
 use std::collections::HashMap;
 
 use matrix_sdk::room::power_levels::power_level_user_changes;
-use matrix_sdk_ui::timeline::RoomPinnedEventsChange;
+use matrix_sdk_ui::timeline::RoomPinnedEventsChange as SdkRoomPinnedEventsChange;
+use rinf::SignalPiece;
 use ruma::events::FullStateEventContent;
+use serde::Serialize;
 
-use crate::{timeline::msg_like::MsgLikeContent, utils::Timestamp};
+use crate::{
+    event::RoomMessageEventMessageType, timeline::msg_like::MsgLikeContent, utils::Timestamp,
+};
 
 impl From<matrix_sdk_ui::timeline::TimelineItemContent> for TimelineItemContent {
     fn from(value: matrix_sdk_ui::timeline::TimelineItemContent) -> Self {
@@ -97,7 +101,7 @@ impl From<matrix_sdk_ui::timeline::TimelineItemContent> for TimelineItemContent 
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 // A note about this `allow(clippy::large_enum_variant)`.
 // In order to reduce the size of `TimelineItemContent`, we would need to
 // put some parts in a `Box`, or an `Arc`. Sadly, it doesn't play well with
@@ -139,19 +143,19 @@ pub enum TimelineItemContent {
     },
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct Reaction {
     pub key: String,
     pub senders: Vec<ReactionSenderData>,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct ReactionSenderData {
     pub sender_id: String,
     pub timestamp: Timestamp,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum MembershipChange {
     None,
     Error,
@@ -197,7 +201,7 @@ impl From<matrix_sdk_ui::timeline::MembershipChange> for MembershipChange {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum OtherState {
     PolicyRuleRoom,
     PolicyRuleServer,
@@ -237,6 +241,27 @@ pub enum OtherState {
     },
 }
 
+#[derive(Serialize, SignalPiece, Clone, Debug)]
+/// The type of change between the previous and current pinned events.
+pub enum RoomPinnedEventsChange {
+    /// Only new event ids were added.
+    Added,
+    /// Only event ids were removed.
+    Removed,
+    /// Some change other than only adding or only removing ids happened.
+    Changed,
+}
+
+impl From<SdkRoomPinnedEventsChange> for RoomPinnedEventsChange {
+    fn from(value: SdkRoomPinnedEventsChange) -> Self {
+        match value {
+            SdkRoomPinnedEventsChange::Added => Self::Added,
+            SdkRoomPinnedEventsChange::Removed => Self::Removed,
+            SdkRoomPinnedEventsChange::Changed => Self::Changed,
+        }
+    }
+}
+
 impl From<&matrix_sdk_ui::timeline::AnyOtherFullStateEventContent> for OtherState {
     fn from(content: &matrix_sdk_ui::timeline::AnyOtherFullStateEventContent) -> Self {
         use matrix_sdk::ruma::events::FullStateEventContent as FullContent;
@@ -269,7 +294,9 @@ impl From<&matrix_sdk_ui::timeline::AnyOtherFullStateEventContent> for OtherStat
                 };
                 Self::RoomName { name }
             }
-            Content::RoomPinnedEvents(c) => Self::RoomPinnedEvents { change: c.into() },
+            Content::RoomPinnedEvents(c) => Self::RoomPinnedEvents {
+                change: SdkRoomPinnedEventsChange::from(c).into(),
+            },
             Content::RoomPowerLevels(c) => match c {
                 FullContent::Original {
                     content,

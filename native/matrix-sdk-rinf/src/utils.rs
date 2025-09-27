@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use rinf::SignalPiece;
 use ruma::{MilliSecondsSinceUnixEpoch, UInt};
+use serde::Serialize;
 use tracing::warn;
 
-#[derive(Debug, Clone)]
-pub struct Timestamp(u64);
+#[derive(Serialize, SignalPiece, Debug, Clone)]
+pub struct Timestamp(pub u64);
 
 impl From<MilliSecondsSinceUnixEpoch> for Timestamp {
     fn from(date: MilliSecondsSinceUnixEpoch) -> Self {

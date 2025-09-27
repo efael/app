@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:messenger/constants.dart';
+import 'package:messenger/theme.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
 
@@ -21,9 +23,7 @@ class WidgetbookApp extends StatelessWidget {
       // it will be generated in the next step
       directories: directories,
       themeMode: ThemeMode.dark,
-      darkTheme: ThemeData.dark(
-        useMaterial3: true,
-      ).copyWith(scaffoldBackgroundColor: Color.fromRGBO(24, 35, 48, 1)),
+      darkTheme: appTheme,
     );
   }
 }

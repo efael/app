@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:messenger/src/bindings/bindings.dart';
+import 'package:messenger/widgets/chat_item.dart';
+import 'package:tuple/tuple.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -11,7 +13,26 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  List<Room> rooms = [];
+  List<Tuple2<RoomInfo, EventTimelineItem?>> rooms = [];
+
+  int compareEvents(
+    Tuple2<RoomInfo, EventTimelineItem?> a,
+    Tuple2<RoomInfo, EventTimelineItem?> b,
+  ) {
+    if (a.item2 == null || b.item2 == null) {
+      return a.item2 == null
+          ? 1
+          : b.item2 == null
+          ? -1
+          : (a.item1.displayName ?? "ZZZZZ").compareTo(
+              b.item1.displayName ?? "ZZZZZ",
+            );
+    }
+
+    return a.item2!.timestamp.value.toInt().compareTo(
+      b.item2!.timestamp.value.toInt(),
+    );
+  }
 
   @override
   void initState() {
@@ -22,6 +43,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       if (response is MatrixListChatsResponseOk) {
         setState(() {
           rooms = response.rooms;
+          rooms.sort(compareEvents);
         });
       } else if (response is MatrixListChatsResponseErr) {
         debugPrint("Error: ${response.message}");
@@ -35,11 +57,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
         // Replace everything signal
         if (update is MatrixRoomListUpdateList) {
           rooms = update.rooms;
+          rooms.sort(compareEvents);
         }
-
         // Remove signal
         else if (update is MatrixRoomListUpdateRemove) {
-          final indices = List<int>.from(update.indices)..sort((a, b) => b.compareTo(a));
+          final indices = List<int>.from(update.indices)
+            ..sort((a, b) => b.compareTo(a));
           for (final i in indices) {
             if (i >= 0 && i < rooms.length) {
               rooms.removeAt(i);
@@ -62,37 +85,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: ListView.separated(
+        child: ListView.builder(
           itemCount: rooms.length,
-          separatorBuilder: (context, index) => Divider(
-            color: Colors.grey.shade300,
-            thickness: 1,
-            height: 1,
-          ),
+          // separatorBuilder: (context, index) =>
+          //     Divider(color: Colors.grey.shade300, thickness: 1, height: 1),
           itemBuilder: (context, index) {
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.blueAccent.shade100,
-                child: Text(
-                  (rooms[index].name ?? "Untitled")[0].toUpperCase(),
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-              title: Text(
-                rooms[index].name ?? "Untitled",
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-              ),
-              subtitle: const Text(
-                "Tap to open chat",
-                style: TextStyle(color: Colors.grey, fontSize: 13),
-              ),
-              onTap: () {
-                debugPrint("Tapped room: ${rooms[index]}");
-              },
-            );
+            final room = rooms[index];
+            return ChatItem(roomInfo: room.item1, latestEvent: room.item2);
           },
         ),
       ),

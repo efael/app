@@ -2477,7 +2477,7 @@ impl From<OidcPrompt> for RumaOidcPrompt {
 }
 
 /// The rule used for users wishing to join this room.
-#[derive(Debug, Clone)]
+#[derive(Serialize, SignalPiece, Debug, Clone)]
 pub enum JoinRule {
     /// Anyone can join the room without any prior action.
     Public,
@@ -2512,7 +2512,7 @@ pub enum JoinRule {
 }
 
 /// An allow rule which defines a condition that allows joining a room.
-#[derive(Debug, Clone)]
+#[derive(Serialize, SignalPiece, Debug, Clone)]
 pub enum AllowRule {
     /// Only a member of the `room_id` Room can join the one this rule is used
     /// in.

@@ -11,10 +11,12 @@ use matrix_sdk::{
     QueueWedgeError as SdkQueueWedgeError, StoreError,
 };
 use matrix_sdk_ui::{encryption_sync_service, notification_client, sync_service, timeline};
+use rinf::SignalPiece;
 use ruma::{
     api::client::error::{ErrorBody, ErrorKind as RumaApiErrorKind, RetryAfter},
     MilliSecondsSinceUnixEpoch,
 };
+use serde::Serialize;
 use tracing::warn;
 
 use crate::{room_list::RoomListError, timeline::FocusEventError};
@@ -226,7 +228,7 @@ impl From<RequestVerificationError> for ClientError {
 /// `From` implementation for more details. These errors can not be
 /// automatically retried, but yet some manual action can be taken before retry
 /// sending. If not the only solution is to delete the local event.
-#[derive(Debug, Clone)]
+#[derive(Serialize, SignalPiece, Debug, Clone)]
 pub enum QueueWedgeError {
     /// This error occurs when there are some insecure devices in the room, and
     /// the current encryption setting prohibit sharing with them.

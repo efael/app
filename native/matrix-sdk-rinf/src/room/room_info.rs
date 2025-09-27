@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use matrix_sdk::{EncryptionState, RoomState};
+use rinf::SignalPiece;
+use serde::Serialize;
 use tracing::warn;
 
 use crate::{
@@ -13,8 +15,10 @@ use crate::{
     room_member::RoomMember,
 };
 
+#[derive(Serialize, SignalPiece, Debug)]
 pub struct RoomInfo {
     pub id: String,
+    #[serde(skip)]
     pub encryption_state: EncryptionState,
     pub creator: Option<String>,
     /// The room's name from the room state event if received from sync, or one
@@ -72,6 +76,7 @@ pub struct RoomInfo {
     /// This room's current power levels.
     ///
     /// Can be missing if the room power levels event is missing from the store.
+    #[serde(skip)]
     pub power_levels: Option<Arc<RoomPowerLevels>>,
 }
 

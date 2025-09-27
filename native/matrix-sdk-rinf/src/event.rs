@@ -3,6 +3,7 @@ use std::ops::Deref;
 use anyhow::{bail, Context};
 use matrix_sdk::IdParseError;
 use matrix_sdk_ui::timeline::TimelineEventItemId;
+use rinf::SignalPiece;
 use ruma::{
     events::{
         room::{
@@ -15,6 +16,7 @@ use ruma::{
     },
     EventId,
 };
+use serde::Serialize;
 
 use crate::{
     room_member::MembershipState,
@@ -451,7 +453,7 @@ impl From<RumaMessageType> for RoomMessageEventMessageType {
 
 /// Contains the 2 possible identifiers of an event, either it has a remote
 /// event id or a local transaction id, never both or none.
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum EventOrTransactionId {
     EventId { event_id: String },
     TransactionId { transaction_id: String },

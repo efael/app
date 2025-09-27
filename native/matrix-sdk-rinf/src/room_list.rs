@@ -379,17 +379,17 @@ pub trait RoomListServiceSyncIndicatorListener: SendOutsideWasm + SyncOutsideWas
 }
 
 pub enum RoomListEntriesUpdate {
-    Append { values: Vec<Arc<Room>> },
+    Append { values: Vec<Room> },
     Clear,
-    PushFront { value: Arc<Room> },
-    PushBack { value: Arc<Room> },
+    PushFront { value: Room },
+    PushBack { value: Room },
     PopFront,
     PopBack,
-    Insert { index: u32, value: Arc<Room> },
-    Set { index: u32, value: Arc<Room> },
+    Insert { index: u32, value: Room },
+    Set { index: u32, value: Room },
     Remove { index: u32 },
     Truncate { length: u32 },
-    Reset { values: Vec<Arc<Room>> },
+    Reset { values: Vec<Room> },
 }
 
 impl RoomListEntriesUpdate {
@@ -398,25 +398,25 @@ impl RoomListEntriesUpdate {
             VectorDiff::Append { values } => Self::Append {
                 values: values
                     .into_iter()
-                    .map(|value| Arc::new(Room::new(value, utd_hook.clone())))
+                    .map(|value| Room::new(value, utd_hook.clone()))
                     .collect(),
             },
             VectorDiff::Clear => Self::Clear,
             VectorDiff::PushFront { value } => Self::PushFront {
-                value: Arc::new(Room::new(value, utd_hook)),
+                value: Room::new(value, utd_hook),
             },
             VectorDiff::PushBack { value } => Self::PushBack {
-                value: Arc::new(Room::new(value, utd_hook)),
+                value: Room::new(value, utd_hook),
             },
             VectorDiff::PopFront => Self::PopFront,
             VectorDiff::PopBack => Self::PopBack,
             VectorDiff::Insert { index, value } => Self::Insert {
                 index: u32::try_from(index).unwrap(),
-                value: Arc::new(Room::new(value, utd_hook)),
+                value: Room::new(value, utd_hook),
             },
             VectorDiff::Set { index, value } => Self::Set {
                 index: u32::try_from(index).unwrap(),
-                value: Arc::new(Room::new(value, utd_hook)),
+                value: Room::new(value, utd_hook),
             },
             VectorDiff::Remove { index } => Self::Remove {
                 index: u32::try_from(index).unwrap(),
@@ -427,7 +427,7 @@ impl RoomListEntriesUpdate {
             VectorDiff::Reset { values } => Self::Reset {
                 values: values
                     .into_iter()
-                    .map(|value| Arc::new(Room::new(value, utd_hook.clone())))
+                    .map(|value| Room::new(value, utd_hook.clone()))
                     .collect(),
             },
         }

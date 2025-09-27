@@ -15,7 +15,9 @@
 use std::{collections::HashMap, sync::Arc};
 
 use matrix_sdk::crypto::types::events::UtdCause;
+use rinf::SignalPiece;
 use ruma::events::{room::MediaSource as RumaMediaSource, EventContent};
+use serde::Serialize;
 
 use super::{
     content::Reaction,
@@ -28,7 +30,7 @@ use crate::{
     utils::Timestamp,
 };
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum MsgLikeKind {
     /// An `m.room.message` event or extensible event, including edits.
     Message { content: MessageContent },
@@ -36,6 +38,7 @@ pub enum MsgLikeKind {
     Sticker {
         body: String,
         info: ImageInfo,
+        #[serde(skip)]
         source: Arc<MediaSource>,
     },
     /// An `m.poll.start` event.
@@ -59,19 +62,19 @@ pub enum MsgLikeKind {
 /// A special kind of [`super::TimelineItemContent`] that groups together
 /// different room message types with their respective reactions and thread
 /// information.
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct MsgLikeContent {
     pub kind: MsgLikeKind,
     pub reactions: Vec<Reaction>,
     /// The event this message is replying to, if any.
-    pub in_reply_to: Option<Arc<InReplyToDetails>>,
+    pub in_reply_to: Option<Box<InReplyToDetails>>,
     /// Event ID of the thread root, if this is a message in a thread.
     pub thread_root: Option<String>,
     /// Details about the thread this message is the root of.
-    pub thread_summary: Option<Arc<ThreadSummary>>,
+    pub thread_summary: Option<Box<ThreadSummary>>,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct MessageContent {
     pub msg_type: MessageType,
     pub body: String,
@@ -100,11 +103,11 @@ impl TryFrom<matrix_sdk_ui::timeline::MsgLikeContent> for MsgLikeContent {
             })
             .collect();
 
-        let in_reply_to = value.in_reply_to.map(|r| Arc::new(r.into()));
+        let in_reply_to = value.in_reply_to.map(|r| Box::new(r.into()));
 
         let thread_root = value.thread_root.map(|id| id.to_string());
 
-        let thread_summary = value.thread_summary.map(|t| Arc::new(t.into()));
+        let thread_summary = value.thread_summary.map(|t| Box::new(t.into()));
 
         Ok(match value.kind {
             Kind::Message(message) => {
@@ -204,7 +207,7 @@ impl From<ruma::events::Mentions> for Mentions {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub enum EncryptedMessage {
     OlmV1Curve25519AesSha2 {
         /// The Curve25519 key of the sender.
@@ -218,6 +221,8 @@ pub enum EncryptedMessage {
 
         /// What we know about what caused this UTD. E.g. was this event sent
         /// when we were not a member of this room?
+        // TODO: fix
+        #[serde(skip)]
         cause: UtdCause,
     },
     Unknown,
@@ -246,13 +251,13 @@ impl EncryptedMessage {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct PollAnswer {
     pub id: String,
     pub text: String,
 }
 
-#[derive(Clone)]
+#[derive(Serialize, SignalPiece, Clone)]
 pub struct ThreadSummary {
     pub latest_event: EmbeddedEventDetails,
     pub num_replies: u32,

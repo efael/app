@@ -1,11 +1,18 @@
-use async_trait::async_trait;
-use matrix_sdk_rinf::room_list::{RoomListEntriesDynamicFilterKind, RoomListEntriesListener, RoomListEntriesUpdate, RoomListServiceStateListener};
-use messages::prelude::{Context, Notifiable};
-use rinf::{RustSignal, debug_print};
 use crate::{
     actors::matrix::Matrix,
-    signals::{room::Room, MatrixListChatsRequest, MatrixListChatsResponse, MatrixRoomListUpdate}
+    signals::{MatrixListChatsRequest, MatrixListChatsResponse, MatrixRoomListUpdate},
 };
+use async_trait::async_trait;
+use matrix_sdk_rinf::{
+    room::room_info::RoomInfo,
+    room_list::{
+        RoomListEntriesDynamicFilterKind, RoomListEntriesListener, RoomListEntriesUpdate,
+        RoomListServiceStateListener,
+    },
+};
+use messages::prelude::{Context, Notifiable};
+use rinf::{RustSignal, debug_print};
+use tokio::task::JoinSet;
 
 #[async_trait]
 impl Notifiable<MatrixListChatsRequest> for Matrix {
@@ -35,9 +42,7 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
         };
 
         debug_print!("[room] started sync service inside list-chat");
-        sync_service
-            .start()
-            .await;
+        sync_service.start().await;
 
         let room_service = match self.room_service.as_ref() {
             None => {
@@ -45,7 +50,7 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
 
                 self.room_service = Some(service.clone());
                 service
-            },
+            }
             Some(service) => service.clone(),
         };
 
@@ -73,12 +78,23 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
 
         // Static room list
         debug_print!("[room] room count = {}", client.rooms().len());
-        let mut rooms = vec![];
 
-        for matrix_room in client.rooms() {
-            let room = Room::from_matrix(matrix_room).await;
-            rooms.push(room);
-        }
+        let mut set = JoinSet::new();
+
+        client.rooms().into_iter().for_each(|r| {
+            set.spawn(async move {
+                let info = r.room_info().await;
+                let latest_event = r.latest_event().await;
+                info.map(|info| (info, latest_event))
+            });
+        });
+
+        let rooms = set
+            .join_all()
+            .await
+            .into_iter()
+            .filter_map(|r| r.ok())
+            .collect();
 
         MatrixListChatsResponse::Ok { rooms }.send_signal_to_dart();
     }
@@ -92,20 +108,34 @@ impl RoomListEntriesListener for RoomListNotifier {
         debug_print!("[room] received an update - {}", updates.len());
         for update in updates {
             match update {
-                RoomListEntriesUpdate::Reset { values } 
+                RoomListEntriesUpdate::Reset { values }
                 | RoomListEntriesUpdate::Append { values } => {
-                    let rooms: Vec<Room> = values
-                        .into_iter()
-                        .map(|r| Room {
-                            id: r.id(),
-                            name: r.display_name(),
-                        })
-                        .collect();
+                    tokio::spawn(async move {
+                        let mut set = JoinSet::new();
 
-                    MatrixRoomListUpdate::List { rooms }.send_signal_to_dart();
+                        values.into_iter().for_each(|r| {
+                            set.spawn(async move {
+                                let info = r.room_info().await;
+                                let latest_event = r.latest_event().await;
+                                info.map(|info| (info, latest_event))
+                            });
+                        });
+
+                        let rooms = set
+                            .join_all()
+                            .await
+                            .into_iter()
+                            .filter_map(|r| r.ok())
+                            .collect();
+
+                        MatrixRoomListUpdate::List { rooms }.send_signal_to_dart();
+                    });
                 }
                 RoomListEntriesUpdate::Remove { index } => {
-                    MatrixRoomListUpdate::Remove { indices: vec![index] }.send_signal_to_dart();
+                    MatrixRoomListUpdate::Remove {
+                        indices: vec![index],
+                    }
+                    .send_signal_to_dart();
                 }
                 unimplemented => {
                     debug_print!("[room] not implemented change!");

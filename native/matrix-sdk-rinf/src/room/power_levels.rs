@@ -11,6 +11,7 @@ use crate::{
     event::{MessageLikeEventType, StateEventType},
 };
 
+#[derive(Debug)]
 pub struct RoomPowerLevels {
     inner: RumaPowerLevels,
     own_user_id: OwnedUserId,

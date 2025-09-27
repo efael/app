@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:messenger/app_config.dart';
 import 'package:messenger/router.dart';
 import 'package:messenger/src/bindings/bindings.dart';
+import 'package:messenger/theme.dart';
 import 'package:rinf/rinf.dart';
 
 class Application extends StatefulWidget {
@@ -45,12 +46,11 @@ class _ApplicationState extends State<Application> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: AppConfig.appName,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: MaterialApp.router(routerConfig: router),
+      themeMode: ThemeMode.dark,
+      darkTheme: appTheme,
+      routerConfig: router,
     );
   }
 }
