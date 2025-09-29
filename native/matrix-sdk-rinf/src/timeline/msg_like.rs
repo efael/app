@@ -30,7 +30,7 @@ use crate::{
     utils::Timestamp,
 };
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum MsgLikeKind {
     /// An `m.room.message` event or extensible event, including edits.
     Message { content: MessageContent },
@@ -62,7 +62,7 @@ pub enum MsgLikeKind {
 /// A special kind of [`super::TimelineItemContent`] that groups together
 /// different room message types with their respective reactions and thread
 /// information.
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct MsgLikeContent {
     pub kind: MsgLikeKind,
     pub reactions: Vec<Reaction>,
@@ -74,7 +74,7 @@ pub struct MsgLikeContent {
     pub thread_summary: Option<Box<ThreadSummary>>,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct MessageContent {
     pub msg_type: MessageType,
     pub body: String,
@@ -207,7 +207,7 @@ impl From<ruma::events::Mentions> for Mentions {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum EncryptedMessage {
     OlmV1Curve25519AesSha2 {
         /// The Curve25519 key of the sender.
@@ -251,13 +251,13 @@ impl EncryptedMessage {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct PollAnswer {
     pub id: String,
     pub text: String,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct ThreadSummary {
     pub latest_event: EmbeddedEventDetails,
     pub num_replies: u32,
