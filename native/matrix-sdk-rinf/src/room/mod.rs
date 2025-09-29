@@ -313,6 +313,15 @@ impl Room {
             .unwrap_or(false)
     }
 
+    pub async fn latest_event_from_timeline(&self) -> Option<EventTimelineItem> {
+        let t = self.inner.timeline().await.expect("does have timeline");
+
+        t
+            .latest_event()
+            .await
+            .map(Into::into)
+    }
+
     pub async fn latest_event(&self) -> Option<EventTimelineItem> {
         self.inner.latest_event_item().await.map(Into::into)
     }

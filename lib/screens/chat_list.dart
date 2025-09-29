@@ -46,7 +46,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       if (response is MatrixListChatsResponseOk) {
         setState(() {
           rooms = response.rooms;
-          rooms.sort(compareEvents);
+          // rooms.sort(compareEvents);
         });
       } else if (response is MatrixListChatsResponseErr) {
         debugPrint("Error: ${response.message}");
@@ -60,7 +60,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         // Replace everything signal
         if (update is MatrixRoomListUpdateList) {
           rooms = update.rooms;
-          rooms.sort(compareEvents);
+          // rooms.sort(compareEvents);
         }
         // Remove signal
         else if (update is MatrixRoomListUpdateRemove) {
@@ -78,10 +78,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
     // after sync-service successfully started, it emits MatrixListChatsRequest, not from dart
     // MatrixListChatsRequest(url: "").sendSignalToRust();
 
-    periodicTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      debugPrint(timer.tick.toString());
-      MatrixListChatsRequest(url: "").sendSignalToRust();
-    });
+    // periodicTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    //   debugPrint(timer.tick.toString());
+    //   MatrixListChatsRequest(url: "").sendSignalToRust();
+    // });
   }
 
   @override

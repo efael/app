@@ -86,6 +86,23 @@ pub struct RoomListService {
 }
 
 impl RoomListService {
+    pub async fn sync(&self) {
+        let stream = self.inner.sync();
+        futures_util::pin_mut!(stream);
+
+        while let Some(result) = stream.next().await {
+            match result {
+                Ok(_) => {
+                    debug_print!("[room] sync iteration finished successfully");
+                },
+                Err(error) => {
+                    debug_print!("[room] sync iteration error: {error:?}");
+                    break;
+                }
+            }
+        }
+    }
+
     pub fn state(&self, listener: Box<dyn RoomListServiceStateListener>) -> Arc<TaskHandle> {
         let state_stream = self.inner.state();
 
@@ -237,19 +254,19 @@ impl RoomList {
 
         let utd_hook = this.room_list_service.utd_hook.clone();
 
-        debug_print!("@ before creating handle");
+        // debug_print!("@ before creating handle");
         let entries_stream = Arc::new(TaskHandle::new(get_runtime_handle().spawn(async move {
             pin_mut!(entries_stream);
 
-            debug_print!("@ looping through entities_stream");
+            // debug_print!("@ looping through entities_stream");
             while let Some(diffs) = entries_stream.next().await {
-                debug_print!("@ got diff, triggering update: {}", diffs.len());
+                // debug_print!("@ got diff, triggering update: {}", diffs.len());
                 let mapped = diffs
                     .into_iter()
                     .map(|room| RoomListEntriesUpdate::from(utd_hook.clone(), room))
                     .collect();
 
-                debug_print!("@ mapped, trying on_update");
+                // debug_print!("@ mapped, trying on_update");
                 listener.on_update(mapped);
             }
         })));
