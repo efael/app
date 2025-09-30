@@ -8,7 +8,7 @@ use std::{fs, path::PathBuf};
 use crate::{
     actors::matrix::Matrix,
     signals::{
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncServiceRequest,
+        MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSessionVerificationRequest, MatrixSyncServiceRequest
     },
 };
 
@@ -39,22 +39,23 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
             }
         };
 
-        debug_print!(
-            "# before login = session: {:?}",
-            client.session().map(|a| a.user_id)
-        );
-        debug_print!("# before login = device id: {:?}", client.device_id());
+        // debug_print!("# before login = session: {:?}", client.session().map(|a| a.user_id));
+        // debug_print!("# before login = device id: {:?}", client.device_id());
 
         match client.login_with_oidc_callback(url.into()).await {
             Ok(_) => {
-                debug_print!("MatrixOidcAuthFinishRequest: logged in");
+                // debug_print!("MatrixOidcAuthFinishRequest: logged in");
 
-                debug_print!("# after session: {:?}", client.session().map(|a| a.user_id));
-                debug_print!("# after device id: {:?}", client.device_id());
+                // debug_print!("# after session: {:?}", client.session().map(|a| a.user_id));
+                // debug_print!("# after device id: {:?}", client.device_id());
 
                 // save session into json
+                let session = client
+                    .session()
+                    .expect("after login, should have session");
+
                 save_session(
-                    client.session().unwrap(),
+                    &session,
                     self.application_support_directory.clone().unwrap().clone(),
                 );
 
@@ -73,7 +74,7 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
     }
 }
 
-fn save_session(session: Session, mut dir: PathBuf) {
+fn save_session(session: &Session, mut dir: PathBuf) {
     dir.push(format!("./session.json"));
     debug_print!("# save session file: {:?}", dir);
 

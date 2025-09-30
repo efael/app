@@ -12,12 +12,15 @@ use matrix_sdk::{
 };
 use matrix_sdk_common::{SendOutsideWasm, SyncOutsideWasm};
 use ruma::UserId;
+use rinf::SignalPiece;
+use serde::{Deserialize, Serialize};
 use tracing::{error, warn};
 
 use crate::{
     client::UserProfile, error::ClientError, runtime::get_runtime_handle, utils::Timestamp,
 };
 
+#[derive(Deserialize, Serialize, SignalPiece, Debug)]
 pub struct SessionVerificationEmoji {
     symbol: String,
     description: String,
@@ -33,9 +36,10 @@ impl SessionVerificationEmoji {
     }
 }
 
+#[derive(Deserialize, Serialize, SignalPiece, Debug)]
 pub enum SessionVerificationData {
     Emojis {
-        emojis: Vec<Arc<SessionVerificationEmoji>>,
+        emojis: Vec<SessionVerificationEmoji>,
         indices: Vec<u8>,
     },
     Decimals {
@@ -67,7 +71,7 @@ pub type Delegate = Arc<RwLock<Option<Box<dyn SessionVerificationControllerDeleg
 
 #[derive(Clone)]
 pub struct SessionVerificationController {
-    encryption: Encryption,
+    pub encryption: Encryption,
     user_identity: UserIdentity,
     account: Account,
     delegate: Delegate,
@@ -116,14 +120,15 @@ impl SessionVerificationController {
     }
 
     /// Request verification for the current device
-    pub async fn request_device_verification(&self) -> Result<(), ClientError> {
+    pub async fn request_device_verification(&self) -> Result<VerificationRequest, ClientError> {
         let methods = vec![VerificationMethod::SasV1];
         let verification_request = self
             .user_identity
             .request_verification_with_methods(methods)
             .await?;
 
-        self.set_ongoing_verification_request(verification_request)
+        self.set_ongoing_verification_request(verification_request.clone())?;
+        Ok(verification_request)
     }
 
     /// Request verification for the given user
@@ -376,10 +381,10 @@ impl SessionVerificationController {
                                         .emojis
                                         .into_iter()
                                         .map(|emoji| {
-                                            Arc::new(SessionVerificationEmoji {
+                                            SessionVerificationEmoji {
                                                 symbol: emoji.symbol.to_owned(),
                                                 description: emoji.description.to_owned(),
-                                            })
+                                            }
                                         })
                                         .collect(),
                                     indices: emojis.indices.to_vec(),

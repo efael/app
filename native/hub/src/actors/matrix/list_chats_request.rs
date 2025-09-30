@@ -42,9 +42,6 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             }
         };
 
-        debug_print!("[room] started sync service inside list-chat");
-        sync_service.start().await;
-
         let room_service = match self.room_service.as_ref() {
             None => {
                 let service = sync_service.room_list_service();
@@ -80,7 +77,6 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             .set_filter(RoomListEntriesDynamicFilterKind::All {
                 filters: vec![RoomListEntriesDynamicFilterKind::NonLeft],
             });
-        debug_print!("[room] does filter set: {set_filter}");
 
         // don't know why, but without this, whole app crashes (UB)
         // tokio::spawn(async move {
@@ -88,7 +84,7 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
         // });
         
         // Static room list
-        debug_print!("[room] room count = {}", client.rooms().len());
+        debug_print!("[room] cache count = {}", client.rooms().len());
         let mut set = JoinSet::new();
 
         client.rooms().into_iter().for_each(|r| {
@@ -106,19 +102,6 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             .filter_map(|r| r.ok())
             .collect();
 
-        // let room_ids = client
-        //     .rooms()
-        //     .into_iter()
-        //     .map(|room| room.id())
-        //     .collect();
-
-        // room_service
-        //     .subscribe_to_rooms(room_ids)
-        //     .await
-        //     .unwrap();
-
-        // let rooms = Vec::new();
-
         MatrixListChatsResponse::Ok { rooms }.send_signal_to_dart();
     }
 }
@@ -128,13 +111,12 @@ struct RoomListNotifier;
 
 impl RoomListEntriesListener for RoomListNotifier {
     fn on_update(&self, updates: Vec<RoomListEntriesUpdate>) {
-        debug_print!("[room] received an update - {}", updates.len());
         for update in updates {
             match update {
                 RoomListEntriesUpdate::Reset { values }
                 | RoomListEntriesUpdate::Append { values } => {
                     debug_print!(
-                        "[update] got either reset | append, rooms: {}",
+                        "[update] got either reset, rooms: {}",
                         values.len()
                     );
 
