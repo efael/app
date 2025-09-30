@@ -19,7 +19,7 @@ use serde::Serialize;
 use super::{content::TimelineItemContent, ProfileDetails};
 use crate::{event::EventOrTransactionId, utils::Timestamp};
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct InReplyToDetails {
     pub event_id: String,
     pub event: EmbeddedEventDetails,
@@ -50,7 +50,7 @@ impl From<matrix_sdk_ui::timeline::InReplyToDetails> for InReplyToDetails {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 #[allow(clippy::large_enum_variant)]
 pub enum EmbeddedEventDetails {
     Unavailable,

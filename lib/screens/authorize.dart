@@ -54,7 +54,7 @@ class _AuthorizeScreenState extends State<AuthorizeScreen> {
           switch (response.message) {
             case MatrixOidcAuthFinishResponseOk():
               // print("finished");
-              if (mounted) context.go("/chat-list");
+              if (mounted) context.go("/chats");
             case MatrixOidcAuthFinishResponseErr():
             // print(message);
           }

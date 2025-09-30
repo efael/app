@@ -453,7 +453,7 @@ impl From<RumaMessageType> for RoomMessageEventMessageType {
 
 /// Contains the 2 possible identifiers of an event, either it has a remote
 /// event id or a local transaction id, never both or none.
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum EventOrTransactionId {
     EventId { event_id: String },
     TransactionId { transaction_id: String },

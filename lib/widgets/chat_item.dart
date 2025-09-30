@@ -7,16 +7,27 @@ import 'package:messenger/widgets/username.dart';
 import 'package:messenger/widgets/userpic.dart';
 
 class ChatItem extends StatelessWidget {
+  const ChatItem({
+    super.key,
+    required this.roomInfo,
+    this.latestEvent,
+
+    this.onTap,
+    this.onLongPress,
+  });
+
   final RoomInfo roomInfo;
   final EventTimelineItem? latestEvent;
 
-  const ChatItem({super.key, required this.roomInfo, this.latestEvent});
+  final GestureTapCallback? onTap;
+  final GestureLongPressCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
-    print(roomInfo.displayName);
-    print(latestEvent);
-    print("====\n====\n====");
+    // print(roomInfo.displayName);
+    // print(roomInfo);
+    // print(latestEvent);
+    // print("====\n====\n====");
     return Container(
       color: consts.colors.dominant.bgHighContrast,
       height: 80,
@@ -24,7 +35,8 @@ class ChatItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: onTap,
+          onLongPress: onLongPress,
           splashColor: consts.colors.dominant.bgMediumContrast,
           highlightColor: consts.colors.dominant.bgLowContrast,
           child: Container(

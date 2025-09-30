@@ -101,7 +101,7 @@ impl From<matrix_sdk_ui::timeline::TimelineItemContent> for TimelineItemContent 
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 // A note about this `allow(clippy::large_enum_variant)`.
 // In order to reduce the size of `TimelineItemContent`, we would need to
 // put some parts in a `Box`, or an `Arc`. Sadly, it doesn't play well with
@@ -143,19 +143,19 @@ pub enum TimelineItemContent {
     },
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct Reaction {
     pub key: String,
     pub senders: Vec<ReactionSenderData>,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct ReactionSenderData {
     pub sender_id: String,
     pub timestamp: Timestamp,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum MembershipChange {
     None,
     Error,
@@ -201,7 +201,7 @@ impl From<matrix_sdk_ui::timeline::MembershipChange> for MembershipChange {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum OtherState {
     PolicyRuleRoom,
     PolicyRuleServer,

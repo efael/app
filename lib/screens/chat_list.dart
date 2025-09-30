@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:messenger/src/bindings/bindings.dart';
 import 'package:messenger/widgets/chat_item.dart';
+import 'package:messenger/widgets/chat_list_header.dart';
 import 'package:tuple/tuple.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -13,6 +15,7 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
+  late Timer periodicTimer;
   List<Tuple2<RoomInfo, EventTimelineItem?>> rooms = [];
 
   int compareEvents(
@@ -43,7 +46,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       if (response is MatrixListChatsResponseOk) {
         setState(() {
           rooms = response.rooms;
-          rooms.sort(compareEvents);
+          // rooms.sort(compareEvents);
         });
       } else if (response is MatrixListChatsResponseErr) {
         debugPrint("Error: ${response.message}");
@@ -57,7 +60,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         // Replace everything signal
         if (update is MatrixRoomListUpdateList) {
           rooms = update.rooms;
-          rooms.sort(compareEvents);
+          // rooms.sort(compareEvents);
         }
         // Remove signal
         else if (update is MatrixRoomListUpdateRemove) {
@@ -75,15 +78,25 @@ class _ChatListScreenState extends State<ChatListScreen> {
     // after sync-service successfully started, it emits MatrixListChatsRequest, not from dart
     // MatrixListChatsRequest(url: "").sendSignalToRust();
 
-    Timer.periodic(const Duration(seconds: 3), (timer) {
-      debugPrint(timer.tick.toString());
-      MatrixListChatsRequest(url: "").sendSignalToRust();
-    });
+    // periodicTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    //   debugPrint(timer.tick.toString());
+    //   MatrixListChatsRequest(url: "").sendSignalToRust();
+    // });
+  }
+
+  @override
+  void dispose() {
+    periodicTimer.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(64.0),
+        child: SafeArea(child: ChatListHeader()),
+      ),
       body: SafeArea(
         child: ListView.builder(
           itemCount: rooms.length,
@@ -91,7 +104,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
           //     Divider(color: Colors.grey.shade300, thickness: 1, height: 1),
           itemBuilder: (context, index) {
             final room = rooms[index];
-            return ChatItem(roomInfo: room.item1, latestEvent: room.item2);
+            return ChatItem(
+              roomInfo: room.item1,
+              latestEvent: room.item2,
+              onTap: () {
+                context.push("/chats/${room.item1.id}");
+              },
+            );
           },
         ),
       ),

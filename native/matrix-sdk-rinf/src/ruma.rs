@@ -238,7 +238,7 @@ pub fn message_event_content_from_html_as_emote(
     ))
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct MediaSource {
     // TODO: fix
     #[serde(skip)]
@@ -332,7 +332,7 @@ pub impl RoomMessageEventContentWithoutRelationExt for RoomMessageEventContentWi
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct Mentions {
     pub user_ids: Vec<String>,
     pub room: bool,
@@ -353,7 +353,7 @@ impl From<Mentions> for ruma::events::Mentions {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum MessageType {
     Emote {
         content: EmoteMessageContent,
@@ -532,13 +532,13 @@ impl From<NotifyType> for RumaNotifyType {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct EmoteMessageContent {
     pub body: String,
     pub formatted: Option<FormattedBody>,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct ImageMessageContent {
     /// The computed filename, for use in a client.
     pub filename: String,
@@ -575,7 +575,7 @@ impl TryFrom<RumaImageMessageEventContent> for ImageMessageContent {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct AudioMessageContent {
     /// The computed filename, for use in a client.
     pub filename: String,
@@ -618,7 +618,7 @@ impl TryFrom<RumaAudioMessageEventContent> for AudioMessageContent {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct VideoMessageContent {
     /// The computed filename, for use in a client.
     pub filename: String,
@@ -655,7 +655,7 @@ impl TryFrom<RumaVideoMessageEventContent> for VideoMessageContent {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct FileMessageContent {
     /// The computed filename, for use in a client.
     pub filename: String,
@@ -692,7 +692,7 @@ impl TryFrom<RumaFileMessageEventContent> for FileMessageContent {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct ImageInfo {
     pub height: Option<u64>,
     pub width: Option<u64>,
@@ -743,7 +743,7 @@ impl TryFrom<&ImageInfo> for BaseImageInfo {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct AudioInfo {
     // TODO: fix
     #[serde(skip)]
@@ -777,7 +777,7 @@ impl TryFrom<&AudioInfo> for BaseAudioInfo {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct UnstableAudioDetailsContent {
     // TODO: fix
     #[serde(skip)]
@@ -811,7 +811,7 @@ impl From<UnstableAudioDetailsContent> for RumaUnstableAudioDetailsContentBlock 
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct UnstableVoiceContent {}
 
 impl From<RumaUnstableVoiceContentBlock> for UnstableVoiceContent {
@@ -826,7 +826,7 @@ impl From<UnstableVoiceContent> for RumaUnstableVoiceContentBlock {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct VideoInfo {
     // TODO: fix
     #[serde(skip)]
@@ -880,7 +880,7 @@ impl TryFrom<&VideoInfo> for BaseVideoInfo {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct FileInfo {
     pub mimetype: Option<String>,
     pub size: Option<u64>,
@@ -912,7 +912,7 @@ impl TryFrom<&FileInfo> for BaseFileInfo {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct ThumbnailInfo {
     pub height: Option<u64>,
     pub width: Option<u64>,
@@ -931,19 +931,19 @@ impl From<ThumbnailInfo> for RumaThumbnailInfo {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct NoticeMessageContent {
     pub body: String,
     pub formatted: Option<FormattedBody>,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct TextMessageContent {
     pub body: String,
     pub formatted: Option<FormattedBody>,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct LocationContent {
     pub body: String,
     pub geo_uri: String,
@@ -952,7 +952,7 @@ pub struct LocationContent {
     pub asset: Option<AssetType>,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum AssetType {
     Sender,
     Pin,
@@ -967,7 +967,7 @@ impl From<AssetType> for RumaAssetType {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct FormattedBody {
     pub format: MessageFormat,
     pub body: String,
@@ -999,7 +999,7 @@ impl From<&RumaFormattedBody> for FormattedBody {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum MessageFormat {
     Html,
     Unknown { format: String },
@@ -1098,7 +1098,7 @@ impl TryFrom<&RumaFileInfo> for FileInfo {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum PollKind {
     Disclosed,
     Undisclosed,
@@ -1861,7 +1861,7 @@ mod galleries {
         },
     };
 
-    #[derive(Serialize, SignalPiece, Clone)]
+    #[derive(Debug, Serialize, SignalPiece, Clone)]
     pub struct GalleryMessageContent {
         pub body: String,
         pub formatted: Option<FormattedBody>,
@@ -1900,7 +1900,7 @@ mod galleries {
         }
     }
 
-    #[derive(Serialize, SignalPiece, Clone)]
+    #[derive(Debug, Serialize, SignalPiece, Clone)]
     pub enum GalleryItemType {
         Image { content: ImageMessageContent },
         Audio { content: AudioMessageContent },

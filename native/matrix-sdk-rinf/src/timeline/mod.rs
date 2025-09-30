@@ -1102,7 +1102,7 @@ impl TimelineItem {
 }
 
 /// This type represents the “send state” of a local event timeline item.
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum EventSendState {
     /// The local event has not been sent yet.
     NotSentYet,
@@ -1184,7 +1184,7 @@ impl From<SdkShieldState> for ShieldState {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct EventTimelineItem {
     /// Indicates that an event is remote.
     pub is_remote: bool,
@@ -1256,7 +1256,7 @@ impl From<SdkEventItemOrigin> for EventItemOrigin {
     }
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub struct Receipt {
     pub timestamp: Option<Timestamp>,
 }
@@ -1276,7 +1276,7 @@ pub struct EventTimelineItemDebugInfo {
     latest_edit_json: Option<String>,
 }
 
-#[derive(Serialize, SignalPiece, Clone)]
+#[derive(Debug, Serialize, SignalPiece, Clone)]
 pub enum ProfileDetails {
     Unavailable,
     Pending,
@@ -1492,7 +1492,7 @@ fn create_caption_edit(
 }
 
 /// Wrapper to retrieve some timeline item info lazily.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct LazyTimelineItemProvider(Arc<matrix_sdk_ui::timeline::EventTimelineItem>);
 
 impl LazyTimelineItemProvider {
