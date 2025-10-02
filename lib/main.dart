@@ -11,3 +11,4 @@ Future<void> main() async {
   await initializeRust(assignRustSignal);
   runApp(const Application());
 }
+
