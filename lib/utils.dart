@@ -1,11 +1,9 @@
 import 'package:intl/intl.dart';
-import 'package:messenger/src/bindings/signals/signals.dart';
 
 final DateFormat shortDateTimeFormatter = DateFormat(DateFormat.ABBR_MONTH_DAY);
 final DateFormat hourMinuteFormatter = DateFormat(DateFormat.HOUR24_MINUTE);
 
-String formatTimestamp(Timestamp timestamp) {
-  final target = DateTime.fromMillisecondsSinceEpoch(timestamp.value.toInt());
+String formatDateTime(DateTime target) {
   final now = DateTime.now();
 
   // print("now ${now.day} ${now.month} ${now.year}");

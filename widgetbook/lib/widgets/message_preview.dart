@@ -8,6 +8,5 @@ import 'package:messenger/src/bindings/bindings.dart';
 Widget build(BuildContext context) {
   EventTimelineItem? eventTimelineItem = mockEventTimelineItem();
 
-  print(eventTimelineItem);
   return MessagePreview(event: eventTimelineItem);
 }

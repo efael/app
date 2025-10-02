@@ -30,14 +30,17 @@ class Username extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          name,
-          style: TextStyle(
-            fontSize: size.fontSize,
-            fontWeight: FontWeight.w500,
-            color: secure
-                ? consts.colors.accent.green
-                : consts.colors.content.highContrast,
+        Flexible(
+          child: Text(
+            name,
+            style: TextStyle(
+              fontSize: size.fontSize,
+              fontWeight: FontWeight.w500,
+              color: secure
+                  ? consts.colors.accent.green
+                  : consts.colors.content.highContrast,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       ],

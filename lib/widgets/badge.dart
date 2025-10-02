@@ -1,11 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:messenger/constants.dart';
+
+class Badge extends StatelessWidget {
+  const Badge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
 
 class BadgePin extends StatelessWidget {
   const BadgePin({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Container(
+      height: 24.0,
+      width: 24.0,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: BoxBorder.all(
+          width: 1,
+          color: consts.colors.content.mediumContrast,
+        ),
+      ),
+      child: Center(
+        child: RotationTransition(
+          turns: const AlwaysStoppedAnimation(45 / 360),
+          child: Icon(
+            Icons.push_pin,
+            size: 16.0,
+            color: consts.colors.content.mediumContrast,
+          ),
+        ),
+      ),
+    );
   }
 }
 

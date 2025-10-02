@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:messenger/constants.dart';
 
 class ChatListHeader extends StatelessWidget {
-  const ChatListHeader({super.key});
+  const ChatListHeader({super.key, required this.appName});
+
+  final String appName;
 
   @override
   Widget build(BuildContext context) {
@@ -16,13 +19,21 @@ class ChatListHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox.square(dimension: 48.0),
-                Text(
-                  "Efael",
-                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w600),
+                Flexible(
+                  child: Text(
+                    appName,
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.w600,
+                      color: consts.colors.content.highContrast,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
                 IconButton(
                   padding: EdgeInsets.all(12.0),
                   iconSize: 24.0,
+                  color: consts.colors.content.highContrast,
                   onPressed: () {
                     // context.pop();
                   },
