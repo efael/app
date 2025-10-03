@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use messages::prelude::{Context, Notifiable};
 use rinf::debug_print;
 
-use crate::{actors::matrix::Matrix, signals::MatrixSyncServiceRequest};
+use crate::{actors::matrix::Matrix, signals::{MatrixListChatsRequest, MatrixSessionVerificationRequest, MatrixSyncServiceRequest}};
 
 #[async_trait]
 impl Notifiable<MatrixSyncServiceRequest> for Matrix {
@@ -15,13 +15,15 @@ impl Notifiable<MatrixSyncServiceRequest> for Matrix {
             }
         };
 
-        if self.sync_service.is_none() {
+        let first_time = self.sync_service.is_none();
+        if first_time {
             let service = client
                 .sync_service()
                 .with_offline_mode()
                 .finish()
                 .await
                 .unwrap();
+
             self.sync_service = Some(service);
         }
 
@@ -29,11 +31,9 @@ impl Notifiable<MatrixSyncServiceRequest> for Matrix {
 
         sync_service.start().await;
 
-        // after staring sync-service
-        // self.emit(MatrixListChatsRequest { url: "".to_string() }).await;
-
-        let state = sync_service.next_state();
-        debug_print!("state: {state:?}");
+        if first_time {
+            self.emit(MatrixSessionVerificationRequest::Start);
+        }
 
         let mut addr = self.self_addr.clone();
         let duration = tokio::time::Duration::from_millis(200);

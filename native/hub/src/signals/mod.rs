@@ -3,9 +3,7 @@ pub mod save_session_error;
 
 use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_events};
 use matrix_sdk_rinf::{
-    authentication::{HomeserverLoginDetails, OidcConfiguration},
-    room::room_info::RoomInfo,
-    timeline::EventTimelineItem,
+    authentication::{HomeserverLoginDetails, OidcConfiguration}, room::room_info::RoomInfo, session_verification::SessionVerificationData, timeline::EventTimelineItem
 };
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
@@ -115,4 +113,16 @@ pub enum MatrixRoomListUpdate {
 pub enum MatrixSyncServiceRequest {
     Loop,
     Stop,
+}
+
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub enum MatrixSessionVerificationRequest {
+    Start,
+    Stop,
+}
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub struct MatrixSASConfirmRequest {
+    pub data: SessionVerificationData
 }
