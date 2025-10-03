@@ -152,7 +152,7 @@ final directories = <_widgetbook.WidgetbookNode>[
       _widgetbook.WidgetbookLeafComponent(
         name: 'Message',
         useCase: _widgetbook.WidgetbookUseCase(
-          name: 'Default',
+          name: 'Message Text',
           builder: _widgetbook_workspace_widgets_message.build,
         ),
       ),
