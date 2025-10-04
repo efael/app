@@ -52,17 +52,6 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             Some(service) => service.clone(),
         };
 
-        // debug_print!("[room] subscribing to state changes");
-        // room_service
-        //     .state(Box::new(RoomStateListener));
-
-        // let moving_service = room_service.clone();
-        // tokio::spawn(async move {
-        //     moving_service
-        //         .sync()
-        //         .await;
-        // });
-
         debug_print!("[room] subscribing to upcoming changes");
         let res = room_service
             .clone()
@@ -72,7 +61,7 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             .clone()
             .entries_with_dynamic_adapters(50, Box::new(RoomListNotifier));
 
-        let set_filter = res
+        res
             .controller()
             .set_filter(RoomListEntriesDynamicFilterKind::All {
                 filters: vec![RoomListEntriesDynamicFilterKind::NonLeft],
@@ -82,7 +71,7 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
         // tokio::spawn(async move {
         //     res.entries_stream().is_finished();
         // });
-        
+
         // Static room list
         debug_print!("[room] cache count = {}", client.rooms().len());
         let mut set = JoinSet::new();
@@ -116,7 +105,7 @@ impl RoomListEntriesListener for RoomListNotifier {
                 RoomListEntriesUpdate::Reset { values }
                 | RoomListEntriesUpdate::Append { values } => {
                     debug_print!(
-                        "[update] got either reset, rooms: {}",
+                        "[update] got reset, rooms: {}",
                         values.len()
                     );
 
@@ -125,15 +114,17 @@ impl RoomListEntriesListener for RoomListNotifier {
 
                         values.into_iter().for_each(|r| {
                             set.spawn(async move {
+
+                                debug_print!("[update] room: {}", r.display_name().expect("does have a name"));
+                                debug_print!("- encryption_state: {:?}", r.encryption_state());
+                                debug_print!("- latest_encryption_state: {:?}", r.latest_encryption_state().await);
+                                debug_print!("----------------------------");
+
                                 let info = r.room_info().await;
                                 let latest_event = r.latest_event_from_timeline().await;
-
-                                debug_print!(
-                                    "[update] room-{}",
-                                    r.display_name().expect("does have a name")
-                                );
                                 // debug_print!("- info: {:?}", info);
-                                debug_print!("- event: {:?}", latest_event);
+                                // debug_print!("- event: {:?}", latest_event);
+
                                 info.map(|info| (info, latest_event))
                             });
                         });

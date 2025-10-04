@@ -54,22 +54,17 @@ class ChatItem extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Flexible(child: Username(name: displayName)),
-                          Text(
-                            lastMessageDateTime != null
-                                ? formatDateTime(lastMessageDateTime!)
-                                : " ",
-                            style: consts.typography.text3,
+                          Username(
+                            name: roomInfo.displayName ?? "-",
+                            secure:
+                                roomInfo.encryptionState ==
+                                EncryptionState.encrypted,
                           ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: messagePreview ?? SizedBox(height: 32),
-                          ),
-
-                          if (pinned) BadgePin(),
+                          if (latestEvent != null)
+                            Text(
+                              formatTimestamp(latestEvent!.timestamp),
+                              style: consts.typography.text3,
+                            ),
                         ],
                       ),
                     ],

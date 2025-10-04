@@ -28,7 +28,6 @@ impl Notifiable<MatrixSyncServiceRequest> for Matrix {
         }
 
         let sync_service = self.sync_service.as_mut().expect("should exist a value");
-
         sync_service.start().await;
 
         if first_time {
