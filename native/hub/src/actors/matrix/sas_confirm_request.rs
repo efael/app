@@ -23,7 +23,7 @@ impl Notifiable<MatrixSASConfirmRequest> for Matrix {
             SessionVerificationData::Emojis { emojis, .. } => {
                 debug_print!("[verification] Emojis:");
                 for e in emojis {
-                    debug_print!("{} ({})", e.symbol(), e.description());
+                    // debug_print!("- {} ({})", e.symbol(), e.description());
                 }
             }
             SessionVerificationData::Decimals { values } => {

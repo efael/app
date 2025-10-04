@@ -53,7 +53,12 @@ class ChatItem extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Username(name: roomInfo.displayName ?? "-"),
+                          Username(
+                            name: roomInfo.displayName ?? "-",
+                            secure:
+                                roomInfo.encryptionState ==
+                                EncryptionState.encrypted,
+                          ),
                           if (latestEvent != null)
                             Text(
                               formatTimestamp(latestEvent!.timestamp),
