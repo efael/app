@@ -1,0 +1,2 @@
+String veryLongText =
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam porta posuere eros vel aliquam. Nulla interdum vel ex vitae ultrices. Curabitur egestas mattis lacus, vitae vehicula lectus egestas non. Duis viverra, lacus vel interdum lacinia, quam tortor ultrices erat, at laoreet lorem turpis id dolor. In quis pellentesque lacus. Mauris sed efficitur ex. Nam pellentesque sapien in faucibus consequat. Sed quis mi egestas, accumsan elit vel, elementum ex. Nulla.";
