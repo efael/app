@@ -33,22 +33,10 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
         let encrpyption = client
             .encryption();
 
-        // let cross_sign_status = encrpyption
-        //     .inner
-        //     .cross_signing_status()
-        //     .await;
-
-        // debug_print!("[verification] cross signing status - {cross_sign_status:?}");
-        // if let Some(status) = cross_sign_status {
-        //     if !status.is_complete() {
-        //         debug_print!("[verification] bootstrapping cross signing");
-        //         encrpyption
-        //             .inner
-        //             .bootstrap_cross_signing(None)
-        //             .await
-        //             .expect("failed to bootstrap cross-signing");
-        //     }
-        // }
+        debug_print!("[verification] waiting for e2ee intialization");
+        encrpyption
+            .wait_for_e2ee_initialization_tasks()
+            .await;
 
         let identity = encrpyption
             .user_identity(session.user_id.clone())
@@ -61,11 +49,6 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
 
             return;
         }
-
-        debug_print!("[verification] waiting for e2ee intialization");
-        encrpyption
-            .wait_for_e2ee_initialization_tasks()
-            .await;
 
         debug_print!("[verification] fetching controller");
         let controller = client

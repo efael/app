@@ -112,9 +112,9 @@ impl SessionVerificationController {
         let verification_request = self.verification_request.read().unwrap().clone();
 
         if let Some(verification_request) = verification_request {
-            debug_print!("[rinf] accepting verification_request in state - {:?}", verification_request.state());
+            debug_print!("[rinf] accepting verification_request flow id - {:?}", verification_request.flow_id());
             let methods = vec![VerificationMethod::SasV1];
-            verification_request.accept_with_methods(methods).await?;
+            verification_request.accept().await?;
         }
 
         Ok(())
@@ -128,6 +128,7 @@ impl SessionVerificationController {
             .request_verification_with_methods(methods)
             .await?;
 
+        debug_print!("[rinf] sending verification_request flow id - {:?}", verification_request.flow_id());
         self.set_ongoing_verification_request(verification_request)
         // Ok(verification_request)
     }

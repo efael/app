@@ -114,10 +114,14 @@ impl RoomListEntriesListener for RoomListNotifier {
 
                         values.into_iter().for_each(|r| {
                             set.spawn(async move {
+
+                                debug_print!("[update] room: {}", r.display_name().expect("does have a name"));
+                                debug_print!("- encryption_state: {:?}", r.encryption_state());
+                                debug_print!("- latest_encryption_state: {:?}", r.latest_encryption_state().await);
+                                debug_print!("----------------------------");
+
                                 let info = r.room_info().await;
                                 let latest_event = r.latest_event_from_timeline().await;
-
-                                // debug_print!("[update] room-{}", r.display_name().expect("does have a name"));
                                 // debug_print!("- info: {:?}", info);
                                 // debug_print!("- event: {:?}", latest_event);
 
