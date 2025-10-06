@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:messenger/constants.dart';
-import 'package:messenger/src/bindings/signals/signals.dart';
 import 'package:messenger/utils.dart';
+import 'package:messenger/widgets/badge.dart';
 import 'package:messenger/widgets/message_preview.dart';
 import 'package:messenger/widgets/username.dart';
 import 'package:messenger/widgets/userpic.dart';
@@ -9,25 +9,27 @@ import 'package:messenger/widgets/userpic.dart';
 class ChatItem extends StatelessWidget {
   const ChatItem({
     super.key,
-    required this.roomInfo,
-    this.latestEvent,
+    required this.displayName,
+    this.lastMessageDateTime,
+    this.messagePreview,
+
+    this.pinned = false,
 
     this.onTap,
     this.onLongPress,
   });
 
-  final RoomInfo roomInfo;
-  final EventTimelineItem? latestEvent;
+  final String displayName;
+  final DateTime? lastMessageDateTime;
+  final MessagePreview? messagePreview;
+
+  final bool pinned;
 
   final GestureTapCallback? onTap;
   final GestureLongPressCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
-    // print(roomInfo.displayName);
-    // print(roomInfo);
-    // print(latestEvent);
-    // print("====\n====\n====");
     return Container(
       color: consts.colors.dominant.bgHighContrast,
       height: 80,
@@ -44,16 +46,20 @@ class ChatItem extends StatelessWidget {
             child: Row(
               spacing: 12,
               children: [
-                Userpic(name: roomInfo.displayName ?? " "),
+                Userpic(name: displayName),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Username(name: roomInfo.displayName ?? "-"),
+                          Username(
+                            name: roomInfo.displayName ?? "-",
+                            secure:
+                                roomInfo.encryptionState ==
+                                EncryptionState.encrypted,
+                          ),
                           if (latestEvent != null)
                             Text(
                               formatTimestamp(latestEvent!.timestamp),
@@ -61,7 +67,6 @@ class ChatItem extends StatelessWidget {
                             ),
                         ],
                       ),
-                      MessagePreview(event: latestEvent),
                     ],
                   ),
                 ),

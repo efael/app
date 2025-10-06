@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:messenger/constants.dart';
 import 'package:messenger/widgets/chat_header.dart';
 import 'package:messenger/widgets/message_box.dart';
@@ -17,7 +18,17 @@ class _ChatScreenState extends State<ChatScreen> {
       backgroundColor: consts.colors.dominant.bgMediumContrast,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(64.0),
-        child: SafeArea(child: ChatHeader()),
+        child: SafeArea(
+          child: ChatHeader(
+            userName: "Test user",
+            onBackTap: () {
+              context.pop();
+            },
+            onSearchTap: () {
+              print("search");
+            },
+          ),
+        ),
       ),
       body: SafeArea(
         left: false,

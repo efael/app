@@ -1,4 +1,5 @@
 pub mod client_session_delegate;
+pub mod session_verification_delegate;
 pub mod init_request;
 pub mod list_chats_request;
 pub mod logout_request;
@@ -6,12 +7,14 @@ pub mod oidc_auth_request;
 pub mod oidc_finish_request;
 pub mod refresh_token_request;
 pub mod sync_service_request;
+pub mod session_verification_request;
+pub mod sas_confirm_request;
 
 use std::{io::ErrorKind, path::PathBuf, sync::Arc};
 
 use matrix_sdk::Client as SdkClient;
 use matrix_sdk_rinf::{
-    client::Client, room_list::RoomListService, sync_service::SyncService, task_handle::TaskHandle,
+    client::Client, room_list::RoomListService, session_verification::SessionVerificationController, sync_service::SyncService, task_handle::TaskHandle
 };
 use messages::{
     actor::Actor,
@@ -24,9 +27,7 @@ use crate::{
     actors::matrix::client_session_delegate::ClientSessionDelegateImplementation,
     extensions::easy_listener::EasyListener,
     signals::{
-        MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest,
-        MatrixSyncServiceRequest, init_client_error::InitClientError,
+        init_client_error::InitClientError, MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest, MatrixSyncServiceRequest
     },
 };
 
@@ -38,6 +39,9 @@ pub struct Matrix {
     application_support_directory: Option<PathBuf>,
     sync_service: Option<Arc<SyncService>>,
     room_service: Option<Arc<RoomListService>>,
+
+    /// For testing purposes, should not be here
+    verification_controller: Option<Arc<SessionVerificationController>>
 }
 
 impl Actor for Matrix {}
@@ -68,6 +72,7 @@ impl Matrix {
             application_support_directory: None,
             sync_service: None,
             room_service: None,
+            verification_controller: None,
         };
 
         actor.listen_to::<MatrixInitRequest>();
@@ -77,6 +82,8 @@ impl Matrix {
         actor.listen_to::<MatrixLogoutRequest>();
         actor.listen_to::<MatrixRefreshTokenRequest>();
         actor.listen_to::<MatrixSyncServiceRequest>();
+        actor.listen_to::<MatrixSessionVerificationRequest>();
+        actor.listen_to::<MatrixSASConfirmRequest>();
 
         actor
     }

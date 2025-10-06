@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use matrix_sdk::{EncryptionState, RoomState};
+use matrix_sdk::{EncryptionState as SdkEncryptionState, RoomState};
 use rinf::SignalPiece;
 use serde::Serialize;
 use tracing::warn;
@@ -15,10 +15,45 @@ use crate::{
     room_member::RoomMember,
 };
 
+/// Represents the state of a room encryption.
+#[derive(Serialize, SignalPiece, Debug)]
+pub enum EncryptionState {
+    /// The room is encrypted.
+    Encrypted,
+
+    /// The room is not encrypted.
+    NotEncrypted,
+
+    /// The state of the room encryption is unknown, probably because the
+    /// `/sync` did not provide all data needed to decide.
+    Unknown,
+}
+
+impl EncryptionState {
+    /// Check whether `EncryptionState` is [`Encrypted`][Self::Encrypted].
+    pub fn is_encrypted(&self) -> bool {
+        matches!(self, Self::Encrypted)
+    }
+
+    /// Check whether `EncryptionState` is [`Unknown`][Self::Unknown].
+    pub fn is_unknown(&self) -> bool {
+        matches!(self, Self::Unknown)
+    }
+}
+
+impl From<SdkEncryptionState> for EncryptionState {
+    fn from(value: SdkEncryptionState) -> Self {
+        match value {
+            SdkEncryptionState::Encrypted => Self::Encrypted,
+            SdkEncryptionState::NotEncrypted => Self::NotEncrypted,
+            SdkEncryptionState::Unknown => Self::Unknown,
+        }
+    }
+}
+
 #[derive(Serialize, SignalPiece, Debug)]
 pub struct RoomInfo {
     pub id: String,
-    #[serde(skip)]
     pub encryption_state: EncryptionState,
     pub creator: Option<String>,
     /// The room's name from the room state event if received from sync, or one
@@ -109,7 +144,7 @@ impl RoomInfo {
 
         Ok(Self {
             id: room.room_id().to_string(),
-            encryption_state: room.encryption_state(),
+            encryption_state: room.encryption_state().into(),
             creator: room.creator().as_ref().map(ToString::to_string),
             display_name: room.cached_display_name().map(|name| name.to_string()),
             raw_name: room.name(),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:messenger/app_config.dart';
 import 'package:messenger/src/bindings/bindings.dart';
 import 'package:messenger/widgets/chat_item.dart';
 import 'package:messenger/widgets/chat_list_header.dart';
@@ -95,7 +96,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(64.0),
-        child: SafeArea(child: ChatListHeader()),
+        child: SafeArea(child: ChatListHeader(appName: AppConfig.appName)),
       ),
       body: SafeArea(
         child: ListView.builder(
@@ -105,8 +106,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
           itemBuilder: (context, index) {
             final room = rooms[index];
             return ChatItem(
-              roomInfo: room.item1,
-              latestEvent: room.item2,
+              displayName: room.item1.displayName ?? "-",
+              lastMessageDateTime: room.item2 != null
+                  ? DateTime.fromMillisecondsSinceEpoch(
+                      room.item2!.timestamp.value.toInt(),
+                    )
+                  : null,
               onTap: () {
                 context.push("/chats/${room.item1.id}");
               },

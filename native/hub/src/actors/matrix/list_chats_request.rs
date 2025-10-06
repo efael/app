@@ -42,9 +42,6 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             }
         };
 
-        debug_print!("[room] started sync service inside list-chat");
-        sync_service.start().await;
-
         let room_service = match self.room_service.as_ref() {
             None => {
                 let service = sync_service.room_list_service();
@@ -55,17 +52,6 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             Some(service) => service.clone(),
         };
 
-        // debug_print!("[room] subscribing to state changes");
-        // room_service
-        //     .state(Box::new(RoomStateListener));
-
-        // let moving_service = room_service.clone();
-        // tokio::spawn(async move {
-        //     moving_service
-        //         .sync()
-        //         .await;
-        // });
-
         debug_print!("[room] subscribing to upcoming changes");
         let res = room_service
             .clone()
@@ -75,20 +61,19 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             .clone()
             .entries_with_dynamic_adapters(50, Box::new(RoomListNotifier));
 
-        let set_filter = res
+        res
             .controller()
             .set_filter(RoomListEntriesDynamicFilterKind::All {
                 filters: vec![RoomListEntriesDynamicFilterKind::NonLeft],
             });
-        debug_print!("[room] does filter set: {set_filter}");
 
         // don't know why, but without this, whole app crashes (UB)
         // tokio::spawn(async move {
         //     res.entries_stream().is_finished();
         // });
-        
+
         // Static room list
-        debug_print!("[room] room count = {}", client.rooms().len());
+        debug_print!("[room] cache count = {}", client.rooms().len());
         let mut set = JoinSet::new();
 
         client.rooms().into_iter().for_each(|r| {
@@ -106,19 +91,6 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             .filter_map(|r| r.ok())
             .collect();
 
-        // let room_ids = client
-        //     .rooms()
-        //     .into_iter()
-        //     .map(|room| room.id())
-        //     .collect();
-
-        // room_service
-        //     .subscribe_to_rooms(room_ids)
-        //     .await
-        //     .unwrap();
-
-        // let rooms = Vec::new();
-
         MatrixListChatsResponse::Ok { rooms }.send_signal_to_dart();
     }
 }
@@ -128,13 +100,12 @@ struct RoomListNotifier;
 
 impl RoomListEntriesListener for RoomListNotifier {
     fn on_update(&self, updates: Vec<RoomListEntriesUpdate>) {
-        debug_print!("[room] received an update - {}", updates.len());
         for update in updates {
             match update {
                 RoomListEntriesUpdate::Reset { values }
                 | RoomListEntriesUpdate::Append { values } => {
                     debug_print!(
-                        "[update] got either reset | append, rooms: {}",
+                        "[update] got reset, rooms: {}",
                         values.len()
                     );
 
@@ -143,15 +114,17 @@ impl RoomListEntriesListener for RoomListNotifier {
 
                         values.into_iter().for_each(|r| {
                             set.spawn(async move {
+
+                                debug_print!("[update] room: {}", r.display_name().expect("does have a name"));
+                                debug_print!("- encryption_state: {:?}", r.encryption_state());
+                                debug_print!("- latest_encryption_state: {:?}", r.latest_encryption_state().await);
+                                debug_print!("----------------------------");
+
                                 let info = r.room_info().await;
                                 let latest_event = r.latest_event_from_timeline().await;
-
-                                debug_print!(
-                                    "[update] room-{}",
-                                    r.display_name().expect("does have a name")
-                                );
                                 // debug_print!("- info: {:?}", info);
-                                debug_print!("- event: {:?}", latest_event);
+                                // debug_print!("- event: {:?}", latest_event);
+
                                 info.map(|info| (info, latest_event))
                             });
                         });

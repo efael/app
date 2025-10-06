@@ -12,12 +12,15 @@ use matrix_sdk::{
 };
 use matrix_sdk_common::{SendOutsideWasm, SyncOutsideWasm};
 use ruma::UserId;
+use rinf::{debug_print, SignalPiece};
+use serde::{Deserialize, Serialize};
 use tracing::{error, warn};
 
 use crate::{
     client::UserProfile, error::ClientError, runtime::get_runtime_handle, utils::Timestamp,
 };
 
+#[derive(Deserialize, Serialize, SignalPiece, Debug)]
 pub struct SessionVerificationEmoji {
     symbol: String,
     description: String,
@@ -33,9 +36,10 @@ impl SessionVerificationEmoji {
     }
 }
 
+#[derive(Deserialize, Serialize, SignalPiece, Debug)]
 pub enum SessionVerificationData {
     Emojis {
-        emojis: Vec<Arc<SessionVerificationEmoji>>,
+        emojis: Vec<SessionVerificationEmoji>,
         indices: Vec<u8>,
     },
     Decimals {
@@ -67,7 +71,7 @@ pub type Delegate = Arc<RwLock<Option<Box<dyn SessionVerificationControllerDeleg
 
 #[derive(Clone)]
 pub struct SessionVerificationController {
-    encryption: Encryption,
+    pub encryption: Encryption,
     user_identity: UserIdentity,
     account: Account,
     delegate: Delegate,
@@ -108,8 +112,9 @@ impl SessionVerificationController {
         let verification_request = self.verification_request.read().unwrap().clone();
 
         if let Some(verification_request) = verification_request {
+            debug_print!("[rinf] accepting verification_request flow id - {:?}", verification_request.flow_id());
             let methods = vec![VerificationMethod::SasV1];
-            verification_request.accept_with_methods(methods).await?;
+            verification_request.accept().await?;
         }
 
         Ok(())
@@ -123,7 +128,9 @@ impl SessionVerificationController {
             .request_verification_with_methods(methods)
             .await?;
 
+        debug_print!("[rinf] sending verification_request flow id - {:?}", verification_request.flow_id());
         self.set_ongoing_verification_request(verification_request)
+        // Ok(verification_request)
     }
 
     /// Request verification for the given user
@@ -366,6 +373,7 @@ impl SessionVerificationController {
         let mut stream = sas.changes();
 
         while let Some(state) = stream.next().await {
+            debug_print!("[rinf] got SAS state update: {state:?}");
             match state {
                 SasState::KeysExchanged { emojis, decimals } => {
                     if let Some(delegate) = &*delegate.read().unwrap() {
@@ -376,10 +384,10 @@ impl SessionVerificationController {
                                         .emojis
                                         .into_iter()
                                         .map(|emoji| {
-                                            Arc::new(SessionVerificationEmoji {
+                                            SessionVerificationEmoji {
                                                 symbol: emoji.symbol.to_owned(),
                                                 description: emoji.description.to_owned(),
-                                            })
+                                            }
                                         })
                                         .collect(),
                                     indices: emojis.indices.to_vec(),

@@ -18,12 +18,12 @@ use crate::{
 pub struct Encryption {
     pub inner: matrix_sdk::encryption::Encryption,
 
-    /// A reference to the FFI client.
-    ///
-    /// Note: we do this to make it so that the FFI `NotificationClient` keeps
-    /// the FFI `Client` and thus the SDK `Client` alive. Otherwise, we
-    /// would need to repeat the hack done in the FFI `Client::drop` method.
-    pub _client: Arc<Client>,
+    // /// A reference to the FFI client.
+    // ///
+    // /// Note: we do this to make it so that the FFI `NotificationClient` keeps
+    // /// the FFI `Client` and thus the SDK `Client` alive. Otherwise, we
+    // /// would need to repeat the hack done in the FFI `Client::drop` method.
+    // pub _client: Arc<Client>,
 }
 
 pub trait BackupStateListener: SyncOutsideWasm + SendOutsideWasm {
@@ -466,6 +466,7 @@ impl Encryption {
 }
 
 /// The E2EE identity of a user.
+#[derive(Debug, Clone)]
 pub struct UserIdentity {
     inner: matrix_sdk::encryption::identities::UserIdentity,
 }
