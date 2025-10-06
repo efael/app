@@ -13,10 +13,18 @@
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
 import 'package:widgetbook_workspace/widgets/badge.dart'
     as _widgetbook_workspace_widgets_badge;
+import 'package:widgetbook_workspace/widgets/chat_header.dart'
+    as _widgetbook_workspace_widgets_chat_header;
 import 'package:widgetbook_workspace/widgets/chat_item.dart'
     as _widgetbook_workspace_widgets_chat_item;
+import 'package:widgetbook_workspace/widgets/chat_list_header.dart'
+    as _widgetbook_workspace_widgets_chat_list_header;
 import 'package:widgetbook_workspace/widgets/header_status.dart'
     as _widgetbook_workspace_widgets_header_status;
+import 'package:widgetbook_workspace/widgets/message.dart'
+    as _widgetbook_workspace_widgets_message;
+import 'package:widgetbook_workspace/widgets/message_box.dart'
+    as _widgetbook_workspace_widgets_message_box;
 import 'package:widgetbook_workspace/widgets/message_preview.dart'
     as _widgetbook_workspace_widgets_message_preview;
 import 'package:widgetbook_workspace/widgets/message_viewer.dart'
@@ -33,11 +41,76 @@ final directories = <_widgetbook.WidgetbookNode>[
     name: 'widgets',
     children: [
       _widgetbook.WidgetbookComponent(
-        name: 'BadgePin',
+        name: 'Badge',
+        useCases: [
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeAttach',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeAttach,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeAudio',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeAudio,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeBackward',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeBackward,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeCount',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeCount,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeForward',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeForward,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeLocation',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeLocation,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeMention',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeMention,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgePause',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgePause,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgePin',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgePin,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgePrev',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgePrev,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeReorder',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeReorder,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeSkip',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeSkip,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeVideoMessage',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeVideoMessage,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'BadgeWallet',
+            builder: _widgetbook_workspace_widgets_badge.buildBadgeWallet,
+          ),
+        ],
+      ),
+      _widgetbook.WidgetbookComponent(
+        name: 'ChatHeader',
         useCases: [
           _widgetbook.WidgetbookUseCase(
             name: 'Default',
-            builder: _widgetbook_workspace_widgets_badge.build,
+            builder: _widgetbook_workspace_widgets_chat_header.build,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'Long Text',
+            builder: _widgetbook_workspace_widgets_chat_header.buildLongText,
           ),
         ],
       ),
@@ -45,8 +118,31 @@ final directories = <_widgetbook.WidgetbookNode>[
         name: 'ChatItem',
         useCases: [
           _widgetbook.WidgetbookUseCase(
+            name: '60 days ago',
+            builder:
+                _widgetbook_workspace_widgets_chat_item.buildMessage60DaysAgo,
+          ),
+          _widgetbook.WidgetbookUseCase(
             name: 'Default',
             builder: _widgetbook_workspace_widgets_chat_item.build,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'Long Text',
+            builder: _widgetbook_workspace_widgets_chat_item.buildLongText,
+          ),
+        ],
+      ),
+      _widgetbook.WidgetbookComponent(
+        name: 'ChatListHeader',
+        useCases: [
+          _widgetbook.WidgetbookUseCase(
+            name: 'Default',
+            builder: _widgetbook_workspace_widgets_chat_list_header.build,
+          ),
+          _widgetbook.WidgetbookUseCase(
+            name: 'Long Text',
+            builder:
+                _widgetbook_workspace_widgets_chat_list_header.buildLongText,
           ),
         ],
       ),
@@ -56,6 +152,24 @@ final directories = <_widgetbook.WidgetbookNode>[
           _widgetbook.WidgetbookUseCase(
             name: 'Default',
             builder: _widgetbook_workspace_widgets_header_status.build,
+          ),
+        ],
+      ),
+      _widgetbook.WidgetbookComponent(
+        name: 'Message',
+        useCases: [
+          _widgetbook.WidgetbookUseCase(
+            name: 'Message Text',
+            builder: _widgetbook_workspace_widgets_message.build,
+          ),
+        ],
+      ),
+      _widgetbook.WidgetbookComponent(
+        name: 'MessageBox',
+        useCases: [
+          _widgetbook.WidgetbookUseCase(
+            name: 'Default',
+            builder: _widgetbook_workspace_widgets_message_box.build,
           ),
         ],
       ),
