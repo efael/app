@@ -20,54 +20,63 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
             }
         };
 
-        let session = match client.session() {
-            Ok(session) => session,
-            Err(error) => {
-                debug_print!(
-                    "MatrixSessionVerificationRequest: client does have session: {error:?}"
-                );
-                return;
-            }
-        };
+        let ee = client.encryption();
 
-        let encrpyption = client
-            .encryption();
+        // new impl:
+        // ee.get_user_identity(user_id)
+        //     .await
+        //     .unwrap()
+        //     .unwrap()
+        //     .is_verified();
 
-        debug_print!("[verification] waiting for e2ee intialization");
-        encrpyption
-            .wait_for_e2ee_initialization_tasks()
-            .await;
+        // let session = match client.session() {
+        //     Ok(session) => session,
+        //     Err(error) => {
+        //         debug_print!(
+        //             "MatrixSessionVerificationRequest: client does have session: {error:?}"
+        //         );
+        //         return;
+        //     }
+        // };
 
-        let identity = encrpyption
-            .user_identity(session.user_id.clone())
-            .await
-            .expect("failed to fetch user identity");
+        // let encrpyption = client
+        //     .encryption();
 
-        if identity.map_or(false, |i| i.is_verified()) {
-            debug_print!("[verification] identity verified ✅");
-            self.emit(MatrixListChatsRequest { url: "".to_string() });
+        // debug_print!("[verification] waiting for e2ee intialization");
+        // encrpyption
+        //     .wait_for_e2ee_initialization_tasks()
+        //     .await;
 
-            return;
-        }
+        // let identity = encrpyption
+        //     .user_identity(session.user_id.clone())
+        //     .await
+        //     .expect("failed to fetch user identity");
 
-        debug_print!("[verification] fetching controller");
-        let controller = client
-            .get_session_verification_controller()
-            .await
-            .expect("should have session verification controller");
+        // if identity.map_or(false, |i| i.is_verified()) {
+        //     debug_print!("[verification] identity verified ✅");
+        //     self.emit(MatrixListChatsRequest { url: "".to_string() });
 
-        let addr = self.get_address();
-        let delegate = SessionVerificationDelegateImplementation::new(addr);
+        //     return;
+        // }
 
-        controller.set_delegate(Some(Box::new(delegate)));
+        // debug_print!("[verification] fetching controller");
+        // let controller = client
+        //     .get_session_verification_controller()
+        //     .await
+        //     .expect("should have session verification controller");
 
-        debug_print!("[verification] sending request for device verification");
-        let request = controller
-            .request_device_verification()
-            .await
-            .expect("failed to start device verification");
+        // let addr = self.get_address();
+        // let delegate = SessionVerificationDelegateImplementation::new(addr);
 
-        self.verification_controller = Some(controller);
+        // controller.set_delegate(Some(Box::new(delegate)));
+
+        // debug_print!("[verification] sending request for device verification");
+        // let request = controller
+        //     .request_device_verification()
+        //     .await
+        //     .expect("failed to start device verification");
+
+        // self.verification_controller = Some(controller);
 
         // tokio::spawn(async move {
         //     while let Some(state) = request.changes().next().await {

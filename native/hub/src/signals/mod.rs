@@ -3,10 +3,13 @@ pub mod save_session_error;
 
 use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_events};
 use matrix_sdk_rinf::{
-    authentication::{HomeserverLoginDetails, OidcConfiguration}, room::room_info::RoomInfo, session_verification::SessionVerificationData, timeline::EventTimelineItem
+    authentication::{HomeserverLoginDetails}, room::room_info::RoomInfo, session_verification::SessionVerificationData, timeline::EventTimelineItem
 };
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
+
+use crate::matrix::oidc::OidcConfiguration;
+
 
 #[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixInitRequest {
@@ -17,7 +20,6 @@ pub struct MatrixInitRequest {
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixInitResponse {
     Ok {
-        homeserver_login_details: HomeserverLoginDetails,
         is_active: bool,
         is_logged_in: bool,
     },
@@ -111,8 +113,8 @@ pub enum MatrixRoomListUpdate {
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub enum MatrixSyncServiceRequest {
-    Loop,
-    Stop,
+    Initial,
+    Latest,
 }
 
 

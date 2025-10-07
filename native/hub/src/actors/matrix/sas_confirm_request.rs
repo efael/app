@@ -34,12 +34,12 @@ impl Notifiable<MatrixSASConfirmRequest> for Matrix {
         // debug_print!("[verification] sleeping for 10 secs");
         // tokio::time::sleep(Duration::from_secs(10)).await;
 
-        self.verification_controller
-            .as_mut()
-            .expect("verification controller does not exist")
-            .approve_verification()
-            .await
-            .expect("failed to accept verification request");
+        // self.verification_controller
+        //     .as_mut()
+        //     .expect("verification controller does not exist")
+        //     .approve_verification()
+        //     .await
+        //     .expect("failed to accept verification request");
 
         debug_print!("[verification] approved");
         self.emit(MatrixListChatsRequest {
