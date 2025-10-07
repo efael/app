@@ -1,12 +1,14 @@
 use async_trait::async_trait;
+use matrix_sdk::config::SyncSettings;
 use messages::prelude::{Context, Notifiable};
 use rinf::debug_print;
+use ruma::api::client::filter::{FilterDefinition, LazyLoadOptions, RoomEventFilter, RoomFilter};
 
-use crate::{actors::matrix::Matrix, signals::{MatrixListChatsRequest, MatrixSessionVerificationRequest, MatrixSyncServiceRequest}};
+use crate::{actors::matrix::Matrix, signals::MatrixSyncServiceRequest};
 
 #[async_trait]
 impl Notifiable<MatrixSyncServiceRequest> for Matrix {
-    async fn notify(&mut self, _msg: MatrixSyncServiceRequest, _: &Context<Self>) {
+    async fn notify(&mut self, msg: MatrixSyncServiceRequest, _: &Context<Self>) {
         let client = match self.client.as_mut() {
             Some(client) => client,
             None => {
@@ -15,31 +17,87 @@ impl Notifiable<MatrixSyncServiceRequest> for Matrix {
             }
         };
 
-        let first_time = self.sync_service.is_none();
-        if first_time {
-            let service = client
-                .sync_service()
-                .with_offline_mode()
-                .finish()
-                .await
-                .unwrap();
+        let session = match self.session.as_mut() {
+            Some(session) => session,
+            None => {
+                debug_print!("MatrixSyncServiceRequest: session does not exist");
+                return;
+            }
+        };
 
-            self.sync_service = Some(service);
+        debug_print!("Starting sync - {msg:?}");
+        match msg {
+            MatrixSyncServiceRequest::Initial => {
+                let settings = build_sync_settings(None);
+
+                for attempt in 0..10 {
+                    match client.sync_once(settings.clone()).await {
+                        Ok(response) => {
+                            debug_print!("Next batch - {}", response.next_batch);
+                            debug_print!("Sync response - {response:#?}");
+
+                            session.set_sync_token(response.next_batch);
+                            session.save_to_disk().expect("failed to save session to disk");
+
+                            break;
+                        }
+                        Err(error) => {
+                            debug_print!("An error occurred during initial sync, attempt {attempt}: {error}");
+                        }
+                    }
+                }
+            },
+            MatrixSyncServiceRequest::Latest => {
+
+            }
         }
 
-        let sync_service = self.sync_service.as_mut().expect("should exist a value");
-        sync_service.start().await;
 
-        if first_time {
-            self.emit(MatrixSessionVerificationRequest::Start);
-        }
+        // let first_time = self.sync_service.is_none();
+        // if first_time {
+        //     let service = client
+        //         .sync_service()
+        //         .with_offline_mode()
+        //         .finish()
+        //         .await
+        //         .unwrap();
 
-        let mut addr = self.self_addr.clone();
-        let duration = tokio::time::Duration::from_millis(200);
-        self.owned_tasks.spawn(async move {
-            tokio::time::sleep(duration).await;
-            let _ = addr.notify(MatrixSyncServiceRequest::Loop).await;
-        });
+        //     self.sync_service = Some(service);
+        // }
+
+        // let sync_service = self.sync_service.as_mut().expect("should exist a value");
+        // sync_service.start().await;
+
+        // if first_time {
+        //     self.emit(MatrixSessionVerificationRequest::Start);
+        // }
+
+        // let mut addr = self.self_addr.clone();
+        // let duration = tokio::time::Duration::from_millis(200);
+        // self.owned_tasks.spawn(async move {
+        //     tokio::time::sleep(duration).await;
+        //     let _ = addr.notify(MatrixSyncServiceRequest::Loop).await;
+        // });
     }
 }
 
+fn build_sync_settings(sync_token: Option<String>) -> SyncSettings {
+    let mut state_filter = RoomEventFilter::empty();
+    state_filter.lazy_load_options = LazyLoadOptions::Enabled {
+        include_redundant_members: false,
+    };
+
+    let mut room_filter = RoomFilter::empty();
+    room_filter.state = state_filter;
+
+    let mut filter = FilterDefinition::empty();
+    filter.room = room_filter;
+
+    let mut sync_settings = SyncSettings::default().filter(filter.into());
+
+    if let Some(token) = sync_token {
+        sync_settings = sync_settings.token(token);
+    }
+
+    sync_settings
+}

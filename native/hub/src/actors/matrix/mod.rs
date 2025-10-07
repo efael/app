@@ -10,12 +10,9 @@ pub mod sync_service_request;
 pub mod session_verification_request;
 pub mod sas_confirm_request;
 
-use std::{io::ErrorKind, path::PathBuf, sync::Arc};
+use std::{io::ErrorKind, path::PathBuf};
 
 use matrix_sdk::Client as SdkClient;
-use matrix_sdk_rinf::{
-    client::Client, room_list::RoomListService, session_verification::SessionVerificationController, sync_service::SyncService, task_handle::TaskHandle
-};
 use messages::{
     actor::Actor,
     prelude::{Address, Notifiable},
@@ -24,24 +21,21 @@ use rinf::{DartSignal, debug_print};
 use tokio::task::JoinSet;
 
 use crate::{
-    actors::matrix::client_session_delegate::ClientSessionDelegateImplementation,
-    extensions::easy_listener::EasyListener,
-    signals::{
+    extensions::easy_listener::EasyListener, matrix::session::Session, signals::{
         init_client_error::InitClientError, MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest, MatrixSyncServiceRequest
-    },
+    }
 };
 
 pub struct Matrix {
     self_addr: Address<Self>,
-    client: Option<Client>,
+    client: Option<SdkClient>,
     owned_tasks: JoinSet<()>,
-    rinf_taks: Vec<Arc<TaskHandle>>,
     application_support_directory: Option<PathBuf>,
-    sync_service: Option<Arc<SyncService>>,
-    room_service: Option<Arc<RoomListService>>,
+    session: Option<Session>,
 
-    /// For testing purposes, should not be here
-    verification_controller: Option<Arc<SessionVerificationController>>
+    // sync_service: Option<Arc<SyncService>>,
+    // room_service: Option<Arc<RoomListService>>,
+    // verification_controller: Option<Arc<SessionVerificationController>>
 }
 
 impl Actor for Matrix {}
@@ -67,12 +61,9 @@ impl Matrix {
         let mut actor = Self {
             client: None,
             owned_tasks,
-            rinf_taks: Vec::new(),
             self_addr,
             application_support_directory: None,
-            sync_service: None,
-            room_service: None,
-            verification_controller: None,
+            session: None,
         };
 
         actor.listen_to::<MatrixInitRequest>();
@@ -112,18 +103,7 @@ impl Matrix {
             .await
             .map_err(InitClientError::SdkClientBuildError)?;
 
-        let session_delegate =
-            ClientSessionDelegateImplementation::new(application_support_directory.clone());
-        let client = Client::new(
-            sdk_client,
-            true,
-            Some(Arc::new(session_delegate)),
-            Some(client0_dir.clone()),
-        )
-        .await
-        .map_err(InitClientError::ClientBuildError)?;
-
-        self.client = Some(client);
+        self.client = Some(sdk_client);
         Ok(())
     }
 
@@ -150,5 +130,14 @@ impl Matrix {
         self.owned_tasks.spawn(async move {
             let _ = addr.notify(request).await;
         });
+    }
+}
+
+impl Matrix {
+    pub fn session_path(&self) -> PathBuf {
+        let mut dir = self.application_support_directory.clone().unwrap().clone();
+
+        dir.push("./session.json");
+        dir
     }
 }
