@@ -105,20 +105,22 @@ impl RoomListEntriesListener for RoomListNotifier {
             match update {
                 RoomListEntriesUpdate::Reset { values }
                 | RoomListEntriesUpdate::Append { values } => {
-                    debug_print!(
-                        "[update] got reset, rooms: {}",
-                        values.len()
-                    );
+                    debug_print!("[update] got reset, rooms: {}", values.len());
 
                     tokio::spawn(async move {
                         let mut set = JoinSet::new();
 
                         values.into_iter().for_each(|r| {
                             set.spawn(async move {
-
-                                debug_print!("[update] room: {}", r.display_name().expect("does have a name"));
+                                debug_print!(
+                                    "[update] room: {}",
+                                    r.display_name().expect("does have a name")
+                                );
                                 debug_print!("- encryption_state: {:?}", r.encryption_state());
-                                debug_print!("- latest_encryption_state: {:?}", r.latest_encryption_state().await);
+                                debug_print!(
+                                    "- latest_encryption_state: {:?}",
+                                    r.latest_encryption_state().await
+                                );
                                 debug_print!("----------------------------");
 
                                 let info = r.room_info().await;
@@ -137,13 +139,11 @@ impl RoomListEntriesListener for RoomListNotifier {
                             .filter_map(|r| r.ok())
                             .collect();
 
-                        rooms.sort_by(|a, b| {
-                            match (&a.1, &b.1) {
-                                (Some(a), Some(b)) => b.timestamp.0.cmp(&a.timestamp.0),
-                                (Some(_), None) => std::cmp::Ordering::Less,
-                                (None, Some(_)) => std::cmp::Ordering::Greater,
-                                (None, None) => a.0.display_name.cmp(&b.0.display_name),
-                            }
+                        rooms.sort_by(|a, b| match (&a.1, &b.1) {
+                            (Some(a), Some(b)) => b.timestamp.0.cmp(&a.timestamp.0),
+                            (Some(_), None) => std::cmp::Ordering::Less,
+                            (None, Some(_)) => std::cmp::Ordering::Greater,
+                            (None, None) => a.0.display_name.cmp(&b.0.display_name),
                         });
 
                         MatrixRoomListUpdate::List { rooms }.send_signal_to_dart();

@@ -1,29 +1,23 @@
-use std::{fs, path::PathBuf};
-
 use async_trait::async_trait;
-// use matrix_sdk_rinf::{
-//     client::{Client, Session},
-//     error::ClientError,
-// };
-use matrix_sdk::Client;
-use messages::prelude::{Context, Notifiable};
+use messages::prelude::{Context, Handler};
 use rinf::{RustSignal, debug_print};
+use std::path::PathBuf;
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixInitRequest, MatrixInitResponse, MatrixSyncServiceRequest},
+    signals::{MatrixInitRequest, MatrixInitResponse},
 };
 
 #[async_trait]
-impl Notifiable<MatrixInitRequest> for Matrix {
-    async fn notify(&mut self, msg: MatrixInitRequest, _: &Context<Self>) {
+impl Handler<MatrixInitRequest> for Matrix {
+    type Result = MatrixInitResponse;
+
+    async fn handle(&mut self, msg: MatrixInitRequest, context: &Context<Self>) -> Self::Result {
         if self.client.is_some() {
             debug_print!("MatrixInitRequest: client is already initialized");
-            MatrixInitResponse::Err {
+            return MatrixInitResponse::Err {
                 message: "Client is already initialized".to_string(),
-            }
-            .send_signal_to_dart();
-            return;
+            };
         }
 
         let application_support_directory = PathBuf::from(&msg.application_support_directory);
@@ -32,11 +26,9 @@ impl Notifiable<MatrixInitRequest> for Matrix {
 
         if let Err(err) = self.init_client(msg.homeserver_url).await {
             debug_print!("MatrixInitRequest: failed to initialize client: {err:?}");
-            MatrixInitResponse::Err {
+            return MatrixInitResponse::Err {
                 message: err.to_string(),
-            }
-            .send_signal_to_dart();
-            return;
+            };
         }
 
         let client = self
@@ -70,7 +62,7 @@ impl Notifiable<MatrixInitRequest> for Matrix {
         };
 
         debug_print!("MatrixInitRequest: client was successfully initialized: {response:?}");
-        response.send_signal_to_dart();
+        response
     }
 }
 
@@ -131,3 +123,37 @@ impl Notifiable<MatrixInitRequest> for Matrix {
 //         })),
 //     }
 // }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        extensions::test_utils,
+        signals::{MatrixInitRequest, MatrixInitResponse},
+    };
+
+    #[tokio::test]
+    async fn test() {
+        let mut actors = test_utils::init_test().await;
+
+        let mut cwd = std::env::current_dir().expect("Should be able to get current dir");
+        cwd.push("./test_polygon");
+
+        tokio::fs::create_dir_all(&cwd)
+            .await
+            .expect("Should create test folder");
+
+        println!("Application support directory is: {cwd:?}");
+
+        let res: MatrixInitResponse = actors
+            .matrix
+            .send(MatrixInitRequest {
+                application_support_directory: cwd.to_str().unwrap().to_string(),
+                homeserver_url: "https://efael.uz".to_string(),
+            })
+            .await
+            .expect("could not send");
+
+        println!("res: {res:?}");
+        assert!(false);
+    }
+}

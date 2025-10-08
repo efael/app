@@ -33,7 +33,7 @@ ruma = { workspace = true, features = [
   "unstable-msc4278",
 ] }
 
-[target.'cfg(target_os = "android")'.dependencies]
+[target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 matrix-sdk = { workspace = true, default-features = false, features = [
   "automatic-room-key-forwarding",
   "e2e-encryption",
@@ -44,7 +44,7 @@ matrix-sdk-rinf = { workspace = true, default-features = false, features = [
   "rustls-tls",
 ] }
 
-[target.'cfg(not(target_os = "android"))'.dependencies]
+[target.'cfg(not(any(target_os = "android", target_os = "linux")))'.dependencies]
 matrix-sdk = { workspace = true, default-features = false, features = [
   "automatic-room-key-forwarding",
   "e2e-encryption",
