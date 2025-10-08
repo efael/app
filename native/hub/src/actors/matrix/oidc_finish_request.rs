@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use matrix_sdk::{reqwest::Url};
+use matrix_sdk::reqwest::Url;
 use messages::prelude::{Context, Notifiable};
 use rinf::{RustSignal, debug_print};
 
