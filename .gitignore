@@ -111,3 +111,5 @@ lib/generated_plugin_registrant.dart
 /lib/src/bincode
 /lib/src/serde
 /lib/src/bindings
+
+test_polygon
