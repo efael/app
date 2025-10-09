@@ -4,7 +4,10 @@ use messages::prelude::{Context, Notifiable};
 use rinf::debug_print;
 use ruma::api::client::filter::{FilterDefinition, LazyLoadOptions, RoomEventFilter, RoomFilter};
 
-use crate::{actors::matrix::Matrix, signals::MatrixSyncServiceRequest};
+use crate::{
+    actors::matrix::Matrix,
+    signals::{MatrixSessionVerificationRequest, MatrixSyncServiceRequest},
+};
 
 #[async_trait]
 impl Notifiable<MatrixSyncServiceRequest> for Matrix {
@@ -25,59 +28,52 @@ impl Notifiable<MatrixSyncServiceRequest> for Matrix {
             }
         };
 
-        debug_print!("Starting sync - {msg:?}");
-        match msg {
-            MatrixSyncServiceRequest::Initial => {
-                let settings = build_sync_settings(None);
+        let sync_token = match msg {
+            MatrixSyncServiceRequest::Initial => None,
+            MatrixSyncServiceRequest::Latest { sync_token } => Some(sync_token),
+        };
 
-                for attempt in 0..10 {
-                    match client.sync_once(settings.clone()).await {
-                        Ok(response) => {
-                            debug_print!("Next batch - {}", response.next_batch);
-                            debug_print!("Sync response - {response:#?}");
+        debug_print!("[sync] starting");
+        let settings = build_sync_settings(sync_token);
 
-                            session.set_sync_token(response.next_batch);
-                            session.save_to_disk().expect("failed to save session to disk");
+        for attempt in 0..10 {
+            match client.sync_once(settings.clone()).await {
+                Ok(response) => {
+                    debug_print!("[sync] next batch - {}", response.next_batch);
 
-                            break;
-                        }
-                        Err(error) => {
-                            debug_print!("An error occurred during initial sync, attempt {attempt}: {error}");
-                        }
-                    }
+                    session.set_sync_token(response.next_batch);
+                    session
+                        .save_to_disk()
+                        .expect("failed to save session to disk");
+
+                    break;
                 }
-            },
-            MatrixSyncServiceRequest::Latest => {
-
+                Err(error) => {
+                    debug_print!(
+                        "[sync] An error occurred during initial sync, attempt {attempt}: {error}"
+                    );
+                }
             }
         }
 
+        let sync_token = session
+            .sync_token
+            .as_ref()
+            .expect("after sync should have sync_token")
+            .clone();
 
-        // let first_time = self.sync_service.is_none();
-        // if first_time {
-        //     let service = client
-        //         .sync_service()
-        //         .with_offline_mode()
-        //         .finish()
-        //         .await
-        //         .unwrap();
+        self.emit(MatrixSessionVerificationRequest::Start);
 
-        //     self.sync_service = Some(service);
-        // }
-
-        // let sync_service = self.sync_service.as_mut().expect("should exist a value");
-        // sync_service.start().await;
-
-        // if first_time {
-        //     self.emit(MatrixSessionVerificationRequest::Start);
-        // }
-
-        // let mut addr = self.self_addr.clone();
-        // let duration = tokio::time::Duration::from_millis(200);
-        // self.owned_tasks.spawn(async move {
-        //     tokio::time::sleep(duration).await;
-        //     let _ = addr.notify(MatrixSyncServiceRequest::Loop).await;
-        // });
+        let mut addr = self.self_addr.clone();
+        let duration = tokio::time::Duration::from_millis(500);
+        self.owned_tasks.spawn(async move {
+            tokio::time::sleep(duration).await;
+            let _ = addr
+                .notify(MatrixSyncServiceRequest::Latest {
+                    sync_token: sync_token,
+                })
+                .await;
+        });
     }
 }
 

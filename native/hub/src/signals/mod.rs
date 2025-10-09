@@ -114,7 +114,7 @@ pub enum MatrixRoomListUpdate {
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub enum MatrixSyncServiceRequest {
     Initial,
-    Latest,
+    Latest { sync_token: String },
 }
 
 
