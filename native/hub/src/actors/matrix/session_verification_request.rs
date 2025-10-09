@@ -1,12 +1,11 @@
 use async_trait::async_trait;
-use matrix_sdk::stream::StreamExt;
 use messages::prelude::{Context, Notifiable};
 use rinf::debug_print;
+use ruma::events::key::verification::VerificationMethod;
 
 use crate::{
-    actors::matrix::{
-        session_verification_delegate::SessionVerificationDelegateImplementation, Matrix
-    }, extensions::easy_listener::EasyListener, signals::{MatrixListChatsRequest, MatrixSessionVerificationRequest}
+    actors::matrix::Matrix,
+    signals::{MatrixListChatsRequest, MatrixSessionVerificationRequest},
 };
 
 #[async_trait]
@@ -20,44 +19,47 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
             }
         };
 
-        let ee = client.encryption();
+        let session = match self.session.as_ref() {
+            Some(session) => session,
+            None => {
+                debug_print!("MatrixSessionVerificationRequest: client does have session");
+                return;
+            }
+        };
 
-        // new impl:
-        // ee.get_user_identity(user_id)
-        //     .await
-        //     .unwrap()
-        //     .unwrap()
-        //     .is_verified();
+        let encrpyption = client.encryption();
 
-        // let session = match client.session() {
-        //     Ok(session) => session,
-        //     Err(error) => {
-        //         debug_print!(
-        //             "MatrixSessionVerificationRequest: client does have session: {error:?}"
-        //         );
-        //         return;
-        //     }
-        // };
+        debug_print!("[verification] waiting for e2ee intialization");
+        encrpyption.wait_for_e2ee_initialization_tasks().await;
 
-        // let encrpyption = client
-        //     .encryption();
+        match encrpyption
+            .get_user_identity(&session.user_session.meta.user_id)
+            .await
+        {
+            Ok(Some(identity)) => {
+                if identity.is_verified() {
+                    debug_print!("[verification] identity verified ✅");
+                    self.emit(MatrixListChatsRequest {
+                        url: "".to_string(),
+                    });
+                    return;
+                }
 
-        // debug_print!("[verification] waiting for e2ee intialization");
-        // encrpyption
-        //     .wait_for_e2ee_initialization_tasks()
-        //     .await;
-
-        // let identity = encrpyption
-        //     .user_identity(session.user_id.clone())
-        //     .await
-        //     .expect("failed to fetch user identity");
-
-        // if identity.map_or(false, |i| i.is_verified()) {
-        //     debug_print!("[verification] identity verified ✅");
-        //     self.emit(MatrixListChatsRequest { url: "".to_string() });
-
-        //     return;
-        // }
+                match identity
+                    .request_verification_with_methods(vec![VerificationMethod::SasV1])
+                    .await
+                {
+                    Ok(request) => {
+                        debug_print!("[verification] requested, flow {:?}", request.flow_id());
+                    }
+                    Err(err) => {
+                        debug_print!("[verification] could not request verification: {}", err);
+                    }
+                };
+            }
+            Ok(None) => debug_print!("[verification] no user identity"),
+            Err(err) => debug_print!("[verification] could not get user identity: {}", err),
+        };
 
         // debug_print!("[verification] fetching controller");
         // let controller = client
