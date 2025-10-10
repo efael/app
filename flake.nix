@@ -119,7 +119,42 @@
         androidCustomPackage
         pinnedJDK
       ];
+      widgetbookSrc = pkgs.stdenv.mkDerivation {
+        pname = "efael-app-widgetbook-src";
+        version = "0.1.0";
+        src = ./.;
+        nativeBuildInputs = [
+          rinf
+        ];
+        buildPhase = ''
+          cp -r "$src/." .
+          rinf gen
+          rm result
+          mkdir -p $out
+          cp -r . $out
+        '';
+      };
     in {
+      packages = {
+        widgetbook =
+          (
+            pinnedFlutter.buildFlutterApplication {
+              pname = "efael-app-widgetbook";
+              version = "0.1.0";
+
+              src = widgetbookSrc;
+              autoPubspecLock = ./widgetbook/pubspec.lock;
+              sourceRoot = "widgetbook";
+
+              targetFlutterPlatform = "web";
+            }
+          ).overrideAttrs ({passthru ? {}, ...} @ aaa: {
+            packageConfig = aaa.packageConfig.overrideAttrs (_: {
+              sourceRoot = "${widgetbookSrc.name}/widgetbook";
+            });
+            sourceRoot = "${widgetbookSrc.name}/widgetbook";
+          });
+      };
       devShells.default =
         if pkgs.stdenv.isLinux
         then
