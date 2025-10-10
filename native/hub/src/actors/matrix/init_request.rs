@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use crate::{
     actors::matrix::Matrix,
     matrix::session::Session,
-    signals::{MatrixInitRequest, MatrixInitResponse, MatrixSyncServiceRequest},
+    signals::{MatrixInitRequest, MatrixInitResponse, MatrixSyncOnceRequest},
 };
 
 #[async_trait]
@@ -81,8 +81,8 @@ impl Handler<MatrixInitRequest> for Matrix {
             is_logged_in: true,
         };
 
-        self.emit(MatrixSyncServiceRequest::Latest {
-            sync_token: session.sync_token.expect("previous session should have sync_token"),
+        self.emit(MatrixSyncOnceRequest {
+            sync_token: Some(session.sync_token.expect("previous session should have sync_token")),
         });
 
         response

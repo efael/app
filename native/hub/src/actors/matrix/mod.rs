@@ -8,7 +8,9 @@ pub mod refresh_token_request;
 pub mod sas_confirm_request;
 pub mod session_verification_delegate;
 pub mod session_verification_request;
-pub mod sync_service_request;
+pub mod sync_once_request;
+pub mod sync_background_request;
+pub mod sync_completed_request;
 
 use std::{io::ErrorKind, path::PathBuf};
 
@@ -24,10 +26,7 @@ use crate::{
     extensions::easy_listener::EasyListener,
     matrix::session::Session,
     signals::{
-        MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest,
-        MatrixSASConfirmRequest, MatrixSessionVerificationRequest, MatrixSyncServiceRequest,
-        init_client_error::InitClientError,
+        init_client_error::InitClientError, MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest, MatrixSyncBackgroundRequest, MatrixSyncCompleted, MatrixSyncOnceRequest
     },
 };
 
@@ -37,9 +36,6 @@ pub struct Matrix {
     owned_tasks: JoinSet<()>,
     application_support_directory: Option<PathBuf>,
     session: Option<Session>,
-    // sync_service: Option<Arc<SyncService>>,
-    // room_service: Option<Arc<RoomListService>>,
-    // verification_controller: Option<Arc<SessionVerificationController>>
 }
 
 impl Actor for Matrix {}
@@ -76,9 +72,11 @@ impl Matrix {
         actor.listen_to_notification::<MatrixListChatsRequest>();
         actor.listen_to_notification::<MatrixLogoutRequest>();
         actor.listen_to_notification::<MatrixRefreshTokenRequest>();
-        actor.listen_to_notification::<MatrixSyncServiceRequest>();
+        actor.listen_to_notification::<MatrixSyncBackgroundRequest>();
+        actor.listen_to_notification::<MatrixSyncOnceRequest>();
         actor.listen_to_notification::<MatrixSessionVerificationRequest>();
         actor.listen_to_notification::<MatrixSASConfirmRequest>();
+        actor.listen_to_notification::<MatrixSyncCompleted>();
 
         actor
     }

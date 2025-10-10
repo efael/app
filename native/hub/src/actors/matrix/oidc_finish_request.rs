@@ -7,7 +7,7 @@ use crate::{
     actors::matrix::Matrix,
     matrix::session::Session,
     signals::{
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncServiceRequest,
+        MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncOnceRequest,
     },
 };
 
@@ -56,7 +56,7 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
 
                 self.session = Some(session);
 
-                self.emit(MatrixSyncServiceRequest::Initial);
+                self.emit(MatrixSyncOnceRequest { sync_token: None });
                 MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
             }
             Err(err) => {
