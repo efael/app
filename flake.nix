@@ -144,6 +144,10 @@
               src = widgetbookSrc;
               autoPubspecLock = ./widgetbook/pubspec.lock;
               sourceRoot = "widgetbook";
+              flutterBuildFlags = [
+                "--base-href"
+                "/app/"
+              ];
 
               targetFlutterPlatform = "web";
             }
