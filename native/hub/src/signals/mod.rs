@@ -1,7 +1,7 @@
 pub mod init_client_error;
 pub mod save_session_error;
 
-use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_events};
+use matrix_sdk::{config::SyncSettings, ruma::api::client::sync::sync_events, sync::SyncResponse, Client};
 use matrix_sdk_rinf::{
     authentication::{HomeserverLoginDetails}, room::room_info::RoomInfo, session_verification::SessionVerificationData, timeline::EventTimelineItem
 };
@@ -112,9 +112,18 @@ pub enum MatrixRoomListUpdate {
 }
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
-pub enum MatrixSyncServiceRequest {
-    Initial,
-    Latest { sync_token: String },
+pub struct MatrixSyncOnceRequest {
+    pub sync_token: Option<String>
+}
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub enum MatrixSyncBackgroundRequest {
+    Start
+}
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub struct MatrixSyncCompleted {
+    pub next_batch: String
 }
 
 
