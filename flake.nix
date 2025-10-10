@@ -129,7 +129,6 @@
         buildPhase = ''
           cp -r "$src/." .
           rinf gen
-          rm result
           mkdir -p $out
           cp -r . $out
         '';
@@ -140,7 +139,7 @@
           (
             pinnedFlutter.buildFlutterApplication {
               pname = "efael-app-widgetbook";
-              version = "0.1.0";
+              version = widgetbookSrc.version;
 
               src = widgetbookSrc;
               autoPubspecLock = ./widgetbook/pubspec.lock;
@@ -148,11 +147,14 @@
 
               targetFlutterPlatform = "web";
             }
-          ).overrideAttrs ({passthru ? {}, ...} @ aaa: {
-            packageConfig = aaa.packageConfig.overrideAttrs (_: {
-              sourceRoot = "${widgetbookSrc.name}/widgetbook";
-            });
+          ).overrideAttrs ({packageConfig, ...}: let
             sourceRoot = "${widgetbookSrc.name}/widgetbook";
+          in {
+            # these overrides needed for properly resolving pub dependencies
+            packageConfig = packageConfig.overrideAttrs (_: {
+              inherit sourceRoot;
+            });
+            inherit sourceRoot;
           });
       };
       devShells.default =
