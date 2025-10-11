@@ -5,7 +5,7 @@ use rinf::debug_print;
 use crate::{
     actors::matrix::Matrix,
     matrix::sync,
-    signals::{MatrixSessionVerificationRequest, MatrixSyncCompleted, MatrixSyncOnceRequest},
+    signals::{MatrixSessionVerificationRequest, MatrixSyncBackgroundRequest, MatrixSyncCompleted, MatrixSyncOnceRequest},
 };
 
 #[async_trait]
@@ -19,7 +19,7 @@ impl Notifiable<MatrixSyncOnceRequest> for Matrix {
             }
         };
 
-        debug_print!("[sync-once] starting");
+        debug_print!("[sync-once] starting - {:?}", msg.sync_token);
         let settings = sync::build_sync_settings(msg.sync_token);
 
         for attempt in 0..10 {
@@ -34,13 +34,12 @@ impl Notifiable<MatrixSyncOnceRequest> for Matrix {
                     break;
                 }
                 Err(error) => {
-                    debug_print!(
-                        "[sync-once] An error occurred during initial sync, attempt {attempt}: {error}"
-                    );
+                    debug_print!("[sync-once] An error occurred during initial sync, attempt {attempt}: {error}");
                 }
             }
         }
 
+        self.emit(MatrixSyncBackgroundRequest::Start);
         self.emit(MatrixSessionVerificationRequest::Start);
     }
 }

@@ -15,20 +15,22 @@ use ruma::events::{
 use crate::{
     actors::matrix::Matrix,
     extensions::easy_listener::EasyListener,
-    matrix::sync,
+    matrix::{sas_verification, sync},
     signals::{MatrixSyncBackgroundRequest, MatrixSyncCompleted},
 };
 
 #[async_trait]
 impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
     async fn notify(&mut self, msg: MatrixSyncBackgroundRequest, _: &Context<Self>) {
-        let client = match self.client.as_mut() {
+        let client = match self.client.as_ref() {
             Some(client) => client,
             None => {
                 debug_print!("[sync] client is not initialized");
                 return;
             }
         };
+
+        let notifier = self.get_address();
 
         // Default handler
         client.add_event_handler(|event: AnySyncTimelineEvent| async move {
@@ -40,61 +42,61 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
         });
 
         // Verification handler
-        client.add_event_handler(
-            |ev: ToDeviceKeyVerificationRequestEvent, client: Client| async move {
+        client.add_event_handler(|event: ToDeviceKeyVerificationRequestEvent, client: Client| async move {
+            debug_print!("[event] ToDeviceKeyVerificationRequestEvent: received request: {event:?}");
+            let request = match client
+                .encryption()
+                .get_verification_request(&event.sender, &event.content.transaction_id)
+                .await
+            {
+                Some(req) => req,
+                None => {
+                    debug_print!("[event] ToDeviceKeyVerificationRequestEvent: could not create request");
+                    return;
+                }
+            };
+
+            debug_print!("[event] ToDeviceKeyVerificationRequestEvent: accepting request");
+            request
+                .accept()
+                .await
+                .expect("[event] ToDeviceKeyVerificationRequestEvent:  can't accept verification request");
+        });
+
+        client.add_event_handler(|event: ToDeviceKeyVerificationStartEvent, client: Client| async move {
+            debug_print!("[event] ToDeviceKeyVerificationStartEvent: received request: {event:?}");
+            if let Some(Verification::SasV1(sas)) = client
+                .encryption()
+                .get_verification(&event.sender, event.content.transaction_id.as_str())
+                .await
+            {
+                debug_print!("[event] ToDeviceKeyVerificationStartEvent: received SAS");
+                sas_verification::handler(sas, event.content.transaction_id.to_string(), notifier);
+            };
+        });
+
+        client.add_event_handler(|event: OriginalSyncRoomMessageEvent, client: Client| async move {
+            debug_print!("[event] OriginalSyncRoomMessageEvent: received request: {event:?}");
+            if let MessageType::VerificationRequest(_) = &event.content.msgtype {
                 let request = match client
                     .encryption()
-                    .get_verification_request(&ev.sender, &ev.content.transaction_id)
+                    .get_verification_request(&event.sender, &event.event_id)
                     .await
                 {
                     Some(req) => req,
                     None => {
-                        debug_print!("could not create request");
+                        debug_print!("[event] OriginalSyncRoomMessageEvent: could not create request");
                         return;
                     }
                 };
 
+                debug_print!("[event] OriginalSyncRoomMessageEvent: accepting request");
                 request
                     .accept()
                     .await
-                    .expect("Can't accept verification request");
-            },
-        );
-
-        client.add_event_handler(
-            |ev: ToDeviceKeyVerificationStartEvent, client: Client| async move {
-                if let Some(Verification::SasV1(sas)) = client
-                    .encryption()
-                    .get_verification(&ev.sender, ev.content.transaction_id.as_str())
-                    .await
-                {
-                    // tokio::spawn(sas_verification_handler(sas, App::get_sender()));
-                };
-            },
-        );
-
-        client.add_event_handler(
-            |ev: OriginalSyncRoomMessageEvent, client: Client| async move {
-                if let MessageType::VerificationRequest(_) = &ev.content.msgtype {
-                    let request = match client
-                        .encryption()
-                        .get_verification_request(&ev.sender, &ev.event_id)
-                        .await
-                    {
-                        Some(req) => req,
-                        None => {
-                            debug_print!("could not create request");
-                            return;
-                        }
-                    };
-
-                    request
-                        .accept()
-                        .await
-                        .expect("Can't accept verification request");
-                }
-            },
-        );
+                    .expect("[event] OriginalSyncRoomMessageEvent: can't accept verification request");
+            }
+        });
 
         let settings = sync::build_sync_settings(None);
         let client = client.clone();
@@ -111,6 +113,7 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
                     }
                 };
 
+                // debug_print!("[sync] iteration completed - {}", &response.next_batch);
                 notifier
                     .notify(MatrixSyncCompleted {
                         next_batch: response.next_batch,

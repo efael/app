@@ -60,30 +60,5 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
             Ok(None) => debug_print!("[verification] no user identity"),
             Err(err) => debug_print!("[verification] could not get user identity: {}", err),
         };
-
-        // debug_print!("[verification] fetching controller");
-        // let controller = client
-        //     .get_session_verification_controller()
-        //     .await
-        //     .expect("should have session verification controller");
-
-        // let addr = self.get_address();
-        // let delegate = SessionVerificationDelegateImplementation::new(addr);
-
-        // controller.set_delegate(Some(Box::new(delegate)));
-
-        // debug_print!("[verification] sending request for device verification");
-        // let request = controller
-        //     .request_device_verification()
-        //     .await
-        //     .expect("failed to start device verification");
-
-        // self.verification_controller = Some(controller);
-
-        // tokio::spawn(async move {
-        //     while let Some(state) = request.changes().next().await {
-        //         debug_print!("[verification] request state: {:?}", state);
-        //     }
-        // });
     }
 }
