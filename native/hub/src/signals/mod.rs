@@ -1,14 +1,14 @@
 pub mod init_client_error;
 pub mod save_session_error;
 
-use matrix_sdk::{config::SyncSettings, ruma::api::client::sync::sync_events, sync::SyncResponse, Client};
+use matrix_sdk::{config::SyncSettings, ruma::api::client::sync::sync_events, Client};
 use matrix_sdk_rinf::{
-    authentication::{HomeserverLoginDetails}, room::room_info::RoomInfo, session_verification::SessionVerificationData, timeline::EventTimelineItem
+    room::room_info::RoomInfo, timeline::EventTimelineItem
 };
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
-use crate::matrix::oidc::OidcConfiguration;
+use crate::matrix::{oidc::OidcConfiguration, sas_verification::Emoji};
 
 
 #[derive(Deserialize, DartSignal, Debug)]
@@ -135,5 +135,6 @@ pub enum MatrixSessionVerificationRequest {
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub struct MatrixSASConfirmRequest {
-    pub data: SessionVerificationData
+    pub flow_id: String,
+    pub emojis: Vec<Emoji>,
 }

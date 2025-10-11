@@ -16,7 +16,7 @@ impl Handler<MatrixInitRequest> for Matrix {
 
     async fn handle(&mut self, msg: MatrixInitRequest, context: &Context<Self>) -> Self::Result {
         if self.client.is_some() {
-            debug_print!("MatrixInitRequest: client is already initialized");
+            debug_print!("[init] client is already initialized");
             return MatrixInitResponse::Err {
                 message: "Client is already initialized".to_string(),
             };
@@ -26,7 +26,7 @@ impl Handler<MatrixInitRequest> for Matrix {
         self.application_support_directory = Some(application_support_directory.clone());
 
         if let Err(err) = self.init_client(msg.homeserver_url).await {
-            debug_print!("MatrixInitRequest: failed to initialize client: {err:?}");
+            debug_print!("[init] failed to initialize client: {err:?}");
             return MatrixInitResponse::Err {
                 message: err.to_string(),
             };
@@ -35,7 +35,7 @@ impl Handler<MatrixInitRequest> for Matrix {
         let client = self
             .client
             .as_ref()
-            .expect("MatrixInitClient: client should exist already");
+            .expect("[init] client should exist already");
 
         let session_path = self.session_path();
         let exists_session_file = session_path.exists();
@@ -50,8 +50,9 @@ impl Handler<MatrixInitRequest> for Matrix {
             .await
             .map(|file| serde_json::from_str::<Session>(&file))
         {
-            Ok(Ok(session)) => {
-                debug_print!("[init] session found: {:?}", session.user_session.meta.user_id);
+            Ok(Ok(mut session)) => {
+                debug_print!("[init] session found: {:?}", session);
+                session.set_path(self.session_path());
                 session
             }
             Ok(Err(err)) => {
@@ -74,15 +75,19 @@ impl Handler<MatrixInitRequest> for Matrix {
             .restore_session(AuthSession::from(&session))
             .await
             .expect("[init] failed to restore session");
-        debug_print!("[init] client was successfully initialized");
+
+        debug_print!("[init] client was successfully restored");
 
         let response = MatrixInitResponse::Ok {
             is_active: client.is_active(),
             is_logged_in: true,
         };
 
+        let sync_token = session.sync_token.clone().expect("previous session should have sync_token");
+        self.session = Some(session);
+
         self.emit(MatrixSyncOnceRequest {
-            sync_token: Some(session.sync_token.expect("previous session should have sync_token")),
+            sync_token: Some(sync_token),
         });
 
         response

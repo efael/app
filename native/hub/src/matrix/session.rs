@@ -4,6 +4,7 @@ use matrix_sdk::{
     AuthSession,
     authentication::oauth::{ClientId, OAuthSession, UserSession},
 };
+use rinf::debug_print;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,12 +28,17 @@ impl Session {
     }
 
     pub fn save_to_disk(&self) -> Result<(), std::io::Error> {
+        debug_print!("[session] saving to: {:?}", self.path.clone());
         serde_json::to_string::<Session>(&self)
             .map(|session| fs::write(self.path.clone(), session))?
     }
 
     pub fn set_sync_token(&mut self, sync_token: String) {
         self.sync_token = Some(sync_token);
+    }
+
+    pub fn set_path(&mut self, path: PathBuf) {
+        self.path = path;
     }
 }
 

@@ -2,7 +2,7 @@
 //! To build a solid app, avoid communicating by sharing memory.
 //! Focus on message passing instead.
 
-mod matrix;
+pub mod matrix;
 
 use messages::prelude::{Address, Context};
 use tokio::spawn;

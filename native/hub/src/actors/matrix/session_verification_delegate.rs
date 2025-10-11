@@ -30,12 +30,12 @@ impl SessionVerificationControllerDelegate for SessionVerificationDelegateImplem
     }
 
     fn did_receive_verification_data(&self, data: SessionVerificationData) {
-        let mut addr = self.notifier_addr.clone();
-        tokio::spawn(async move {
-            let msg = MatrixSASConfirmRequest { data };
+        // let mut addr = self.notifier_addr.clone();
+        // tokio::spawn(async move {
+        //     let msg = MatrixSASConfirmRequest { data };
 
-            addr.notify(msg).await.unwrap();
-        });
+        //     addr.notify(msg).await.unwrap();
+        // });
     }
 
     fn did_fail(&self) {
