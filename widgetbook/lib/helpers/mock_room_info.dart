@@ -21,5 +21,6 @@ RoomInfo mockRoomInfo({String? displayName}) => RoomInfo(
   numUnreadMentions: Uint64(BigInt.from(0)),
   pinnedEventIds: [],
   historyVisibility: RoomHistoryVisibilityJoined(),
-  displayName: displayName,
+  displayName: displayName, 
+  encryptionState: EncryptionState.encrypted,
 );

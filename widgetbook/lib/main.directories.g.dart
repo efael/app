@@ -29,6 +29,8 @@ import 'package:widgetbook_workspace/widgets/message_preview.dart'
     as _widgetbook_workspace_widgets_message_preview;
 import 'package:widgetbook_workspace/widgets/message_viewer.dart'
     as _widgetbook_workspace_widgets_message_viewer;
+import 'package:widgetbook_workspace/widgets/my_custom_popup.dart'
+    as _widgetbook_workspace_widgets_my_custom_popup;
 import 'package:widgetbook_workspace/widgets/profile_header_widget.dart'
     as _widgetbook_workspace_widgets_profile_header_widget;
 import 'package:widgetbook_workspace/widgets/username.dart'
@@ -189,6 +191,16 @@ final directories = <_widgetbook.WidgetbookNode>[
             name: 'Default Message',
             builder: _widgetbook_workspace_widgets_message_viewer
                 .messageViewerUseCase,
+          ),
+        ],
+      ),
+      _widgetbook.WidgetbookComponent(
+        name: 'MyPopupMenuItem',
+        useCases: [
+          _widgetbook.WidgetbookUseCase(
+            name: 'Default Message',
+            builder: _widgetbook_workspace_widgets_my_custom_popup
+                .customPopupUseCase,
           ),
         ],
       ),
