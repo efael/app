@@ -27,6 +27,12 @@ import 'package:widgetbook_workspace/widgets/message_box.dart'
     as _widgetbook_workspace_widgets_message_box;
 import 'package:widgetbook_workspace/widgets/message_preview.dart'
     as _widgetbook_workspace_widgets_message_preview;
+import 'package:widgetbook_workspace/widgets/message_viewer.dart'
+    as _widgetbook_workspace_widgets_message_viewer;
+import 'package:widgetbook_workspace/widgets/my_custom_popup.dart'
+    as _widgetbook_workspace_widgets_my_custom_popup;
+import 'package:widgetbook_workspace/widgets/profile_header_widget.dart'
+    as _widgetbook_workspace_widgets_profile_header_widget;
 import 'package:widgetbook_workspace/widgets/username.dart'
     as _widgetbook_workspace_widgets_username;
 import 'package:widgetbook_workspace/widgets/userpic.dart'
@@ -168,6 +174,30 @@ final directories = <_widgetbook.WidgetbookNode>[
         useCase: _widgetbook.WidgetbookUseCase(
           name: 'Default',
           builder: _widgetbook_workspace_widgets_message_preview.build,
+        ),
+      ),
+      _widgetbook.WidgetbookLeafComponent(
+        name: 'MessageViewer',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default Message',
+          builder:
+              _widgetbook_workspace_widgets_message_viewer.messageViewerUseCase,
+        ),
+      ),
+      _widgetbook.WidgetbookLeafComponent(
+        name: 'MyPopupMenuItem',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default Message',
+          builder:
+              _widgetbook_workspace_widgets_my_custom_popup.customPopupUseCase,
+        ),
+      ),
+      _widgetbook.WidgetbookLeafComponent(
+        name: 'ProfileHeaderWidget',
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Avater=No, Online=No',
+          builder: _widgetbook_workspace_widgets_profile_header_widget
+              .profileHeaderAllCase,
         ),
       ),
       _widgetbook.WidgetbookComponent(
