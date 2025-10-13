@@ -1,12 +1,8 @@
 use async_trait::async_trait;
-use matrix_sdk_rinf::session_verification::SessionVerificationData;
 use messages::prelude::{Context, Notifiable};
 use rinf::debug_print;
 
-use crate::{
-    actors::matrix::Matrix,
-    signals::{MatrixListChatsRequest, MatrixSASConfirmRequest},
-};
+use crate::{actors::matrix::Matrix, signals::MatrixSASConfirmRequest};
 
 #[async_trait]
 impl Notifiable<MatrixSASConfirmRequest> for Matrix {
@@ -19,31 +15,32 @@ impl Notifiable<MatrixSASConfirmRequest> for Matrix {
             }
         };
 
-        match &request.data {
-            SessionVerificationData::Emojis { emojis, .. } => {
-                debug_print!("[verification] Emojis:");
-                for e in emojis {
-                    // debug_print!("- {} ({})", e.symbol(), e.description());
-                }
+        let session = match self.session.as_ref() {
+            Some(session) => session,
+            None => {
+                debug_print!("MatrixSessionVerificationRequest: client does have session");
+                return;
             }
-            SessionVerificationData::Decimals { values } => {
-                debug_print!("[verification] Decimals: {:?}", values);
-            }
-        }
+        };
 
-        // debug_print!("[verification] sleeping for 10 secs");
-        // tokio::time::sleep(Duration::from_secs(10)).await;
+        debug_print!("[sas-confirm] Emojis: {:?}", request.emojis);
 
-        self.verification_controller
-            .as_mut()
-            .expect("verification controller does not exist")
-            .approve_verification()
+        let verification_request = client
+            .encryption()
+            .get_verification(&session.user_session.meta.user_id, &request.flow_id)
             .await
-            .expect("failed to accept verification request");
+            .expect("[sas-confirm] not found verification request");
 
-        debug_print!("[verification] approved");
-        self.emit(MatrixListChatsRequest {
-            url: "".to_string(),
-        });
+        // Confirming without showing to user, temp implementation
+        // Need to first send signal to dart to show emojis, receive
+        // matched / not matched requests back
+        verification_request
+            .sas()
+            .expect("[sas-confirm] not found SAS verification")
+            .confirm()
+            .await
+            .expect("[sas-confirm] failed to confirm request");
+
+        debug_print!("[sas-confirm] confirmed");
     }
 }

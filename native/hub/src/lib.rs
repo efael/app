@@ -4,6 +4,7 @@
 mod actors;
 mod extensions;
 mod signals;
+mod matrix;
 
 use actors::create_actors;
 use rinf::{dart_shutdown, write_interface};

@@ -1,111 +1,21 @@
-use std::{
-    collections::HashMap,
-    fmt::{self, Debug},
-    sync::Arc,
-};
+use std::{collections::HashMap, fmt::Debug};
 
 use matrix_sdk::{
+    Client, Error,
     authentication::oauth::{
+        ClientId, ClientRegistrationData, OAuthAuthorizationData, OAuthError as SdkOAuthError,
         error::OAuthAuthorizationCodeError,
         registration::{ApplicationType, ClientMetadata, Localized, OAuthGrantType},
-        ClientId, ClientRegistrationData, OAuthError as SdkOAuthError,
     },
-    Error,
 };
 use rinf::SignalPiece;
-use ruma::serde::Raw;
+use ruma::{api::client::discovery::get_authorization_server_metadata::v1::Prompt, serde::Raw};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::client::{Client, OidcPrompt, SlidingSyncVersion};
-
-#[derive(Serialize, Deserialize, SignalPiece, Debug)]
-pub struct HomeserverLoginDetails {
-    pub url: String,
-    pub sliding_sync_version: SlidingSyncVersion,
-    pub supports_oidc_login: bool,
-    pub supported_oidc_prompts: Vec<OidcPrompt>,
-    pub supports_password_login: bool,
-}
-
-impl HomeserverLoginDetails {
-    /// The URL of the currently configured homeserver.
-    pub fn url(&self) -> String {
-        self.url.clone()
-    }
-
-    /// The sliding sync version.
-    pub fn sliding_sync_version(&self) -> SlidingSyncVersion {
-        self.sliding_sync_version.clone()
-    }
-
-    /// Whether the current homeserver supports login using OIDC.
-    pub fn supports_oidc_login(&self) -> bool {
-        self.supports_oidc_login
-    }
-
-    /// The prompts advertised by the authentication issuer for use in the login
-    /// URL.
-    pub fn supported_oidc_prompts(&self) -> Vec<OidcPrompt> {
-        self.supported_oidc_prompts.clone()
-    }
-
-    /// Whether the current homeserver supports the password login flow.
-    pub fn supports_password_login(&self) -> bool {
-        self.supports_password_login
-    }
-}
-
-/// An object encapsulating the SSO login flow
-pub struct SsoHandler {
-    /// The wrapped Client.
-    pub client: Arc<Client>,
-
-    /// The underlying URL for authentication.
-    pub url: String,
-}
-
-impl SsoHandler {
-    /// Returns the URL for starting SSO authentication. The URL should be
-    /// opened in a web view. Once the web view succeeds, call `finish` with
-    /// the callback URL.
-    pub fn url(&self) -> String {
-        self.url.clone()
-    }
-
-    /// Completes the SSO login process.
-    pub async fn finish(&self, callback_url: String) -> Result<(), SsoError> {
-        let auth = self.client.inner.matrix_auth();
-        let url = Url::parse(&callback_url).map_err(|_| SsoError::CallbackUrlInvalid)?;
-        let builder = auth
-            .login_with_sso_callback(url)
-            .map_err(|_| SsoError::CallbackUrlInvalid)?;
-        builder.await.map_err(|_| SsoError::LoginWithTokenFailed)?;
-        Ok(())
-    }
-}
-
-impl Debug for SsoHandler {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        fmt.debug_struct("SsoHandler")
-            .field("url", &self.url)
-            .finish_non_exhaustive()
-    }
-}
-
-#[derive(Debug, thiserror::Error, Serialize, Deserialize)]
-pub enum SsoError {
-    #[error("The supplied callback URL used to complete SSO is invalid.")]
-    CallbackUrlInvalid,
-    #[error("Logging in with the token from the supplied callback URL failed.")]
-    LoginWithTokenFailed,
-
-    #[error("An error occurred: {message}")]
-    Generic { message: String },
-}
 
 /// The configuration to use when authenticating with OIDC.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, SignalPiece, Debug)]
 pub struct OidcConfiguration {
     /// The name of the client that will be shown during OIDC authentication.
     pub client_name: Option<String>,
@@ -130,6 +40,18 @@ pub struct OidcConfiguration {
 }
 
 impl OidcConfiguration {
+    pub async fn url(&self, client: &mut Client) -> Result<OAuthAuthorizationData, OidcError> {
+        let registration_data = self.registration_data()?;
+        let redirect_uri = self.redirect_uri()?;
+
+        let mut url_builder = client
+            .oauth()
+            .login(redirect_uri, None, Some(registration_data));
+
+        url_builder = url_builder.prompt(vec![Prompt::from("consent")]);
+        Ok(url_builder.build().await?)
+    }
+
     pub fn redirect_uri(&self) -> Result<Url, OidcError> {
         Url::parse(&self.redirect_uri).map_err(|_| OidcError::CallbackUrlInvalid)
     }
@@ -177,7 +99,6 @@ impl OidcConfiguration {
                 .iter()
                 .filter_map(|(issuer, client_id)| {
                     let Ok(issuer) = Url::parse(issuer) else {
-                        tracing::error!("Failed to parse {issuer:?}");
                         return None;
                     };
                     Some((issuer, ClientId::new(client_id.clone())))
@@ -236,6 +157,8 @@ impl From<Error> for OidcError {
         }
     }
 }
+
+/* Helpers */
 
 trait OptionExt {
     /// Convenience method to convert an `Option<String>` to a URL and returns

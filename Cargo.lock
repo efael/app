@@ -1455,10 +1455,12 @@ dependencies = [
  "matrix-sdk-rinf",
  "messages",
  "rinf",
+ "ruma",
  "serde",
  "serde_json",
  "thiserror 2.0.16",
  "tokio",
+ "url",
 ]
 
 [[package]]

@@ -1,14 +1,13 @@
 use async_trait::async_trait;
 use matrix_sdk::reqwest::Url;
-use matrix_sdk_rinf::client::Session;
 use messages::prelude::{Context, Notifiable};
 use rinf::{RustSignal, debug_print};
-use std::{fs, path::PathBuf};
 
 use crate::{
     actors::matrix::Matrix,
+    matrix::session::Session,
     signals::{
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSessionVerificationRequest, MatrixSyncServiceRequest
+        MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncOnceRequest,
     },
 };
 
@@ -39,29 +38,26 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
             }
         };
 
-        // debug_print!("# before login = session: {:?}", client.session().map(|a| a.user_id));
-        // debug_print!("# before login = device id: {:?}", client.device_id());
+        debug_print!("# before login = session: {:?}", client.session());
 
-        match client.login_with_oidc_callback(url.into()).await {
+        match client.oauth().finish_login(url.into()).await {
             Ok(_) => {
-                // debug_print!("MatrixOidcAuthFinishRequest: logged in");
+                debug_print!("MatrixOidcAuthFinishRequest: logged in");
 
-                // debug_print!("# after session: {:?}", client.session().map(|a| a.user_id));
-                // debug_print!("# after device id: {:?}", client.device_id());
-
-                // save session into json
-                let session = client
-                    .session()
+                let oauth_session = client
+                    .oauth()
+                    .full_session()
                     .expect("after login, should have session");
 
-                save_session(
-                    &session,
-                    self.application_support_directory.clone().unwrap().clone(),
-                );
+                let session = Session::from_oauth(oauth_session, self.session_path());
+                session
+                    .save_to_disk()
+                    .expect("failed to save session to disk");
 
+                self.session = Some(session);
+
+                self.emit(MatrixSyncOnceRequest { sync_token: None });
                 MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
-
-                self.emit(MatrixSyncServiceRequest::Loop);
             }
             Err(err) => {
                 debug_print!("MatrixOidcAuthFinishRequest: failed to finish login: {err:?}");
@@ -72,14 +68,4 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
             }
         };
     }
-}
-
-fn save_session(session: &Session, mut dir: PathBuf) {
-    dir.push(format!("./session.json"));
-    debug_print!("# save session file: {:?}", dir);
-
-    serde_json::to_string::<Session>(&session)
-        .map(|session| fs::write(dir, session))
-        .unwrap()
-        .unwrap();
 }

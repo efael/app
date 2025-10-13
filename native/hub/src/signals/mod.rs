@@ -1,12 +1,15 @@
 pub mod init_client_error;
 pub mod save_session_error;
 
-use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_events};
+use matrix_sdk::{config::SyncSettings, ruma::api::client::sync::sync_events, Client};
 use matrix_sdk_rinf::{
-    authentication::{HomeserverLoginDetails, OidcConfiguration}, room::room_info::RoomInfo, session_verification::SessionVerificationData, timeline::EventTimelineItem
+    room::room_info::RoomInfo, timeline::EventTimelineItem
 };
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
+
+use crate::matrix::{oidc::OidcConfiguration, sas_verification::Emoji};
+
 
 #[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixInitRequest {
@@ -17,7 +20,6 @@ pub struct MatrixInitRequest {
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixInitResponse {
     Ok {
-        homeserver_login_details: HomeserverLoginDetails,
         is_active: bool,
         is_logged_in: bool,
     },
@@ -110,9 +112,18 @@ pub enum MatrixRoomListUpdate {
 }
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
-pub enum MatrixSyncServiceRequest {
-    Loop,
-    Stop,
+pub struct MatrixSyncOnceRequest {
+    pub sync_token: Option<String>
+}
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub enum MatrixSyncBackgroundRequest {
+    Start
+}
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub struct MatrixSyncCompleted {
+    pub next_batch: String
 }
 
 
@@ -124,5 +135,6 @@ pub enum MatrixSessionVerificationRequest {
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub struct MatrixSASConfirmRequest {
-    pub data: SessionVerificationData
+    pub flow_id: String,
+    pub emojis: Vec<Emoji>,
 }

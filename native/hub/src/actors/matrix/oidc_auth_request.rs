@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use matrix_sdk::authentication::oauth::OAuthAuthorizationData;
-use matrix_sdk_rinf::client::OidcPrompt;
 use messages::prelude::{Context, Notifiable};
 use rinf::{RustSignal, debug_print};
 
@@ -12,7 +11,7 @@ use crate::{
 #[async_trait]
 impl Notifiable<MatrixOidcAuthRequest> for Matrix {
     async fn notify(&mut self, msg: MatrixOidcAuthRequest, _: &Context<Self>) {
-        let client = match self.client.as_mut() {
+        let mut client = match self.client.as_mut() {
             Some(client) => client,
             None => {
                 debug_print!("MatrixOidcAuthRequest: client is not initialized");
@@ -24,12 +23,8 @@ impl Notifiable<MatrixOidcAuthRequest> for Matrix {
             }
         };
 
-        match client
-            .url_for_oidc(&msg.oidc_configuration, Some(OidcPrompt::Consent), None)
-            .await
-        {
+        match msg.oidc_configuration.url(&mut client).await {
             Ok(OAuthAuthorizationData { url, state: _ }) => {
-                debug_print!("MatrixOidcAuthRequest: url built: {url:?}");
                 MatrixOidcAuthResponse::Ok {
                     url: url.to_string(),
                 }

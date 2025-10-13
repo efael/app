@@ -30,67 +30,68 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             }
         };
 
-        let sync_service = match self.sync_service.as_ref() {
-            Some(sync_service) => sync_service.clone(),
-            None => {
-                debug_print!("[room] MatrixOidcAuthFinishRequest: sync service is not initialized");
-                MatrixListChatsResponse::Err {
-                    message: "sync service is not initialized".to_string(),
-                }
-                .send_signal_to_dart();
-                return;
-            }
-        };
+        // let sync_service = match self.sync_service.as_ref() {
+        //     Some(sync_service) => sync_service.clone(),
+        //     None => {
+        //         debug_print!("[room] MatrixOidcAuthFinishRequest: sync service is not initialized");
+        //         MatrixListChatsResponse::Err {
+        //             message: "sync service is not initialized".to_string(),
+        //         }
+        //         .send_signal_to_dart();
+        //         return;
+        //     }
+        // };
 
-        let room_service = match self.room_service.as_ref() {
-            None => {
-                let service = sync_service.room_list_service();
+        // let room_service = match self.room_service.as_ref() {
+        //     None => {
+        //         let service = sync_service.room_list_service();
 
-                self.room_service = Some(service.clone());
-                service
-            }
-            Some(service) => service.clone(),
-        };
+        //         self.room_service = Some(service.clone());
+        //         service
+        //     }
+        //     Some(service) => service.clone(),
+        // };
 
-        debug_print!("[room] subscribing to upcoming changes");
-        let res = room_service
-            .clone()
-            .all_rooms()
-            .await
-            .unwrap()
-            .clone()
-            .entries_with_dynamic_adapters(50, Box::new(RoomListNotifier));
+        // debug_print!("[room] subscribing to upcoming changes");
+        // let res = room_service
+        //     .clone()
+        //     .all_rooms()
+        //     .await
+        //     .unwrap()
+        //     .clone()
+        //     .entries_with_dynamic_adapters(50, Box::new(RoomListNotifier));
 
-        res
-            .controller()
-            .set_filter(RoomListEntriesDynamicFilterKind::All {
-                filters: vec![RoomListEntriesDynamicFilterKind::NonLeft],
-            });
+        // res
+        //     .controller()
+        //     .set_filter(RoomListEntriesDynamicFilterKind::All {
+        //         filters: vec![RoomListEntriesDynamicFilterKind::NonLeft],
+        //     });
 
-        // don't know why, but without this, whole app crashes (UB)
-        // tokio::spawn(async move {
-        //     res.entries_stream().is_finished();
+        // // don't know why, but without this, whole app crashes (UB)
+        // // tokio::spawn(async move {
+        // //     res.entries_stream().is_finished();
+        // // });
+
+        // // Static room list
+        // debug_print!("[room] cache count = {}", client.rooms().len());
+        // let mut set = JoinSet::new();
+
+        // client.rooms().into_iter().for_each(|r| {
+        //     set.spawn(async move {
+        //         let info = r.room_info().await;
+        //         let latest_event = r.latest_event_from_timeline().await;
+        //         info.map(|info| (info, latest_event))
+        //     });
         // });
 
-        // Static room list
-        debug_print!("[room] cache count = {}", client.rooms().len());
-        let mut set = JoinSet::new();
+        // let rooms = set
+        //     .join_all()
+        //     .await
+        //     .into_iter()
+        //     .filter_map(|r| r.ok())
+        //     .collect();
 
-        client.rooms().into_iter().for_each(|r| {
-            set.spawn(async move {
-                let info = r.room_info().await;
-                let latest_event = r.latest_event_from_timeline().await;
-                info.map(|info| (info, latest_event))
-            });
-        });
-
-        let rooms = set
-            .join_all()
-            .await
-            .into_iter()
-            .filter_map(|r| r.ok())
-            .collect();
-
+        let rooms = Vec::new();
         MatrixListChatsResponse::Ok { rooms }.send_signal_to_dart();
     }
 }
@@ -104,20 +105,22 @@ impl RoomListEntriesListener for RoomListNotifier {
             match update {
                 RoomListEntriesUpdate::Reset { values }
                 | RoomListEntriesUpdate::Append { values } => {
-                    debug_print!(
-                        "[update] got reset, rooms: {}",
-                        values.len()
-                    );
+                    debug_print!("[update] got reset, rooms: {}", values.len());
 
                     tokio::spawn(async move {
                         let mut set = JoinSet::new();
 
                         values.into_iter().for_each(|r| {
                             set.spawn(async move {
-
-                                debug_print!("[update] room: {}", r.display_name().expect("does have a name"));
+                                debug_print!(
+                                    "[update] room: {}",
+                                    r.display_name().expect("does have a name")
+                                );
                                 debug_print!("- encryption_state: {:?}", r.encryption_state());
-                                debug_print!("- latest_encryption_state: {:?}", r.latest_encryption_state().await);
+                                debug_print!(
+                                    "- latest_encryption_state: {:?}",
+                                    r.latest_encryption_state().await
+                                );
                                 debug_print!("----------------------------");
 
                                 let info = r.room_info().await;
@@ -136,13 +139,11 @@ impl RoomListEntriesListener for RoomListNotifier {
                             .filter_map(|r| r.ok())
                             .collect();
 
-                        rooms.sort_by(|a, b| {
-                            match (&a.1, &b.1) {
-                                (Some(a), Some(b)) => b.timestamp.0.cmp(&a.timestamp.0),
-                                (Some(_), None) => std::cmp::Ordering::Less,
-                                (None, Some(_)) => std::cmp::Ordering::Greater,
-                                (None, None) => a.0.display_name.cmp(&b.0.display_name),
-                            }
+                        rooms.sort_by(|a, b| match (&a.1, &b.1) {
+                            (Some(a), Some(b)) => b.timestamp.0.cmp(&a.timestamp.0),
+                            (Some(_), None) => std::cmp::Ordering::Less,
+                            (None, Some(_)) => std::cmp::Ordering::Greater,
+                            (None, None) => a.0.display_name.cmp(&b.0.display_name),
                         });
 
                         MatrixRoomListUpdate::List { rooms }.send_signal_to_dart();
