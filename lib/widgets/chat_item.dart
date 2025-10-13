@@ -52,21 +52,21 @@ class ChatItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Row(
-                      //   children: [
-                      //     Username(
-                      //       name: roomInfo.displayName ?? "-",
-                      //       secure:
-                      //           roomInfo.encryptionState ==
-                      //           EncryptionState.encrypted,
-                      //     ),
-                      //     if (latestEvent != null)
-                      //       Text(
-                      //         formatTimestamp(latestEvent!.timestamp),
-                      //         style: consts.typography.text3,
-                      //       ),
-                      //   ],
-                      // ),
+                      Row(
+                        children: [
+                          // Username(
+                          //   name: roomInfo.displayName ?? "-",
+                          //   secure:
+                          //       roomInfo.encryptionState ==
+                          //       EncryptionState.encrypted,
+                          // ),
+                          // if (latestEvent != null)
+                          //   Text(
+                          //     formatTimestamp(latestEvent!.timestamp),
+                          //     style: consts.typography.text3,
+                          //   ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
