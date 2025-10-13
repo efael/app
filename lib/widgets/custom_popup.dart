@@ -53,16 +53,16 @@ class _CustomPopupMenuState extends State<CustomPopupMenu> with SingleTickerProv
     const double popupWidth = 200;
     const double popupHeight = 48 * 3;
 
-    // ➕ O'ngga surish miqdori
+    // Right swipe amount
     const double horizontalShift = 12.0;
     dx += horizontalShift;
 
-    // Chegaradan chiqmasin
+    // Don't cross the border.
     if (dx + popupWidth > screenSize.width) {
       dx = screenSize.width - popupWidth - 8;
     }
     if (dx < 8) {
-      dx = 8; // chap tomondan ham chiqmasin
+      dx = 8; // Don't even go out from the left side.
     }
 
     if (dy + popupHeight > screenSize.height) {
@@ -75,7 +75,7 @@ class _CustomPopupMenuState extends State<CustomPopupMenu> with SingleTickerProv
       builder: (context) {
         return Stack(
           children: [
-            // Orqa fon — bosilsa yopiladi
+            //Background — closes when clicked
             Positioned.fill(
               child: GestureDetector(
                 onTap: _removeOverlay,

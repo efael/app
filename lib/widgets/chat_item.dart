@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:messenger/constants.dart';
-import 'package:messenger/utils.dart';
-import 'package:messenger/widgets/badge.dart';
 import 'package:messenger/widgets/message_preview.dart';
-import 'package:messenger/widgets/username.dart';
 import 'package:messenger/widgets/userpic.dart';
 
 class ChatItem extends StatelessWidget {

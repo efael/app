@@ -7,6 +7,8 @@ enum MessageStatus { sent, delivering, seen }
 
 enum MessageDirection { incoming, outgoing }
 
+enum MessageActions { edit, delete, share, copy }
+
 class MessageViewer extends StatelessWidget {
   final GlobalKey targetKey = GlobalKey();
   final String content;
@@ -14,6 +16,8 @@ class MessageViewer extends StatelessWidget {
   final MessageStatus status;
   final MessageDirection direction;
   final VoidCallback? onTap;
+  final Function(MessageActions action)? onAction;
+  List<({MessageActions action, IconData icon, String label})> actions;
 
   MessageViewer({
     super.key,
@@ -22,37 +26,31 @@ class MessageViewer extends StatelessWidget {
     this.status = MessageStatus.sent,
     this.direction = MessageDirection.outgoing,
     this.onTap,
+    this.onAction,
+    this.actions = const [
+      (icon: Icons.edit, label: 'Edit', action: MessageActions.edit),
+      (icon: Icons.delete, label: 'Delete', action: MessageActions.delete),
+      (icon: Icons.share, label: 'Share', action: MessageActions.share),
+      (icon: Icons.copy, label: 'Copy', action: MessageActions.copy),
+    ],
   });
 
   @override
   Widget build(BuildContext context) {
     return CustomPopupMenu(
-      items: [
-        MyPopupMenuItem(
-          leading: Icon(Icons.edit, color: consts.colors.content.mediumContrast),
+      items: actions.map((a) {
+        return MyPopupMenuItem(
+          leading: Icon(a.icon, color: consts.colors.content.mediumContrast),
           title: Text(
-            'Edit',
+            a.label,
             style: consts.typography.text2.copyWith(color: consts.colors.content.highContrast),
           ),
-          onTap: () => debugPrint('Edit bosildi'),
-        ),
-        MyPopupMenuItem(
-          leading: Icon(Icons.delete, color: consts.colors.content.mediumContrast),
-          title: Text(
-            'Delete',
-            style: consts.typography.text2.copyWith(color: consts.colors.content.highContrast),
-          ),
-          onTap: () => debugPrint('Delete bosildi'),
-        ),
-        MyPopupMenuItem(
-          leading: Icon(Icons.share, color: consts.colors.content.mediumContrast),
-          title: Text(
-            'Share',
-            style: consts.typography.text2.copyWith(color: consts.colors.content.highContrast),
-          ),
-          onTap: () => debugPrint('Share bosildi'),
-        ),
-      ],
+          onTap: () {
+            debugPrint('${a.label} bosildi');
+            onAction?.call(a.action);
+          },
+        );
+      }).toList(),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),

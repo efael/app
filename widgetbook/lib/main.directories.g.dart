@@ -148,71 +148,57 @@ final directories = <_widgetbook.WidgetbookNode>[
           ),
         ],
       ),
-      _widgetbook.WidgetbookComponent(
+      _widgetbook.WidgetbookLeafComponent(
         name: 'HeaderStatusTyping',
-        useCases: [
-          _widgetbook.WidgetbookUseCase(
-            name: 'Default',
-            builder: _widgetbook_workspace_widgets_header_status.build,
-          ),
-        ],
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder: _widgetbook_workspace_widgets_header_status.build,
+        ),
       ),
-      _widgetbook.WidgetbookComponent(
+      _widgetbook.WidgetbookLeafComponent(
         name: 'Message',
-        useCases: [
-          _widgetbook.WidgetbookUseCase(
-            name: 'Message Text',
-            builder: _widgetbook_workspace_widgets_message.build,
-          ),
-        ],
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Message Text',
+          builder: _widgetbook_workspace_widgets_message.build,
+        ),
       ),
-      _widgetbook.WidgetbookComponent(
+      _widgetbook.WidgetbookLeafComponent(
         name: 'MessageBox',
-        useCases: [
-          _widgetbook.WidgetbookUseCase(
-            name: 'Default',
-            builder: _widgetbook_workspace_widgets_message_box.build,
-          ),
-        ],
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder: _widgetbook_workspace_widgets_message_box.build,
+        ),
       ),
-      _widgetbook.WidgetbookComponent(
+      _widgetbook.WidgetbookLeafComponent(
         name: 'MessagePreview',
-        useCases: [
-          _widgetbook.WidgetbookUseCase(
-            name: 'Default',
-            builder: _widgetbook_workspace_widgets_message_preview.build,
-          ),
-        ],
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default',
+          builder: _widgetbook_workspace_widgets_message_preview.build,
+        ),
       ),
-      _widgetbook.WidgetbookComponent(
+      _widgetbook.WidgetbookLeafComponent(
         name: 'MessageViewer',
-        useCases: [
-          _widgetbook.WidgetbookUseCase(
-            name: 'Default Message',
-            builder: _widgetbook_workspace_widgets_message_viewer
-                .messageViewerUseCase,
-          ),
-        ],
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default Message',
+          builder:
+              _widgetbook_workspace_widgets_message_viewer.messageViewerUseCase,
+        ),
       ),
-      _widgetbook.WidgetbookComponent(
+      _widgetbook.WidgetbookLeafComponent(
         name: 'MyPopupMenuItem',
-        useCases: [
-          _widgetbook.WidgetbookUseCase(
-            name: 'Default Message',
-            builder: _widgetbook_workspace_widgets_my_custom_popup
-                .customPopupUseCase,
-          ),
-        ],
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Default Message',
+          builder:
+              _widgetbook_workspace_widgets_my_custom_popup.customPopupUseCase,
+        ),
       ),
-      _widgetbook.WidgetbookComponent(
+      _widgetbook.WidgetbookLeafComponent(
         name: 'ProfileHeaderWidget',
-        useCases: [
-          _widgetbook.WidgetbookUseCase(
-            name: 'Avater=No, Online=No',
-            builder: _widgetbook_workspace_widgets_profile_header_widget
-                .profileHeaderAllCase,
-          ),
-        ],
+        useCase: _widgetbook.WidgetbookUseCase(
+          name: 'Avater=No, Online=No',
+          builder: _widgetbook_workspace_widgets_profile_header_widget
+              .profileHeaderAllCase,
+        ),
       ),
       _widgetbook.WidgetbookComponent(
         name: 'Username',
