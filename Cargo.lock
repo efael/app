@@ -1451,6 +1451,7 @@ name = "hub"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "futures",
  "matrix-sdk",
  "matrix-sdk-rinf",
  "messages",

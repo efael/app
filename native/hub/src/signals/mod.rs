@@ -8,7 +8,7 @@ use matrix_sdk_rinf::{
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
-use crate::matrix::{oidc::OidcConfiguration, sas_verification::Emoji};
+use crate::matrix::{oidc::OidcConfiguration, room::Room, sas_verification::Emoji};
 
 
 #[derive(Deserialize, DartSignal, Debug)]

@@ -12,7 +12,7 @@ pub mod sync_once_request;
 pub mod sync_background_request;
 pub mod sync_completed_request;
 
-use std::{io::ErrorKind, path::PathBuf};
+use std::{io::ErrorKind, path::PathBuf, sync::Arc};
 
 use matrix_sdk::Client as SdkClient;
 use messages::{
@@ -24,7 +24,7 @@ use tokio::task::JoinSet;
 
 use crate::{
     extensions::easy_listener::EasyListener,
-    matrix::session::Session,
+    matrix::{room_list::RoomList, session::Session},
     signals::{
         init_client_error::InitClientError, MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest, MatrixSyncBackgroundRequest, MatrixSyncCompleted, MatrixSyncOnceRequest
     },
@@ -36,6 +36,7 @@ pub struct Matrix {
     owned_tasks: JoinSet<()>,
     application_support_directory: Option<PathBuf>,
     session: Option<Session>,
+    room_list: Arc<RoomList>,
 }
 
 impl Actor for Matrix {}
@@ -64,6 +65,7 @@ impl Matrix {
             self_addr,
             application_support_directory: None,
             session: None,
+            room_list: Arc::new(RoomList::default()),
         };
 
         actor.listen_to_handler::<MatrixInitRequest>();

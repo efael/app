@@ -24,6 +24,7 @@ messages = "0.3.1"
 thiserror = { workspace = true }
 serde_json = { workspace = true }
 url.workspace = true
+futures = "0.3.31"
 ruma = { workspace = true, features = [
   "html",
   "unstable-unspecified",
