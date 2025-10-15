@@ -18,72 +18,67 @@ impl Default for RoomList {
 }
 
 impl RoomList {
-    pub async fn populate(&self, client: Client) {
+    pub async fn populate(&self, client: &Client) {
         debug_print!("[room-list] populating room cache");
 
         let rooms = client
             .joined_rooms()
             .into_iter()
-            .map(|r| async move { Room::from_room(r.clone()).await });
+            .map(|sdk_room| async move { Room::from_sdk_room(sdk_room.clone()).await });
 
         let rooms = futures::future::join_all(rooms).await;
+        *self.rooms.lock() = rooms;
 
-        let mut old_rooms = self.rooms.lock();
-
-        *old_rooms = rooms;
-
-        debug_print!("[room-list] room cache populated")
+        debug_print!("[room-list] room cache populated successfully");
     }
 
     pub fn get_rooms(&self) -> Vec<Room> {
         self.rooms.lock().clone()
     }
 
-    pub fn wrap(&self, room: &Room) -> Option<Room> {
+    pub fn wrap(&self, other_room: &Room) -> Option<Room> {
         let rooms = self.rooms.lock();
 
-        for r in rooms.iter() {
-            if r.inner.room_id() == room.room_id() {
-                return Some(r.clone());
+        for room in rooms.iter() {
+            if room.room_id() == other_room.room_id() {
+                return Some(room.clone());
             }
         }
 
         None
     }
 
-    pub fn room_visit_event(&self, room: Room) {
+    pub fn room_visit_event(&self, other_room: Room) {
         let mut rooms = self.rooms.lock();
 
-        for dec in rooms.iter_mut() {
-            if dec.inner.room_id() == room.room_id() {
-                dec.visited = true;
+        for room in rooms.iter_mut() {
+            if room.room_id() == other_room.room_id() {
+                room.is_visited = true;
                 return;
             }
         }
     }
 
     pub async fn timeline_event(&self, client: Client, event: &AnyTimelineEvent) {
-        let room = match client.get_room(event.room_id()) {
+        let sdk_room = match client.get_room(event.room_id()) {
             Some(room) => room,
             None => return,
         };
 
-        if room.state() != SdkRoomState::Joined {
+        if sdk_room.state() != SdkRoomState::Joined {
             return;
         }
 
-        let decorated = Room::from_room(room).await;
-
+        let created_room = Room::from_sdk_room(sdk_room).await;
         let mut rooms = self.rooms.lock();
-
-        for dec in rooms.iter_mut() {
-            if dec.inner.room_id() == event.room_id() {
-                *dec = decorated;
+        for room in rooms.iter_mut() {
+            if room.room_id() == event.room_id() {
+                *room = created_room;
                 return;
             }
         }
 
-        debug_print!("[room-list] A wild room has appeared! {}", decorated.name);
-        rooms.insert(0, decorated);
+        debug_print!("[room-list] A room has appeared! {}", created_room.name);
+        rooms.insert(0, created_room);
     }
 }

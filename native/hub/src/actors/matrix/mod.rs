@@ -6,11 +6,10 @@ pub mod oidc_auth_request;
 pub mod oidc_finish_request;
 pub mod refresh_token_request;
 pub mod sas_confirm_request;
-pub mod session_verification_delegate;
 pub mod session_verification_request;
-pub mod sync_once_request;
 pub mod sync_background_request;
 pub mod sync_completed_request;
+pub mod sync_once_request;
 
 use std::{io::ErrorKind, path::PathBuf, sync::Arc};
 
@@ -26,7 +25,10 @@ use crate::{
     extensions::easy_listener::EasyListener,
     matrix::{room_list::RoomList, session::Session},
     signals::{
-        init_client_error::InitClientError, MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest, MatrixSyncBackgroundRequest, MatrixSyncCompleted, MatrixSyncOnceRequest
+        MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
+        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshTokenRequest,
+        MatrixSASConfirmRequest, MatrixSessionVerificationRequest, MatrixSyncBackgroundRequest,
+        MatrixSyncCompleted, MatrixSyncOnceRequest, init_client_error::InitClientError,
     },
 };
 

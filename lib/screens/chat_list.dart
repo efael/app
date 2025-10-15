@@ -17,26 +17,7 @@ class ChatListScreen extends StatefulWidget {
 
 class _ChatListScreenState extends State<ChatListScreen> {
   late Timer periodicTimer;
-  List<Tuple2<RoomInfo, EventTimelineItem?>> rooms = [];
-
-  int compareEvents(
-    Tuple2<RoomInfo, EventTimelineItem?> a,
-    Tuple2<RoomInfo, EventTimelineItem?> b,
-  ) {
-    if (a.item2 == null || b.item2 == null) {
-      return a.item2 == null
-          ? 1
-          : b.item2 == null
-          ? -1
-          : (a.item1.displayName ?? "ZZZZZ").compareTo(
-              b.item1.displayName ?? "ZZZZZ",
-            );
-    }
-
-    return a.item2!.timestamp.value.toInt().compareTo(
-      b.item2!.timestamp.value.toInt(),
-    );
-  }
+  List<Room> rooms = [];
 
   @override
   void initState() {
@@ -55,26 +36,26 @@ class _ChatListScreenState extends State<ChatListScreen> {
     });
 
     // Dynamic updates
-    MatrixRoomListUpdate.rustSignalStream.listen((rustSignal) {
-      final update = rustSignal.message;
-      setState(() {
-        // Replace everything signal
-        if (update is MatrixRoomListUpdateList) {
-          rooms = update.rooms;
-          // rooms.sort(compareEvents);
-        }
-        // Remove signal
-        else if (update is MatrixRoomListUpdateRemove) {
-          final indices = List<int>.from(update.indices)
-            ..sort((a, b) => b.compareTo(a));
-          for (final i in indices) {
-            if (i >= 0 && i < rooms.length) {
-              rooms.removeAt(i);
-            }
-          }
-        }
-      });
-    });
+    // MatrixRoomListUpdate.rustSignalStream.listen((rustSignal) {
+    //   final update = rustSignal.message;
+    //   setState(() {
+    //     // Replace everything signal
+    //     if (update is MatrixRoomListUpdateList) {
+    //       rooms = update.rooms;
+    //       // rooms.sort(compareEvents);
+    //     }
+    //     // Remove signal
+    //     else if (update is MatrixRoomListUpdateRemove) {
+    //       final indices = List<int>.from(update.indices)
+    //         ..sort((a, b) => b.compareTo(a));
+    //       for (final i in indices) {
+    //         if (i >= 0 && i < rooms.length) {
+    //           rooms.removeAt(i);
+    //         }
+    //       }
+    //     }
+    //   });
+    // });
 
     // after sync-service successfully started, it emits MatrixListChatsRequest, not from dart
     // MatrixListChatsRequest(url: "").sendSignalToRust();
@@ -106,14 +87,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
           itemBuilder: (context, index) {
             final room = rooms[index];
             return ChatItem(
-              displayName: room.item1.displayName ?? "-",
-              lastMessageDateTime: room.item2 != null
+              displayName: room.name,
+              lastMessageDateTime: room.lastTs != null
                   ? DateTime.fromMillisecondsSinceEpoch(
-                      room.item2!.timestamp.value.toInt(),
+                      room.lastTs!.toBigInt().toInt(),
                     )
                   : null,
               onTap: () {
-                context.push("/chats/${room.item1.id}");
+                context.push("/chats/${room.id}");
               },
             );
           },
