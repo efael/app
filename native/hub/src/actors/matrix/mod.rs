@@ -1,4 +1,3 @@
-pub mod client_session_delegate;
 pub mod init_request;
 pub mod list_chats_request;
 pub mod logout_request;

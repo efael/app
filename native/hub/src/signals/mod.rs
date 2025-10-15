@@ -2,9 +2,6 @@ pub mod init_client_error;
 pub mod save_session_error;
 
 use matrix_sdk::{config::SyncSettings, ruma::api::client::sync::sync_events, Client};
-// use matrix_sdk_rinf::{
-//     room::room_info::RoomInfo, timeline::EventTimelineItem
-// };
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
