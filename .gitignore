@@ -114,3 +114,5 @@ lib/generated_plugin_registrant.dart
 
 test_polygon
 /result
+
+.idea
