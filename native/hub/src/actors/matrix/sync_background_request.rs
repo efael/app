@@ -1,15 +1,21 @@
+use std::ops::Deref;
+
 use async_trait::async_trait;
 use matrix_sdk::{
-    Client, Error, LoopCtrl, encryption::verification::Verification, sync::SyncResponse,
+    Client, Error, HttpError, LoopCtrl, RumaApiError, encryption::verification::Verification,
+    sync::SyncResponse,
 };
 use messages::prelude::{Context, Notifiable};
 use rinf::debug_print;
-use ruma::events::{
-    AnySyncEphemeralRoomEvent, AnySyncTimelineEvent,
-    key::verification::{
-        request::ToDeviceKeyVerificationRequestEvent, start::ToDeviceKeyVerificationStartEvent,
+use ruma::{
+    api::error::FromHttpResponseError,
+    events::{
+        AnySyncEphemeralRoomEvent, AnySyncTimelineEvent,
+        key::verification::{
+            request::ToDeviceKeyVerificationRequestEvent, start::ToDeviceKeyVerificationStartEvent,
+        },
+        room::message::{MessageType, OriginalSyncRoomMessageEvent},
     },
-    room::message::{MessageType, OriginalSyncRoomMessageEvent},
 };
 
 use crate::{
@@ -21,7 +27,7 @@ use crate::{
 
 #[async_trait]
 impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
-    async fn notify(&mut self, msg: MatrixSyncBackgroundRequest, _: &Context<Self>) {
+    async fn notify(&mut self, _msg: MatrixSyncBackgroundRequest, _: &Context<Self>) {
         let client = match self.client.as_ref() {
             Some(client) => client,
             None => {
@@ -63,40 +69,51 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
                 .expect("[event] ToDeviceKeyVerificationRequestEvent:  can't accept verification request");
         });
 
-        client.add_event_handler(|event: ToDeviceKeyVerificationStartEvent, client: Client| async move {
-            debug_print!("[event] ToDeviceKeyVerificationStartEvent: received request: {event:?}");
-            if let Some(Verification::SasV1(sas)) = client
-                .encryption()
-                .get_verification(&event.sender, event.content.transaction_id.as_str())
-                .await
-            {
-                debug_print!("[event] ToDeviceKeyVerificationStartEvent: received SAS");
-                sas_verification::handler(sas, event.content.transaction_id.to_string(), notifier);
-            };
-        });
-
-        client.add_event_handler(|event: OriginalSyncRoomMessageEvent, client: Client| async move {
-            debug_print!("[event] OriginalSyncRoomMessageEvent: received request: {event:?}");
-            if let MessageType::VerificationRequest(_) = &event.content.msgtype {
-                let request = match client
+        client.add_event_handler(
+            |event: ToDeviceKeyVerificationStartEvent, client: Client| async move {
+                debug_print!(
+                    "[event] ToDeviceKeyVerificationStartEvent: received request: {event:?}"
+                );
+                if let Some(Verification::SasV1(sas)) = client
                     .encryption()
-                    .get_verification_request(&event.sender, &event.event_id)
+                    .get_verification(&event.sender, event.content.transaction_id.as_str())
                     .await
                 {
-                    Some(req) => req,
-                    None => {
-                        debug_print!("[event] OriginalSyncRoomMessageEvent: could not create request");
-                        return;
-                    }
+                    debug_print!("[event] ToDeviceKeyVerificationStartEvent: received SAS");
+                    sas_verification::handler(
+                        sas,
+                        event.content.transaction_id.to_string(),
+                        notifier,
+                    );
                 };
+            },
+        );
 
-                debug_print!("[event] OriginalSyncRoomMessageEvent: accepting request");
-                request
-                    .accept()
-                    .await
-                    .expect("[event] OriginalSyncRoomMessageEvent: can't accept verification request");
-            }
-        });
+        client.add_event_handler(
+            |event: OriginalSyncRoomMessageEvent, client: Client| async move {
+                debug_print!("[event] OriginalSyncRoomMessageEvent: received request: {event:?}");
+                if let MessageType::VerificationRequest(_) = &event.content.msgtype {
+                    let request = match client
+                        .encryption()
+                        .get_verification_request(&event.sender, &event.event_id)
+                        .await
+                    {
+                        Some(req) => req,
+                        None => {
+                            debug_print!(
+                                "[event] OriginalSyncRoomMessageEvent: could not create request"
+                            );
+                            return;
+                        }
+                    };
+
+                    debug_print!("[event] OriginalSyncRoomMessageEvent: accepting request");
+                    request.accept().await.expect(
+                        "[event] OriginalSyncRoomMessageEvent: can't accept verification request",
+                    );
+                }
+            },
+        );
 
         let settings = sync::build_sync_settings(None);
         let client = client.clone();
@@ -108,6 +125,17 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
                 let response = match sync_result {
                     Ok(resp) => resp,
                     Err(err) => {
+                        // this catches 401 unauthorized error
+                        if let Error::Http(http_error) = &err
+                            && let HttpError::Api(server) = http_error.deref()
+                            && let FromHttpResponseError::Server(RumaApiError::ClientApi(
+                                ruma_error,
+                            )) = server.deref()
+                            && ruma_error.status_code.eq(&401)
+                        {
+                            // do something
+                        }
+
                         debug_print!("[sync] no result: {}", err);
                         return Ok(LoopCtrl::Continue);
                     }

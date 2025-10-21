@@ -16,7 +16,7 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  late Timer periodicTimer;
+  // late Timer periodicTimer;
   List<Room> rooms = [];
 
   @override
@@ -68,7 +68,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   void dispose() {
-    periodicTimer.cancel();
+    // periodicTimer.cancel();
     super.dispose();
   }
 

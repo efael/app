@@ -6,24 +6,19 @@ use rinf::{RustSignal, debug_print};
 use crate::{
     actors::matrix::Matrix,
     matrix::session::Session,
-    signals::{
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncOnceRequest,
-    },
+    signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncOnceRequest},
 };
 
 #[async_trait]
 impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
     async fn notify(&mut self, msg: MatrixOidcAuthFinishRequest, _: &Context<Self>) {
-        let client = match self.client.as_mut() {
-            Some(client) => client,
-            None => {
-                debug_print!("MatrixOidcAuthFinishRequest: client is not initialized");
-                MatrixOidcAuthFinishResponse::Err {
-                    message: "Client is not initialized".to_string(),
-                }
-                .send_signal_to_dart();
-                return;
+        let Some(client) = self.client.as_mut() else {
+            debug_print!("MatrixOidcAuthFinishRequest: client is not initialized");
+            MatrixOidcAuthFinishResponse::Err {
+                message: "Client is not initialized".to_string(),
             }
+            .send_signal_to_dart();
+            return;
         };
 
         let url = match Url::parse(msg.url.as_ref()) {

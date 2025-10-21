@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use crate::{
     actors::matrix::Matrix,
     matrix::session::Session,
-    signals::{MatrixInitRequest, MatrixInitResponse, MatrixSyncOnceRequest},
+    signals::{MatrixInitRequest, MatrixInitResponse},
 };
 
 #[async_trait]
@@ -46,6 +46,10 @@ impl Handler<MatrixInitRequest> for Matrix {
             };
         }
 
+        let Ok(session) = Session::load_from_disk(session_path) else {
+            return ();
+        };
+
         let session = match tokio::fs::read_to_string(&session_path)
             .await
             .map(|file| serde_json::from_str::<Session>(&file))
@@ -83,12 +87,18 @@ impl Handler<MatrixInitRequest> for Matrix {
             is_logged_in: true,
         };
 
-        let sync_token = session.sync_token.clone().expect("previous session should have sync_token");
-        self.session = Some(session);
-
-        self.emit(MatrixSyncOnceRequest {
-            sync_token: Some(sync_token),
-        });
+        // let sync_token = client
+        //     .oauth()
+        //     .full_session()
+        //     .expect(msg)
+        //     .sync_token
+        //     .clone()
+        //     .expect("previous session should have sync_token");
+        // self.session = Some(session);
+        //
+        // self.emit(MatrixSyncOnceRequest {
+        //     sync_token: Some(sync_token),
+        // });
 
         response
     }

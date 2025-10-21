@@ -51,6 +51,7 @@ class _ApplicationState extends State<Application> {
       themeMode: ThemeMode.dark,
       darkTheme: appTheme,
       routerConfig: router,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -40,8 +40,9 @@ class _AuthorizeScreenState extends State<AuthorizeScreen> {
             //     ? "https"
             //     : AppConfig.appOpenUrlScheme,
             callbackUrlScheme: AppConfig.appOpenUrlScheme,
-            options: const FlutterWebAuth2Options(
+            options: FlutterWebAuth2Options(
               intentFlags: defaultIntentFlags,
+              useWebview: AppConfig.useWebview,
             ),
           );
 

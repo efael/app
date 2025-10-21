@@ -1454,6 +1454,7 @@ dependencies = [
  "futures",
  "matrix-sdk",
  "matrix-sdk-rinf",
+ "matrix-sdk-ui",
  "messages",
  "rinf",
  "ruma",

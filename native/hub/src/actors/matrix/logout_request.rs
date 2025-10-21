@@ -21,18 +21,27 @@ impl Notifiable<MatrixLogoutRequest> for Matrix {
                 return;
             }
         };
-        match client.logout().await {
-            Ok(_) => {
-                debug_print!("MatrixLogoutRequest: logged out");
-                MatrixLogoutResponse::Ok {}.send_signal_to_dart();
+
+        let homeserver_url = client.homeserver();
+
+        if let Err(err) = self.clean_storage().await {
+            debug_print!("MatrixLogoutRequest: failed to clean storage{err:?}");
+            MatrixLogoutResponse::Err {
+                message: "Failed to clean storage".to_string(),
             }
-            Err(err) => {
-                debug_print!("MatrixLogoutRequest: {err:?}");
-                MatrixLogoutResponse::Err {
-                    message: err.to_string(),
-                }
-                .send_signal_to_dart();
-            }
+            .send_signal_to_dart();
+            return;
         };
+
+        if let Err(err) = self.init_client(homeserver_url.to_string()).await {
+            debug_print!("MatrixLogoutRequest: failed to initialize client {err:?}");
+            MatrixLogoutResponse::Err {
+                message: "Failed to initialize client".to_string(),
+            }
+            .send_signal_to_dart();
+            return;
+        };
+
+        MatrixLogoutResponse::Ok {}.send_signal_to_dart();
     }
 }
