@@ -24,7 +24,15 @@ class UserAvatar extends StatelessWidget {
         backgroundImage: (this.imagePath != null) ? AssetImage(this.imagePath!) : null,
         backgroundColor: Colors.transparent,
         child: (this.imagePath == null)
-            ? Text(this.userInitials, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22))
+            ? FittedBox(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text(
+                    this.userInitials,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 100),
+                  ),
+                ),
+              )
             : null,
       ),
     );
