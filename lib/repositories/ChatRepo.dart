@@ -1,3 +1,5 @@
+import 'package:messenger/enums/CallStatus.dart';
+import 'package:messenger/models/CallHistory.dart';
 import 'package:messenger/models/ChatContact.dart';
 
 class ChatRepo {
@@ -109,15 +111,45 @@ class ChatRepo {
       {"id": 8, "photo": "assets/tmp/user7.png", "firstName": "Kirill", "lastName": "Karmanov"},
       {"id": 9, "photo": "assets/tmp/user8.png", "firstName": "Illia", "lastName": "Pyshniak"},
       {"id": 10, "photo": "assets/tmp/user9.png", "firstName": "Edward", "lastName": "B."},
-      {
-        "id": 11,
-        "photo": "assets/tmp/user0.png",
-        "firstName": "Daniel",
-        "lastName": "Menakhovsky",
-        "isOnline": true,
-      },
+      {"id": 11, "photo": "assets/tmp/user0.png", "firstName": "Daniel", "lastName": "Menakhovsky", "isOnline": true},
     ];
 
     return apiData.map((it) => ChatContact.fromUserContactsJson(it)).toList();
+  }
+
+  Future<List<CallHistory>> loadCallsHistory() async {
+    return [
+      CallHistory(
+        userId: 1,
+        photo: "assets/tmp/user0.png",
+        firstName: "Ilya",
+        lastName: "",
+        time: DateTime(2025, 10, 9, 10, 0),
+        status: CallStatus.missed,
+      ),
+      CallHistory(
+        userId: 3,
+        photo: "assets/tmp/user2.png",
+        firstName: "Моя",
+        lastName: "муза",
+        time: DateTime(2025, 10, 9, 10, 0),
+        status: CallStatus.incoming,
+      ),
+      CallHistory(
+        userId: 6,
+        firstName: "Mihail",
+        lastName: "Guryev",
+        time: DateTime(2025, 10, 9, 10, 0),
+        status: CallStatus.outgoing,
+      ),
+      CallHistory(
+        userId: 8,
+        photo: "assets/tmp/user7.png",
+        firstName: "Kirill",
+        lastName: "Karmanov",
+        time: DateTime(2025, 10, 9, 10, 0),
+        status: CallStatus.missed,
+      ),
+    ];
   }
 }

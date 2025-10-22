@@ -9,5 +9,8 @@ class AppLocalizationsRu {
     "yesterday": "Вчера",
     "all": "Все",
     "empty": "Пусто",
+    "incoming": "Входящий",
+    "outgoing": "Исходящий",
+    "missed": "Пропущенный",
   };
 }

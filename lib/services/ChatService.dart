@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:messenger/models/CallHistory.dart';
 import 'package:messenger/models/ChatContact.dart';
 
 class ChatService extends GetxService {
@@ -7,4 +8,5 @@ class ChatService extends GetxService {
   var unreadMessages = <int, int>{}.obs;
 
   var userContacts = <ChatContact>[].obs;
+  var callHistory = <CallHistory>[].obs;
 }

@@ -1,1 +1,1 @@
-enum MessageState { WAITING, SENT, READ, FAILED }
+enum MessageState { waiting, sent, read, failed }

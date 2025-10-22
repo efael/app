@@ -43,6 +43,7 @@ class HomeController extends BaseController {
 
     loadChatContacts();
     loadUserContacts();
+    loadUserCallsHistory();
 
     watchesAndFixes();
 
@@ -85,6 +86,17 @@ class HomeController extends BaseController {
     try {
       isLoading.value = true;
       chatService.userContacts.value = await chatRepo.loadUserContacts();
+    } catch (e) {
+      Logger().e(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future loadUserCallsHistory() async {
+    try {
+      isLoading.value = true;
+      chatService.callHistory.value = await chatRepo.loadCallsHistory();
     } catch (e) {
       Logger().e(e);
     } finally {

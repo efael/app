@@ -28,7 +28,7 @@ class ChatContact {
   get fullName => "${this.firstName} ${this.lastName}";
 
   get initials =>
-      ("${(this.firstName + ' ')[0].toUpperCase()}${(this.lastMessage + ' ')[0].toUpperCase()}")
+      ("${(this.firstName + ' ')[0].toUpperCase()}${(this.lastName + ' ')[0].toUpperCase()}")
           .trim();
 
   factory ChatContact.fromJson(Map<String, dynamic> json) {
@@ -63,6 +63,7 @@ class ChatContact {
   }
 
   Map<String, dynamic> toJson() => {
+    "id": this.id,
     "photo": this.photo,
     "firstName": this.firstName,
     "lastName": this.lastName,
