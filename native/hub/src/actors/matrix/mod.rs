@@ -110,7 +110,7 @@ impl Matrix {
             return Err(InitClientError::FailedToCreateStorageFolder(err));
         };
 
-        let mut sdk_client = SdkClient::builder()
+        let sdk_client = SdkClient::builder()
             .server_name_or_homeserver_url(&homeserver_url)
             .sqlite_store(&client0_dir, None)
             .sliding_sync_version_builder(VersionBuilder::DiscoverNative)
@@ -127,27 +127,6 @@ impl Matrix {
             .build()
             .await
             .map_err(InitClientError::SdkClientBuildError)?;
-
-        let session_path = self.session_path();
-
-        match tokio::fs::read_to_string(&session_path)
-            .await
-            .map(|file| serde_json::from_str::<Session>(&file))
-        {
-            Ok(Ok(session)) => {
-                debug_print!("[init] session found: {:?}", session);
-                sdk_client
-                    .restore_session(AuthSession::from(&session))
-                    .await
-                    .expect("[init] failed to restore session");
-            }
-            Ok(Err(err)) => {
-                debug_print!("[init] failed to parse file: {err:?}");
-            }
-            Err(err) => {
-                debug_print!("[init] failed to read session file: {err:?}");
-            }
-        };
 
         debug_print!("[init] client was successfully restored");
 
@@ -193,6 +172,22 @@ impl Matrix {
                 },
             )
             .expect("[init_client] failed to set session callbacks");
+
+        let session_path = self.session_path();
+
+        if let Ok(session) = Session::load_from_disk(session_path) {
+            sdk_client
+                .restore_session(AuthSession::from(&session))
+                .await
+                .expect("[init] failed to restore session");
+
+            debug_print!("[init] client session was successfully restored");
+            self.session = Some(session.clone());
+
+            self.emit(MatrixSyncOnceRequest {
+                sync_token: session.sync_token,
+            });
+        };
 
         self.client = Some(sdk_client);
         Ok(())

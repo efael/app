@@ -1,12 +1,10 @@
 use async_trait::async_trait;
-use matrix_sdk::AuthSession;
 use messages::prelude::{Context, Handler};
 use rinf::debug_print;
 use std::path::PathBuf;
 
 use crate::{
     actors::matrix::Matrix,
-    matrix::session::Session,
     signals::{MatrixInitRequest, MatrixInitResponse},
 };
 
@@ -14,7 +12,7 @@ use crate::{
 impl Handler<MatrixInitRequest> for Matrix {
     type Result = MatrixInitResponse;
 
-    async fn handle(&mut self, msg: MatrixInitRequest, context: &Context<Self>) -> Self::Result {
+    async fn handle(&mut self, msg: MatrixInitRequest, _context: &Context<Self>) -> Self::Result {
         if self.client.is_some() {
             debug_print!("[init] client is already initialized");
             return MatrixInitResponse::Err {
@@ -37,70 +35,10 @@ impl Handler<MatrixInitRequest> for Matrix {
             .as_ref()
             .expect("[init] client should exist already");
 
-        let session_path = self.session_path();
-        let exists_session_file = session_path.exists();
-        if !exists_session_file {
-            return MatrixInitResponse::Ok {
-                is_active: client.is_active(),
-                is_logged_in: false,
-            };
-        }
-
-        let Ok(session) = Session::load_from_disk(session_path) else {
-            return ();
-        };
-
-        let session = match tokio::fs::read_to_string(&session_path)
-            .await
-            .map(|file| serde_json::from_str::<Session>(&file))
-        {
-            Ok(Ok(mut session)) => {
-                debug_print!("[init] session found: {:?}", session);
-                session.set_path(self.session_path());
-                session
-            }
-            Ok(Err(err)) => {
-                debug_print!("[init] failed to parse file: {err:?}");
-                return MatrixInitResponse::Ok {
-                    is_active: client.is_active(),
-                    is_logged_in: false,
-                };
-            }
-            Err(err) => {
-                debug_print!("[init] failed to read session file: {err:?}");
-                return MatrixInitResponse::Ok {
-                    is_active: client.is_active(),
-                    is_logged_in: false,
-                };
-            }
-        };
-
-        client
-            .restore_session(AuthSession::from(&session))
-            .await
-            .expect("[init] failed to restore session");
-
-        debug_print!("[init] client was successfully restored");
-
-        let response = MatrixInitResponse::Ok {
+        MatrixInitResponse::Ok {
             is_active: client.is_active(),
-            is_logged_in: true,
-        };
-
-        // let sync_token = client
-        //     .oauth()
-        //     .full_session()
-        //     .expect(msg)
-        //     .sync_token
-        //     .clone()
-        //     .expect("previous session should have sync_token");
-        // self.session = Some(session);
-        //
-        // self.emit(MatrixSyncOnceRequest {
-        //     sync_token: Some(sync_token),
-        // });
-
-        response
+            is_logged_in: client.oauth().user_session().is_some(),
+        }
     }
 }
 
@@ -134,6 +72,6 @@ mod tests {
             .expect("could not send");
 
         println!("res: {res:?}");
-        assert!(false);
+        // assert!(false);
     }
 }

@@ -6,7 +6,6 @@ use async_trait::async_trait;
 use messages::prelude::{Context, Notifiable};
 use rinf::{RustSignal, debug_print};
 
-
 #[async_trait]
 impl Notifiable<MatrixListChatsRequest> for Matrix {
     async fn notify(&mut self, _msg: MatrixListChatsRequest, _: &Context<Self>) {
@@ -22,7 +21,7 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
             }
         };
 
-        self.room_list.populate(&client).await;
+        self.room_list.populate(client).await;
         let rooms = self.room_list.get_rooms();
 
         for r in &rooms {
@@ -32,3 +31,4 @@ impl Notifiable<MatrixListChatsRequest> for Matrix {
         MatrixListChatsResponse::Ok { rooms }.send_signal_to_dart();
     }
 }
+

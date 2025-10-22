@@ -7,7 +7,7 @@ use matrix_sdk::{
 use rinf::debug_print;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Session {
     pub client_id: ClientId,
     pub user_session: UserSession,

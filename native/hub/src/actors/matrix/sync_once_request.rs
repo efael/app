@@ -10,8 +10,8 @@ use crate::{
     actors::matrix::Matrix,
     matrix::sync,
     signals::{
-        MatrixListChatsRequest, MatrixLogoutRequest, MatrixSessionVerificationRequest,
-        MatrixSyncBackgroundRequest, MatrixSyncCompleted, MatrixSyncOnceRequest,
+        MatrixListChatsRequest, MatrixLogoutRequest, MatrixSyncBackgroundRequest,
+        MatrixSyncCompleted, MatrixSyncOnceRequest,
     },
 };
 

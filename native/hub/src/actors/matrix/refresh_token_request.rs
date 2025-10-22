@@ -7,7 +7,7 @@ use crate::{actors::matrix::Matrix, signals::MatrixRefreshTokenRequest};
 #[async_trait]
 impl Notifiable<MatrixRefreshTokenRequest> for Matrix {
     async fn notify(&mut self, _msg: MatrixRefreshTokenRequest, _: &Context<Self>) {
-        let client = match self.client.as_mut() {
+        let _client = match self.client.as_mut() {
             Some(client) => client,
             None => {
                 debug_print!("MatrixRefreshTokenRequest: client is not initialized");
