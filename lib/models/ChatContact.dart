@@ -28,11 +28,13 @@ class ChatContact {
   get fullName => "${this.firstName} ${this.lastName}";
 
   get initials =>
-      "${(this.firstName + ' ')[0].toUpperCase()}${(this.lastMessage + ' ')[0].toUpperCase()}";
+      ("${(this.firstName + ' ')[0].toUpperCase()}${(this.lastMessage + ' ')[0].toUpperCase()}")
+          .trim();
 
-  ChatContact fromJson(Map<String, dynamic> json) {
+  factory ChatContact.fromJson(Map<String, dynamic> json) {
     return ChatContact(
       id: json["id"],
+      photo: json["photo"],
       firstName: json["firstName"],
       lastName: json["lastName"],
       lastMessage: json["lastMessage"],
@@ -40,13 +42,27 @@ class ChatContact {
       //must be in ISO 8601 formats. eg: 2025-10-21 | 2025-10-21 14:30:00
       time: DateTime.parse(json["time"]),
 
-      isGroup: json["isGroup"],
-      isPinned: json["isPinned"],
-      isSecretChat: json["isSecretChat"],
+      isGroup: json["isGroup"] ?? false,
+      isPinned: json["isPinned"] ?? false,
+      isSecretChat: json["isSecretChat"] ?? false,
+      isOnline: json["isOnline"] ?? false,
     );
   }
 
-  Map<String, dynamic> toStoreJson() => {
+  factory ChatContact.fromUserContactsJson(Map<String, dynamic> json) {
+    return ChatContact(
+      id: json["id"],
+      photo: json["photo"],
+      firstName: json["firstName"],
+      lastName: json["lastName"],
+      isOnline: json["isOnline"] ?? false,
+
+      lastMessage: "",
+      time: DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
     "photo": this.photo,
     "firstName": this.firstName,
     "lastName": this.lastName,

@@ -21,9 +21,12 @@ class ChatsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return (models.isNotEmpty)
-        ? ListView.builder(
+        ? ListView.separated(
             padding: EdgeInsets.zero,
             itemCount: models.length,
+            separatorBuilder: (BuildContext context, int index) {
+              return const Divider(color: Color(0x55314356), height: 1, thickness: 1);
+            },
             itemBuilder: (context, i) {
               var item = models[i];
 
@@ -31,7 +34,9 @@ class ChatsList extends StatelessWidget {
                 model: item,
                 onSelectChat: onSelectChat,
                 isActiveChat: item == activeChatModel,
-                unreadMessages: (unreadMessages.containsKey(item.id)) ? unreadMessages[item.id]! : 0,
+                unreadMessages: (unreadMessages.containsKey(item.id))
+                    ? unreadMessages[item.id]!
+                    : 0,
               );
             },
           )

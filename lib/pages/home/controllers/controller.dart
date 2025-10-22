@@ -14,7 +14,7 @@ import '../../BaseController.dart';
 class HomeController extends BaseController {
   var activeTabKey = "chats".obs;
   var pageTabs = <StackPages>[
-    StackPages(key: "contacts", iconPath: "assets/icons/feed.svg", page: const ContactsListView()),
+    StackPages(key: "contacts", iconPath: "assets/icons/users.svg", page: const ContactsListView()),
     StackPages(key: "chats", iconPath: "assets/icons/message.svg", page: const ChatListView()),
     StackPages(
       key: "settings",
@@ -24,6 +24,7 @@ class HomeController extends BaseController {
     ),
   ].obs;
 
+  // TODO remove list elements
   var chatTabs = <ChatTabs>[
     ChatTabs(key: "design", label: "Дизайн", chats: []),
     ChatTabs(key: "business", label: "Бизнес", chats: []),
@@ -41,6 +42,8 @@ class HomeController extends BaseController {
     // enableOrDisableCalls(true);
 
     loadChatContacts();
+    loadUserContacts();
+
     watchesAndFixes();
 
     // TODO remove this
@@ -71,6 +74,17 @@ class HomeController extends BaseController {
     try {
       isLoading.value = true;
       chatService.chatContacts.value = await chatRepo.loadChatContacts();
+    } catch (e) {
+      Logger().e(e);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future loadUserContacts() async {
+    try {
+      isLoading.value = true;
+      chatService.userContacts.value = await chatRepo.loadUserContacts();
     } catch (e) {
       Logger().e(e);
     } finally {

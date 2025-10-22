@@ -5,4 +5,6 @@ class ChatService extends GetxService {
   var chatContacts = <ChatContact>[].obs;
   var activeChat = Rx<ChatContact?>(null);
   var unreadMessages = <int, int>{}.obs;
+
+  var userContacts = <ChatContact>[].obs;
 }

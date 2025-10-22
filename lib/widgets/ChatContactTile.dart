@@ -67,7 +67,7 @@ class ChatContactTile extends StatelessWidget {
           TimeAgoText(dateTime: model.time),
           (unreadMessages > 0)
               ? Container(
-                  constraints: const BoxConstraints(minWidth: 20, minHeight: 20, maxWidth: 20),
+                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24, maxWidth: 24),
                   padding: EdgeInsets.symmetric(horizontal: 2),
                   decoration: BoxDecoration(
                     color: Colors.blue,
