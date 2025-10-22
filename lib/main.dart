@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get_secure_storage/get_secure_storage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get/get.dart';
+
 import 'AppBinding.dart';
 import 'AppPages.dart';
 import 'AppRoutes.dart';
@@ -10,7 +10,6 @@ import 'themes/default.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await GetSecureStorage.init(password: 'strongpassword');
 
   runApp(App());
 }
