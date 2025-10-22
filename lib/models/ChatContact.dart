@@ -6,9 +6,9 @@ class ChatContact {
   final String lastMessage;
   final DateTime time;
 
-  final bool isOnline;
+  bool isOnline;
   final bool isGroup;
-  final bool isPinned;
+  bool isPinned;
   final bool isSecretChat;
 
   ChatContact({

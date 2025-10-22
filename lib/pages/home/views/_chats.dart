@@ -8,35 +8,35 @@ class ChatListView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: controller.chatTabs.length + 1,
-      child: Scaffold(
-        body: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                pinned: true,
-                floating: true,
-                title: Text("Efael"),
-                actions: [IconButton(onPressed: () => {}, icon: Icon(Icons.search))],
-                bottom: (controller.chatTabs.isNotEmpty)
-                    ? TabBar(
-                        isScrollable: true,
-                        padding: EdgeInsets.zero,
-                        tabAlignment: TabAlignment.start,
-                        dividerColor: Color(0xFF314356),
-                        labelStyle: TextStyle(fontSize: 14),
-                        tabs: [
-                          Tab(text: 'all'.tr),
-                          ...controller.chatTabs.map((it) => Tab(text: it.label)),
-                        ],
-                      )
-                    : null,
-              ),
-            ];
-          },
-          body: Obx(
-            () => TabBarView(
+    return Obx(
+      () => DefaultTabController(
+        length: controller.chatTabs.length + 1,
+        child: Scaffold(
+          body: NestedScrollView(
+            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  pinned: true,
+                  floating: true,
+                  title: Text("Efael"),
+                  actions: [IconButton(onPressed: () => {}, icon: Icon(Icons.search))],
+                  bottom: (controller.chatTabs.isNotEmpty)
+                      ? TabBar(
+                          isScrollable: true,
+                          padding: EdgeInsets.zero,
+                          tabAlignment: TabAlignment.start,
+                          dividerColor: Color(0xFF314356),
+                          labelStyle: TextStyle(fontSize: 14),
+                          tabs: [
+                            Tab(text: 'all'.tr),
+                            ...controller.chatTabs.map((it) => Tab(text: it.label)),
+                          ],
+                        )
+                      : null,
+                ),
+              ];
+            },
+            body: TabBarView(
               children: [
                 ChatsList(
                   models: controller.chatService.chatContacts,

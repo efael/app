@@ -41,7 +41,13 @@ class HomeController extends BaseController {
     // enableOrDisableCalls(true);
 
     loadChatContacts();
+    watchesAndFixes();
 
+    // TODO remove this
+    chatService.unreadMessages.value = {1: 85, 6: 3};
+  }
+
+  void watchesAndFixes() {
     chatService.unreadMessages.listen((it) {
       var counts = it.values;
       var index = findTabIndexByActiveTabKey("chats");
@@ -53,9 +59,8 @@ class HomeController extends BaseController {
       }
 
       pageTabs.refresh();
+      chatTabs.refresh();
     });
-
-    chatService.unreadMessages.value = {1: 85, 6: 3};
   }
 
   int findTabIndexByActiveTabKey(String key) {
