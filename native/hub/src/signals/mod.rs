@@ -1,15 +1,12 @@
 pub mod init_client_error;
 pub mod save_session_error;
 
-use matrix_sdk::{config::SyncSettings, ruma::api::client::sync::sync_events, Client};
-use matrix_sdk_rinf::{
-    room::room_info::RoomInfo, timeline::EventTimelineItem
-};
+use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_events};
+use matrix_sdk_ui::sync_service::SyncService;
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
-use crate::matrix::{oidc::OidcConfiguration, sas_verification::Emoji};
-
+use crate::matrix::{oidc::OidcConfiguration, room::Room, sas_verification::Emoji};
 
 #[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixInitRequest {
@@ -19,13 +16,8 @@ pub struct MatrixInitRequest {
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixInitResponse {
-    Ok {
-        is_active: bool,
-        is_logged_in: bool,
-    },
-    Err {
-        message: String,
-    },
+    Ok { is_active: bool, is_logged_in: bool },
+    Err { message: String },
 }
 
 #[derive(Deserialize, DartSignal, Debug)]
@@ -93,39 +85,30 @@ pub struct MatrixListChatsRequest {
 
 #[derive(Serialize, RustSignal)]
 pub enum MatrixListChatsResponse {
-    Ok {
-        rooms: Vec<(RoomInfo, Option<EventTimelineItem>)>,
-    },
-    Err {
-        message: String,
-    },
+    Ok { rooms: Vec<Room> },
+    Err { message: String },
 }
 
 #[derive(Serialize, RustSignal)]
 pub enum MatrixRoomListUpdate {
-    List {
-        rooms: Vec<(RoomInfo, Option<EventTimelineItem>)>,
-    },
-    Remove {
-        indices: Vec<u32>,
-    },
+    List { rooms: Vec<Room> },
+    Remove { indices: Vec<u32> },
 }
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub struct MatrixSyncOnceRequest {
-    pub sync_token: Option<String>
+    pub sync_token: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub enum MatrixSyncBackgroundRequest {
-    Start
+    Start,
 }
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub struct MatrixSyncCompleted {
-    pub next_batch: String
+    pub next_batch: String,
 }
-
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub enum MatrixSessionVerificationRequest {
@@ -138,3 +121,6 @@ pub struct MatrixSASConfirmRequest {
     pub flow_id: String,
     pub emojis: Vec<Emoji>,
 }
+
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
+pub struct MatrixRefreshSessionRequest;

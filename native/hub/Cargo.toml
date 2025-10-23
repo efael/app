@@ -20,18 +20,21 @@ rinf = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["rt", "macros", "time"] }
 async-trait = { workspace = true }
-messages = "0.3.1"
+messages = { workspace = true }
 thiserror = { workspace = true }
 serde_json = { workspace = true }
 url.workspace = true
+futures = { workspace = true }
 ruma = { workspace = true, features = [
   "html",
-  "unstable-unspecified",
   "unstable-msc3488",
   "compat-unset-avatar",
   "unstable-msc3245-v1-compat",
   "unstable-msc4278",
 ] }
+tracing.workspace = true
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tracing-panic.workspace = true
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 matrix-sdk = { workspace = true, default-features = false, features = [
@@ -40,7 +43,7 @@ matrix-sdk = { workspace = true, default-features = false, features = [
   "rustls-tls",
   "bundled-sqlite",
 ] }
-matrix-sdk-rinf = { workspace = true, default-features = false, features = [
+matrix-sdk-ui = { workspace = true, default-features = false, features = [
   "rustls-tls",
 ] }
 
@@ -51,7 +54,7 @@ matrix-sdk = { workspace = true, default-features = false, features = [
   "native-tls",
   "sqlite",
 ] }
-matrix-sdk-rinf = { workspace = true, default-features = false, features = [
+matrix-sdk-ui = { workspace = true, default-features = false, features = [
   "native-tls",
 ] }
 
