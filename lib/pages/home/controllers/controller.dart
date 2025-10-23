@@ -73,14 +73,14 @@ class HomeController extends BaseController {
 
     storageService.enableCalls.listen((state) {
       var index = findTabIndexByActiveTabKey("calls");
-      this.pageTabs[index].disabled = !state;
+      pageTabs[index].disabled = !state;
 
-      this.pageTabs.refresh();
+      pageTabs.refresh();
     });
   }
 
   int findTabIndexByActiveTabKey(String key) {
-    return this.pageTabs.indexWhere((it) => it.key == key);
+    return pageTabs.indexWhere((it) => it.key == key);
   }
 
   Future loadChatContacts() async {
@@ -125,8 +125,8 @@ class HomeController extends BaseController {
   }
 
   void logout() {
-    this.storageService.clear();
-    this.chatService.clear();
+    storageService.clear();
+    chatService.clear();
   }
 }
 

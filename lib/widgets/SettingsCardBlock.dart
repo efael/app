@@ -50,6 +50,7 @@ class SettingsInfoTile extends StatelessWidget {
   final Widget? trailing;
   final GestureTapCallback? onTap;
   final Color color;
+  final SettingsSwitchTileType? switcher;
 
   const SettingsInfoTile({
     super.key,
@@ -59,6 +60,7 @@ class SettingsInfoTile extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.color = Colors.white,
+    this.switcher,
   });
 
   @override
@@ -73,11 +75,29 @@ class SettingsInfoTile extends StatelessWidget {
         leading: (icon != null)
             ? SvgPicture.asset(icon!, colorFilter: ColorFilter.mode(color, BlendMode.srcIn))
             : null,
-        onTap: this.onTap,
+        onTap: (switcher != null)
+            ? () {
+                switcher!.onChanged(!switcher!.value);
+                if (onTap != null) onTap!();
+              }
+            : onTap,
         contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
         minTileHeight: 0,
-        trailing: trailing,
+        trailing: (switcher != null)
+            ? Transform.scale(
+                scale: 0.8,
+                alignment: Alignment.centerRight,
+                child: Switch(value: switcher!.value, onChanged: switcher!.onChanged),
+              )
+            : trailing,
       ),
     );
   }
+}
+
+class SettingsSwitchTileType {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  SettingsSwitchTileType({required this.value, required this.onChanged});
 }

@@ -61,51 +61,24 @@ class SettingsView extends GetView<HomeController> {
 
                   SettingsCardBlock(
                     children: [
-                      SettingsInfoTile(
-                        title: "Избранное",
-                        icon: "assets/icons/bookmark.svg",
-                      ),
-                      SettingsInfoTile(
-                        title: "Кошелёк",
-                        icon: "assets/icons/bookmark.svg",
-                      ),
-                      SettingsInfoTile(
-                        title: "Wallet",
-                        icon: "assets/icons/face-smile.svg",
-                      ),
-                      SettingsInfoTile(
-                        title: "Звонки и контакты",
-                        icon: "assets/icons/phone.svg",
-                      ),
+                      SettingsInfoTile(title: "Избранное", icon: "assets/icons/bookmark.svg"),
+                      SettingsInfoTile(title: "Кошелёк", icon: "assets/icons/bookmark.svg"),
+                      SettingsInfoTile(title: "Wallet", icon: "assets/icons/face-smile.svg"),
+                      SettingsInfoTile(title: "Звонки и контакты", icon: "assets/icons/phone.svg"),
                     ],
                   ),
                   SettingsCardBlock(
                     title: "settings".tr,
                     children: [
-                      SettingsInfoTile(
-                        title: "Настройки чатов",
-                        icon: "assets/icons/message.svg",
-                      ),
+                      SettingsInfoTile(title: "Настройки чатов", icon: "assets/icons/message.svg"),
                       SettingsInfoTile(
                         title: "Конфиденциальность",
                         icon: "assets/icons/lock_2.svg",
                       ),
-                      SettingsInfoTile(
-                        title: "Уведомления и звуки",
-                        icon: "assets/icons/bell.svg",
-                      ),
-                      SettingsInfoTile(
-                        title: "Данные и память",
-                        icon: "assets/icons/database.svg",
-                      ),
-                      SettingsInfoTile(
-                        title: "Папки с чатами",
-                        icon: "assets/icons/folder.svg",
-                      ),
-                      SettingsInfoTile(
-                        title: "Устройства",
-                        icon: "assets/icons/monitor.svg",
-                      ),
+                      SettingsInfoTile(title: "Уведомления и звуки", icon: "assets/icons/bell.svg"),
+                      SettingsInfoTile(title: "Данные и память", icon: "assets/icons/database.svg"),
+                      SettingsInfoTile(title: "Папки с чатами", icon: "assets/icons/folder.svg"),
+                      SettingsInfoTile(title: "Устройства", icon: "assets/icons/monitor.svg"),
                       SettingsInfoTile(
                         title: "language".tr,
                         icon: "assets/icons/globe.svg",
@@ -152,15 +125,10 @@ class SettingsView extends GetView<HomeController> {
                         () => SettingsInfoTile(
                           title: "calls".tr,
                           icon: "assets/icons/phone.svg",
-                          onTap: () => {},
-                          trailing: Transform.scale(
-                            scale: 0.8,
-                            alignment: Alignment.centerRight,
-                            child: Switch(
-                              value: controller.storageService.enableCalls.value,
-                              onChanged: (state) =>
-                                  controller.storageService.enableCalls.value = state,
-                            ),
+                          switcher: SettingsSwitchTileType(
+                            value: controller.storageService.enableCalls.value,
+                            onChanged: (state) =>
+                                controller.storageService.enableCalls.value = state,
                           ),
                         ),
                       ),

@@ -17,9 +17,9 @@ class CallHistory {
     required this.status,
   });
 
-  get fullName => "${this.firstName} ${this.lastName}";
+  get fullName => "$firstName $lastName";
 
-  get initials => ("${(this.firstName + ' ')[0].toUpperCase()}${(this.lastName + ' ')[0].toUpperCase()}").trim();
+  get initials => ("${(firstName + ' ')[0].toUpperCase()}${(lastName + ' ')[0].toUpperCase()}").trim();
 
   factory CallHistory.fromJson(Map<String, dynamic> json) {
     return CallHistory(
@@ -33,11 +33,11 @@ class CallHistory {
   }
 
   Map<String, dynamic> toJson() => {
-    "userId": this.userId,
-    "photo": this.photo,
-    "firstName": this.firstName,
-    "lastName": this.lastName,
-    "time": this.time,
-    "status": this.status,
+    "userId": userId,
+    "photo": photo,
+    "firstName": firstName,
+    "lastName": lastName,
+    "time": time,
+    "status": status,
   };
 }
