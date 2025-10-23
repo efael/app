@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use messages::prelude::{Context, Notifiable};
-use rinf::debug_print;
 use ruma::events::key::verification::VerificationMethod;
 
 use crate::{
@@ -10,26 +9,21 @@ use crate::{
 
 #[async_trait]
 impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
+    #[tracing::instrument(skip(self))]
     async fn notify(&mut self, _msg: MatrixSessionVerificationRequest, _: &Context<Self>) {
-        let client = match self.client.as_mut() {
-            Some(client) => client,
-            None => {
-                debug_print!("MatrixSessionVerificationRequest: client is not initialized");
-                return;
-            }
+        let Some(client) = self.client.as_mut() else {
+            tracing::error!("client is not initialized");
+            return;
         };
 
-        let session = match self.session.as_ref() {
-            Some(session) => session,
-            None => {
-                debug_print!("MatrixSessionVerificationRequest: client does have session");
-                return;
-            }
+        let Some(session) = self.session.as_ref() else {
+            tracing::error!("client does have session");
+            return;
         };
 
         let encrpyption = client.encryption();
 
-        debug_print!("[verification] waiting for e2ee intialization");
+        tracing::trace!("waiting for e2ee intialization");
         encrpyption.wait_for_e2ee_initialization_tasks().await;
 
         match encrpyption
@@ -38,7 +32,7 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
         {
             Ok(Some(identity)) => {
                 if identity.is_verified() {
-                    debug_print!("[verification] identity verified ✅");
+                    tracing::trace!("identity verified ✅");
                     self.emit(MatrixListChatsRequest {
                         url: "".to_string(),
                     });
@@ -50,15 +44,15 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
                     .await
                 {
                     Ok(request) => {
-                        debug_print!("[verification] requested, flow {:?}", request.flow_id());
+                        tracing::trace!("requested, flow {:?}", request.flow_id());
                     }
                     Err(err) => {
-                        debug_print!("[verification] could not request verification: {}", err);
+                        tracing::error!(error = %err, "could not request verification");
                     }
                 };
             }
-            Ok(None) => debug_print!("[verification] no user identity"),
-            Err(err) => debug_print!("[verification] could not get user identity: {}", err),
+            Ok(None) => tracing::trace!("no user identity"),
+            Err(err) => tracing::error!(error = %err, "could not get user identity"),
         };
     }
 }

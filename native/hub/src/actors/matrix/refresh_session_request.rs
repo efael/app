@@ -7,6 +7,7 @@ use crate::{
 
 #[async_trait]
 impl Notifiable<MatrixRefreshSessionRequest> for Matrix {
+    #[tracing::instrument(skip(self))]
     async fn notify(&mut self, _msg: MatrixRefreshSessionRequest, _: &Context<Self>) {
         let path = self.session_path();
 

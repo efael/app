@@ -1,7 +1,7 @@
 use matrix_sdk::room::{MessagesOptions, Room as SdkRoom};
-use matrix_sdk::sync::{UnreadNotificationsCount as SdkUnreadNotificationsCount};
+use matrix_sdk::sync::UnreadNotificationsCount as SdkUnreadNotificationsCount;
 use matrix_sdk::{EncryptionState, Error, RoomDisplayName};
-use rinf::{debug_print, SignalPiece};
+use rinf::{SignalPiece, debug_print};
 use ruma::api::Direction;
 use ruma::events::room::message::MessageType;
 use serde::{Deserialize, Serialize};
@@ -12,7 +12,6 @@ use crate::matrix::events;
 pub struct Room {
     // #[serde(skip)]
     // pub inner: SdkRoom,
-
     pub id: String,
     pub name: String,
 
@@ -59,9 +58,11 @@ impl Room {
             id: sdk_room.room_id().to_string(),
             name: name.to_room_alias_name(),
             is_visited: false,
-            is_encrypted: is_encrypted,
+            is_encrypted,
             is_favourite: sdk_room.is_favourite(),
-            unread_notification_counts: UnreadNotificationsCount::from(sdk_room.unread_notification_counts()),
+            unread_notification_counts: UnreadNotificationsCount::from(
+                sdk_room.unread_notification_counts(),
+            ),
             last_message: None,
             last_sender: None,
             last_ts: None,
@@ -81,10 +82,11 @@ impl Room {
 
             let mut latest_ts: Option<u128> = None;
             for timeline_event in &timeline_messages {
-                if latest_ts.is_none() {
-                    if let Ok(event) = events::deserialize_event(timeline_event, room.room_id().clone()) {
-                        latest_ts = Some(event.origin_server_ts().0.into());
-                    }
+                if latest_ts.is_none()
+                    && let Ok(event) =
+                        events::deserialize_event(timeline_event, room.room_id().clone())
+                {
+                    latest_ts = Some(event.origin_server_ts().0.into());
                 }
 
                 let event = match events::get_room_message_event(&sdk_room, timeline_event) {
@@ -107,11 +109,7 @@ impl Room {
                     }
                 };
 
-                let member = sdk_room
-                    .get_member(&original_event.sender)
-                    .await
-                    .map_err(Error::from)?
-                    .unwrap();
+                let member = sdk_room.get_member(&original_event.sender).await?.unwrap();
 
                 room.last_message = Some(body);
                 room.last_sender = Some(member.name().to_string());
@@ -132,7 +130,6 @@ impl Room {
     }
 }
 
-
 #[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq, SignalPiece)]
 pub struct UnreadNotificationsCount {
     /// The number of unread notifications for this room with the highlight flag
@@ -145,6 +142,10 @@ pub struct UnreadNotificationsCount {
 
 impl From<SdkUnreadNotificationsCount> for UnreadNotificationsCount {
     fn from(value: SdkUnreadNotificationsCount) -> Self {
-        Self { highlight_count: value.highlight_count, notification_count: value.notification_count }
+        Self {
+            highlight_count: value.highlight_count,
+            notification_count: value.notification_count,
+        }
     }
 }
+

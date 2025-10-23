@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use matrix_sdk_ui::sync_service::SyncService;
 use messages::prelude::{Context, Notifiable};
-use rinf::debug_print;
 
 use crate::{
     actors::matrix::Matrix, extensions::easy_listener::EasyListener,
@@ -10,9 +9,10 @@ use crate::{
 
 #[async_trait]
 impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
+    #[tracing::instrument(skip(self))]
     async fn notify(&mut self, _msg: MatrixSyncBackgroundRequest, _: &Context<Self>) {
         let Some(client) = self.client.as_ref() else {
-            debug_print!("[sync] client is not initialized");
+            tracing::error!("client is not initialized");
             return;
         };
 
@@ -23,7 +23,7 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
         {
             Ok(ss) => ss,
             Err(err) => {
-                debug_print!("[sync] encountered error while initializing sync service {err:?}");
+                tracing::error!(error = %err,"encountered error while initializing sync service");
                 return;
             }
         };
@@ -39,13 +39,13 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
 
             loop {
                 if let Some(_state) = sync_service.state().next().await {
-                    // debug_print!("[sync] new state {state:?}");
+                    // tracing::trace!("[sync] new state {state:?}");
                 }
 
                 if let Ok(loading_state) = loading_state.as_mut()
                     && let Some(state) = loading_state.next().await
                 {
-                    debug_print!("[sync] new room state {state:?}");
+                    tracing::info!("new room state {state:?}");
                 }
             }
         });

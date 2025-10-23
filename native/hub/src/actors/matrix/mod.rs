@@ -8,6 +8,7 @@ pub mod sas_confirm_request;
 pub mod session_verification_request;
 // pub mod sync_background_request;
 pub mod refresh_session_request;
+pub mod session_callbacks;
 pub mod sync_completed_request;
 pub mod sync_new;
 pub mod sync_once_request;
@@ -24,11 +25,12 @@ use messages::{
     actor::Actor,
     prelude::{Address, Notifiable},
 };
-use rinf::{DartSignal, debug_print};
+use rinf::DartSignal;
 use tokio::task::JoinSet;
 
 use crate::{
-    extensions::{easy_listener::EasyListener, emitter::Emitter},
+    actors::matrix::session_callbacks::{reload_session_callback, save_session_callback},
+    extensions::easy_listener::EasyListener,
     matrix::{room_list::RoomList, session::Session},
     signals::{
         MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
@@ -39,6 +41,7 @@ use crate::{
     },
 };
 
+#[derive(Debug)]
 pub struct Matrix {
     self_addr: Address<Self>,
     client: Option<SdkClient>,
@@ -93,13 +96,13 @@ impl Matrix {
         actor
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn init_client(&mut self, homeserver_url: String) -> Result<(), InitClientError> {
         let application_support_directory = self.application_support_directory.as_ref().ok_or(
             InitClientError::FailedToCreateStorageFolder(ErrorKind::NotFound.into()),
         )?;
 
         let mut client0_dir = application_support_directory.clone();
-        debug_print!("# application folder: {}", &client0_dir.to_str().unwrap());
         client0_dir.push("./client0");
 
         self.client.take();
@@ -128,7 +131,7 @@ impl Matrix {
             .await
             .map_err(InitClientError::SdkClientBuildError)?;
 
-        debug_print!("[init] client was successfully restored");
+        tracing::trace!("client initialized");
 
         sdk_client
             .set_session_callbacks(
@@ -136,42 +139,16 @@ impl Matrix {
                     let session_path = self.session_path();
                     let address = self.get_address();
 
-                    Box::new(move |_client| {
-                        debug_print!("SESSION CALLBACK RELOAD");
-                        let session =
-                            Session::load_from_disk(session_path.clone()).map_err(|err| {
-                                Box::new(err) as Box<dyn std::error::Error + Send + Sync + 'static>
-                            })?;
-
-                        address.clone().emit(MatrixRefreshSessionRequest);
-
-                        Ok(session.user_session.tokens)
-                    })
+                    reload_session_callback(session_path, address)
                 },
                 {
                     let session_path = self.session_path();
                     let address = self.get_address();
 
-                    Box::new(move |client| {
-                        debug_print!("SESSION CALLBACK SAVE");
-
-                        let oauth_session = client
-                            .oauth()
-                            .full_session()
-                            .expect("after login, should have session");
-
-                        let session = Session::from_oauth(oauth_session, session_path.clone());
-                        session.save_to_disk().map_err(|err| {
-                            Box::new(err) as Box<dyn std::error::Error + Send + Sync + 'static>
-                        })?;
-
-                        address.clone().emit(MatrixRefreshSessionRequest);
-
-                        Ok(())
-                    })
+                    save_session_callback(session_path, address)
                 },
             )
-            .expect("[init_client] failed to set session callbacks");
+            .expect("failed to set session callbacks");
 
         let session_path = self.session_path();
 
@@ -179,9 +156,9 @@ impl Matrix {
             sdk_client
                 .restore_session(AuthSession::from(&session))
                 .await
-                .expect("[init] failed to restore session");
+                .expect("failed to restore session");
 
-            debug_print!("[init] client session was successfully restored");
+            tracing::trace!("client session was successfully restored");
             self.session = Some(session.clone());
 
             self.emit(MatrixSyncOnceRequest {
@@ -193,14 +170,15 @@ impl Matrix {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn clean_storage(&self) -> Result<(), ()> {
         let dir = self.application_support_directory.clone().ok_or(())?;
-        debug_print!("# clean_storage: removing {dir:?}");
+        tracing::trace!("removing {dir:?}");
 
         let mut entries = tokio::fs::read_dir(dir).await.map_err(|_| ())?;
         while let Ok(Some(entry)) = entries.next_entry().await {
             let path = entry.path();
-            debug_print!("# clean_storage: removing {path:?}");
+            tracing::trace!("removing {path:?}");
 
             let _ = tokio::fs::remove_dir_all(&path).await;
             let _ = tokio::fs::remove_file(&path).await;
@@ -209,11 +187,13 @@ impl Matrix {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self, request))]
     pub fn emit<Signal>(&mut self, request: Signal)
     where
         Self: Notifiable<Signal>,
         Signal: DartSignal + Send + 'static,
     {
+        tracing::trace!("emitting {}", std::any::type_name_of_val(&request));
         let mut addr = self.self_addr.clone();
         self.owned_tasks.spawn(async move {
             let _ = addr.notify(request).await;

@@ -100,7 +100,7 @@ pub struct MatrixSyncOnceRequest {
     pub sync_token: Option<String>,
 }
 
-#[derive(Deserialize, Serialize, DartSignal)]
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub enum MatrixSyncBackgroundRequest {
     Start,
 }
@@ -122,5 +122,5 @@ pub struct MatrixSASConfirmRequest {
     pub emojis: Vec<Emoji>,
 }
 
-#[derive(Deserialize, Serialize, DartSignal)]
+#[derive(Deserialize, Serialize, DartSignal, Debug)]
 pub struct MatrixRefreshSessionRequest;

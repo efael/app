@@ -1,10 +1,11 @@
 use crate::matrix::room::Room;
 use matrix_sdk::locks::Mutex;
-use matrix_sdk::room::{Room as SdkRoom};
+use matrix_sdk::room::Room as SdkRoom;
 use matrix_sdk::{Client, RoomState as SdkRoomState};
 use rinf::debug_print;
 use ruma::events::AnyTimelineEvent;
 
+#[derive(Debug)]
 pub struct RoomList {
     rooms: Mutex<Vec<Room>>,
 }

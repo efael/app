@@ -3,9 +3,11 @@ use matrix_sdk::{
     deserialized_responses::{TimelineEvent, TimelineEventKind},
 };
 use ruma::{
+    OwnedRoomId, RoomId,
     events::{
-        room::message::RoomMessageEventContent, AnyMessageLikeEvent, AnyTimelineEvent, MessageLikeEvent
-    }, OwnedRoomId, RoomId
+        AnyMessageLikeEvent, AnyTimelineEvent, MessageLikeEvent,
+        room::message::RoomMessageEventContent,
+    },
 };
 
 pub fn deserialize_event(
@@ -16,7 +18,7 @@ pub fn deserialize_event(
     let room_id = OwnedRoomId::from(room_id);
 
     match &event.kind {
-        TimelineEventKind::Decrypted(decrypted) => Ok(decrypted.event.deserialize()?.into()),
+        TimelineEventKind::Decrypted(decrypted) => Ok(decrypted.event.deserialize()?),
         TimelineEventKind::PlainText { event } => Ok(event.deserialize()?.into_full_event(room_id)),
         TimelineEventKind::UnableToDecrypt { event, .. } => {
             Ok(event.deserialize()?.into_full_event(room_id))
@@ -30,13 +32,18 @@ pub fn get_room_message_event(
 ) -> Option<MessageLikeEvent<RoomMessageEventContent>> {
     let event = match deserialize_event(event, room.room_id().to_string()) {
         Ok(event) => event,
-        Err(_) => { return None; }
+        Err(_) => {
+            return None;
+        }
     };
 
     let event = match event {
         AnyTimelineEvent::MessageLike(AnyMessageLikeEvent::RoomMessage(event)) => event,
-        _ => { return None; }
+        _ => {
+            return None;
+        }
     };
 
     Some(event)
 }
+
