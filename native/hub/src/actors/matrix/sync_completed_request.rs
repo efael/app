@@ -8,7 +8,7 @@ impl Notifiable<MatrixSyncCompleted> for Matrix {
     #[tracing::instrument(skip(self))]
     async fn notify(&mut self, msg: MatrixSyncCompleted, _: &Context<Self>) {
         let Some(session) = self.session.as_mut() else {
-            tracing::error!("client does have session");
+            tracing::error!("client does not have session");
             return;
         };
 
