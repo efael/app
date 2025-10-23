@@ -14,6 +14,7 @@ class ContactsListView extends GetView<HomeController> {
       body: Obx(
         () => (controller.chatService.userContacts.isNotEmpty)
             ? ListView.separated(
+                controller: controller.pageScrollController["contacts"],
                 padding: EdgeInsets.zero,
                 itemCount: controller.chatService.userContacts.length,
                 separatorBuilder: (BuildContext context, int index) {
@@ -23,9 +24,7 @@ class ContactsListView extends GetView<HomeController> {
                   var item = controller.chatService.userContacts[i];
 
                   return Theme(
-                    data: Theme.of(context).copyWith(
-                      splashColor: Colors.transparent,
-                    ),
+                    data: Theme.of(context).copyWith(splashColor: Colors.transparent),
                     child: ListTile(
                       contentPadding: EdgeInsets.symmetric(horizontal: 16),
                       onTap: () => controller.openChat(item),

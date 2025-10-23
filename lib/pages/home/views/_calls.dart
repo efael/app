@@ -15,6 +15,7 @@ class CallsListView extends GetView<HomeController> {
       body: Obx(
         () => (controller.chatService.callHistory.isNotEmpty)
             ? ListView.separated(
+                controller: controller.pageScrollController["calls"],
                 padding: EdgeInsets.zero,
                 itemCount: controller.chatService.callHistory.length,
                 separatorBuilder: (BuildContext context, int index) {
@@ -24,9 +25,7 @@ class CallsListView extends GetView<HomeController> {
                   var item = controller.chatService.callHistory[i];
 
                   return Theme(
-                    data: Theme.of(context).copyWith(
-                      splashColor: Colors.transparent,
-                    ),
+                    data: Theme.of(context).copyWith(splashColor: Colors.transparent),
                     child: ListTile(
                       contentPadding: EdgeInsets.symmetric(horizontal: 16),
                       onTap: () => {},
@@ -42,7 +41,9 @@ class CallsListView extends GetView<HomeController> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            (item.status == CallStatus.outgoing) ? Icons.call_made : Icons.call_received,
+                            (item.status == CallStatus.outgoing)
+                                ? Icons.call_made
+                                : Icons.call_received,
                             color: (item.status == CallStatus.missed) ? Colors.red : null,
                           ),
                           SizedBox(width: 15),

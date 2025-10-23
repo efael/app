@@ -1,6 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:messenger/AppRoutes.dart';
 import 'package:messenger/models/ChatContact.dart';
 import 'package:messenger/pages/home/views/_calls.dart';
 import 'package:messenger/pages/home/views/_chats.dart';
@@ -38,9 +39,17 @@ class HomeController extends BaseController {
     ChatTabs(key: "rest", label: "Отдых", chats: []),
   ].obs;
 
-  var chatRepo = ChatRepo();
-  var chatService = Get.find<ChatService>();
-  var storageService = Get.find<StorageService>();
+  final chatRepo = ChatRepo();
+  final chatService = Get.find<ChatService>();
+  final storageService = Get.find<StorageService>();
+
+  final pageScrollController = <String, ScrollController>{
+    "contacts": ScrollController(),
+    "calls": ScrollController(),
+    "chats": ScrollController(),
+    "settings": ScrollController(),
+  };
+  TabController? chatTabsController;
 
   @override
   void onReady() {
@@ -119,8 +128,27 @@ class HomeController extends BaseController {
   void openChat(ChatContact model) {
     chatService.activeChat.value = model;
 
+    Get.toNamed(AppRoutes.CHAT);
+
+    // TODO remove
     if (chatService.unreadMessages.containsKey(model.id)) {
       chatService.unreadMessages.remove(model.id);
+    }
+  }
+
+  void scrollToTop(String key) {
+    if (pageScrollController.containsKey(key) && activeTabKey.value == key) {
+      if (key == "chats" && pageScrollController[key]?.position.pixels == 0) {
+        chatTabsController?.animateTo(
+          0,
+        );
+      } else {
+        pageScrollController[key]?.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 

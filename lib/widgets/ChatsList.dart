@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:messenger/models/ChatContact.dart';
 import 'package:messenger/widgets/ChatContactTile.dart';
-import 'package:get/get.dart';
 
 class ChatsList extends StatelessWidget {
   final List<ChatContact> models;

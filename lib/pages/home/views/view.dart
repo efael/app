@@ -31,8 +31,9 @@ class HomePage extends GetView<HomeController> {
               )
               .toList(),
           activeItemKey: controller.activeTabKey.value,
-          onTap: (value) {
-            controller.activeTabKey.value = value;
+          onTap: (key) {
+            controller.scrollToTop(key);
+            controller.activeTabKey.value = key;
           },
         ),
       ),

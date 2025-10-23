@@ -16,6 +16,7 @@ class SettingsView extends GetView<HomeController> {
       // appBar: AppBar(title: Text("Settings")),
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: controller.pageScrollController["settings"],
           child: Center(
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
