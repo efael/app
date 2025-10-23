@@ -47,7 +47,6 @@ class CustomBottomNavigationBar extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
                 onTap: () => onTap(item.key),
-                hoverColor: Colors.blue,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 6),
                   child: Column(

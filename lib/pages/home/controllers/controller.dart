@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
-import 'package:messenger/AppRoutes.dart';
 import 'package:messenger/models/ChatContact.dart';
 import 'package:messenger/pages/home/views/_calls.dart';
 import 'package:messenger/pages/home/views/_chats.dart';
@@ -128,7 +127,7 @@ class HomeController extends BaseController {
   void openChat(ChatContact model) {
     chatService.activeChat.value = model;
 
-    Get.toNamed(AppRoutes.CHAT);
+    // Get.toNamed(AppRoutes.CHAT);
 
     // TODO remove
     if (chatService.unreadMessages.containsKey(model.id)) {
@@ -136,7 +135,13 @@ class HomeController extends BaseController {
     }
   }
 
+  // var i = 1;
   void scrollToTop(String key) {
+    // chatService.unreadMessages[1] = i;
+    // i++;
+    // chatTabs.add(ChatTabs(key: "qwe", label: "Hello", chats: []));
+    // chatService.chatContacts.insert(0, chatService.chatContacts.first);
+
     if (pageScrollController.containsKey(key) && activeTabKey.value == key) {
       if (key == "chats" && pageScrollController[key]?.position.pixels == 0) {
         chatTabsController?.animateTo(
