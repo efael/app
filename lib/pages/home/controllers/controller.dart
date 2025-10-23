@@ -16,6 +16,12 @@ class HomeController extends BaseController {
   var activeTabKey = "chats".obs;
   var pageTabs = <StackPages>[
     StackPages(key: "contacts", iconPath: "assets/icons/users.svg", page: const ContactsListView()),
+    StackPages(
+      key: "calls",
+      iconPath: "assets/icons/phone.svg",
+      page: const CallsListView(),
+      disabled: true,
+    ),
     StackPages(key: "chats", iconPath: "assets/icons/message.svg", page: const ChatListView()),
     StackPages(
       key: "settings",
@@ -66,7 +72,10 @@ class HomeController extends BaseController {
     });
 
     storageService.enableCalls.listen((state) {
-      enableOrDisableCalls(state);
+      var index = findTabIndexByActiveTabKey("calls");
+      this.pageTabs[index].disabled = !state;
+
+      this.pageTabs.refresh();
     });
   }
 
@@ -115,24 +124,6 @@ class HomeController extends BaseController {
     }
   }
 
-  void enableOrDisableCalls(bool state) {
-    var index = 1;
-    var key = "calls";
-
-    if (state) {
-      if (this.pageTabs[index].key != key) {
-        this.pageTabs.insert(
-          index,
-          StackPages(key: key, iconPath: "assets/icons/phone.svg", page: const CallsListView()),
-        );
-      }
-    } else {
-      if (this.pageTabs[index].key == key) {
-        this.pageTabs.removeAt(index);
-      }
-    }
-  }
-
   void logout() {
     this.storageService.clear();
     this.chatService.clear();
@@ -143,12 +134,14 @@ class StackPages {
   final String key;
   final Widget page;
   final String iconPath;
+  bool disabled;
   int notificationsCount;
 
   StackPages({
     required this.key,
     required this.page,
     required this.iconPath,
+    this.disabled = false,
     this.notificationsCount = 0,
   });
 }
