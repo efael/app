@@ -8,6 +8,7 @@ import 'package:messenger/pages/home/views/_contacts.dart';
 import 'package:messenger/pages/home/views/_settings.dart';
 import 'package:messenger/repositories/ChatRepo.dart';
 import 'package:messenger/services/ChatService.dart';
+import 'package:messenger/services/StorageService.dart';
 
 import '../../BaseController.dart';
 
@@ -33,13 +34,11 @@ class HomeController extends BaseController {
 
   var chatRepo = ChatRepo();
   var chatService = Get.find<ChatService>();
+  var storageService = Get.find<StorageService>();
 
   @override
   void onReady() {
     super.onReady();
-
-    // To enable calls tab
-    // enableOrDisableCalls(true);
 
     loadChatContacts();
     loadUserContacts();
@@ -64,6 +63,10 @@ class HomeController extends BaseController {
 
       pageTabs.refresh();
       chatTabs.refresh();
+    });
+
+    storageService.enableCalls.listen((state) {
+      enableOrDisableCalls(state);
     });
   }
 
@@ -128,6 +131,11 @@ class HomeController extends BaseController {
         this.pageTabs.removeAt(index);
       }
     }
+  }
+
+  void logout() {
+    this.storageService.clear();
+    this.chatService.clear();
   }
 }
 

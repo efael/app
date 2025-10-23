@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:logger/logger.dart';
 
 class NavItem {
   final String key;
@@ -32,14 +31,12 @@ class CustomBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    final Color background = theme.colorScheme.surface;
     final double height = 64.0;
 
     return SafeArea(
       child: Container(
         height: height,
-        decoration: BoxDecoration(color: background),
+        decoration: BoxDecoration(color: theme.colorScheme.surface),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: List.generate(items.length, (index) {

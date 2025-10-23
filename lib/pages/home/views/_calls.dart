@@ -11,7 +11,7 @@ class CallsListView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Calls")),
+      appBar: AppBar(title: Text("calls".tr)),
       body: Obx(
         () => (controller.chatService.callHistory.isNotEmpty)
             ? ListView.separated(

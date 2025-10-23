@@ -12,5 +12,12 @@ class AppLocalizationsRu {
     "incoming": "Входящий",
     "outgoing": "Исходящий",
     "missed": "Пропущенный",
+    "warning": "Предупреждение",
+    "logoutText": "Вы действительно хотите выйти из приложения",
+    "yes": "Да",
+    "no": "Нет",
+    "language": "Язык",
+    "select_lang": "Выберите язык",
+    "cancel": "Отмена",
   };
 }

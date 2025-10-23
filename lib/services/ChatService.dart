@@ -9,4 +9,13 @@ class ChatService extends GetxService {
 
   var userContacts = <ChatContact>[].obs;
   var callHistory = <CallHistory>[].obs;
+
+  void clear() {
+    activeChat.value = null;
+
+    chatContacts.clear();
+    userContacts.clear();
+    callHistory.clear();
+    unreadMessages.clear();
+  }
 }
