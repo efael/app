@@ -4,8 +4,7 @@ use messages::prelude::{Context, Notifiable};
 use rinf::RustSignal;
 
 use crate::{
-    actors::matrix::Matrix,
-    signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncOnceRequest},
+    actors::matrix::Matrix, matrix::session::Session, signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncBackgroundRequest, MatrixSyncOnceRequest}
 };
 
 #[async_trait]
@@ -33,9 +32,23 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
 
         match client.oauth().finish_login(url.into()).await {
             Ok(_) => {
-                tracing::trace!("logged in");
+                tracing::trace!("logged in as - {}", client.session().unwrap().meta().user_id);
 
-                self.emit(MatrixSyncOnceRequest { sync_token: None });
+                let oauth_session = client
+                    .oauth()
+                    .full_session()
+                    .expect("after login, should have session");
+
+                let session = Session::from_oauth(oauth_session, self.session_path());
+                session
+                    .save_to_disk()
+                    .expect("failed to save session to disk");
+
+                self.session = Some(session);
+
+                // self.emit(MatrixSyncOnceRequest { sync_token: None });
+
+                self.emit(MatrixSyncBackgroundRequest::Start);
                 MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
             }
             Err(err) => {
