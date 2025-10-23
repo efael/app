@@ -22,47 +22,52 @@ class ContactsListView extends GetView<HomeController> {
                 itemBuilder: (context, i) {
                   var item = controller.chatService.userContacts[i];
 
-                  return ListTile(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                    onTap: () => controller.openChat(item),
-                    title: Text(item.fullName, style: TextStyle(fontWeight: FontWeight.w600)),
-                    leading: UserAvatar(
-                      imagePath: item.photo,
-                      userInitials: item.initials,
-                      size: 42,
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      splashColor: Colors.transparent,
                     ),
-                    trailing: Obx(() {
-                      var msgCount = (controller.chatService.unreadMessages.containsKey(item.id))
-                          ? controller.chatService.unreadMessages[item.id]!
-                          : 0;
+                    child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                      onTap: () => controller.openChat(item),
+                      title: Text(item.fullName, style: TextStyle(fontWeight: FontWeight.w600)),
+                      leading: UserAvatar(
+                        imagePath: item.photo,
+                        userInitials: item.initials,
+                        size: 42,
+                      ),
+                      trailing: Obx(() {
+                        var msgCount = (controller.chatService.unreadMessages.containsKey(item.id))
+                            ? controller.chatService.unreadMessages[item.id]!
+                            : 0;
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          (msgCount > 0)
-                              ? Container(
-                                  constraints: const BoxConstraints(
-                                    minWidth: 24,
-                                    minHeight: 24,
-                                    maxWidth: 24,
-                                  ),
-                                  padding: EdgeInsets.symmetric(horizontal: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: BorderRadius.circular(32),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      msgCount.toString(),
-                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            (msgCount > 0)
+                                ? Container(
+                                    constraints: const BoxConstraints(
+                                      minWidth: 24,
+                                      minHeight: 24,
+                                      maxWidth: 24,
                                     ),
-                                  ),
-                                )
-                              : SizedBox(),
-                        ],
-                      );
-                    }),
+                                    padding: EdgeInsets.symmetric(horizontal: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: BorderRadius.circular(32),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        msgCount.toString(),
+                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  )
+                                : SizedBox(),
+                          ],
+                        );
+                      }),
+                    ),
                   );
                 },
               )

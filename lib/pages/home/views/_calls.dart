@@ -23,27 +23,32 @@ class CallsListView extends GetView<HomeController> {
                 itemBuilder: (context, i) {
                   var item = controller.chatService.callHistory[i];
 
-                  return ListTile(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                    onTap: () => {},
-                    title: Text(
-                      item.fullName,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: (item.status == CallStatus.missed) ? Colors.red : Colors.white,
-                      ),
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      splashColor: Colors.transparent,
                     ),
-                    subtitle: Text(item.status.label.tr),
-                    leading: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          (item.status == CallStatus.outgoing) ? Icons.call_made : Icons.call_received,
-                          color: (item.status == CallStatus.missed) ? Colors.red : null,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                      onTap: () => {},
+                      title: Text(
+                        item.fullName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: (item.status == CallStatus.missed) ? Colors.red : Colors.white,
                         ),
-                        SizedBox(width: 15),
-                        UserAvatar(imagePath: item.photo, userInitials: item.initials, size: 42),
-                      ],
+                      ),
+                      subtitle: Text(item.status.label.tr),
+                      leading: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            (item.status == CallStatus.outgoing) ? Icons.call_made : Icons.call_received,
+                            color: (item.status == CallStatus.missed) ? Colors.red : null,
+                          ),
+                          SizedBox(width: 15),
+                          UserAvatar(imagePath: item.photo, userInitials: item.initials, size: 42),
+                        ],
+                      ),
                     ),
                   );
                 },
