@@ -19,5 +19,6 @@ class AppLocalizationsRu {
     "language": "Язык",
     "select_lang": "Выберите язык",
     "cancel": "Отмена",
+    "message": "Сообшения",
   };
 }

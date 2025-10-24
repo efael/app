@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:messenger/AppRoutes.dart';
 import 'package:messenger/models/ChatContact.dart';
 import 'package:messenger/pages/home/views/_calls.dart';
 import 'package:messenger/pages/home/views/_chats.dart';
@@ -127,7 +128,7 @@ class HomeController extends BaseController {
   void openChat(ChatContact model) {
     chatService.activeChat.value = model;
 
-    // Get.toNamed(AppRoutes.CHAT);
+    Get.toNamed(AppRoutes.CHAT);
 
     // TODO remove
     if (chatService.unreadMessages.containsKey(model.id)) {

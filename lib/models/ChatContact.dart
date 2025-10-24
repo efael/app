@@ -5,6 +5,7 @@ class ChatContact {
   final String lastName;
   final String lastMessage;
   final DateTime time;
+  final String lastSeen;
 
   bool isOnline;
   final bool isGroup;
@@ -19,13 +20,14 @@ class ChatContact {
     required this.lastMessage,
     required this.time,
 
+    this.lastSeen = "last seen long time ago",
     this.isOnline = false,
     this.isGroup = false,
     this.isPinned = false,
     this.isSecretChat = false,
   });
 
-  get fullName => "${firstName} ${lastName}";
+  get fullName => "$firstName $lastName";
 
   get initials =>
       ("${(firstName + ' ')[0].toUpperCase()}${(lastName + ' ')[0].toUpperCase()}")
