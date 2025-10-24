@@ -1,6 +1,7 @@
 class AppRoutes {
-  static const BASE = '/';
-  static const HOME = '/home';
-  static const CHAT = '/chat';
-  static const CHAT_DETAILS = '/chat/info';
+  static const base = '/';
+  static const auth = '/auth';
+  static const home = '/home';
+  static const chat = '/chat';
+  static const chatDetails = '/chat/info';
 }

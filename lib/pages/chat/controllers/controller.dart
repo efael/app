@@ -125,7 +125,7 @@ class ChatController extends BaseController {
   }
 
   void openDetails() {
-    Get.toNamed(AppRoutes.CHAT_DETAILS);
+    Get.toNamed(AppRoutes.chatDetails);
   }
 
   void onNewMessage(String msg) {

@@ -1,5 +1,5 @@
 name: messenger
-description: "A new Flutter project."
+description: "Matrix client and it looks and feels like Telegram"
 
 publish_to: "none"
 
@@ -44,5 +44,4 @@ flutter:
 rinf:
   gen_input_crates:
     - hub
-    - matrix-sdk-rinf
   gen_output_dir: lib/src/bindings

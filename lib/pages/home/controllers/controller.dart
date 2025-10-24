@@ -16,14 +16,22 @@ import '../../BaseController.dart';
 class HomeController extends BaseController {
   var activeTabKey = "chats".obs;
   var pageTabs = <StackPages>[
-    StackPages(key: "contacts", iconPath: "assets/icons/users.svg", page: const ContactsListView()),
+    StackPages(
+      key: "contacts",
+      iconPath: "assets/icons/users.svg",
+      page: const ContactsListView(),
+    ),
     StackPages(
       key: "calls",
       iconPath: "assets/icons/phone.svg",
       page: const CallsListView(),
       disabled: true,
     ),
-    StackPages(key: "chats", iconPath: "assets/icons/message.svg", page: const ChatListView()),
+    StackPages(
+      key: "chats",
+      iconPath: "assets/icons/message.svg",
+      page: const ChatListView(),
+    ),
     StackPages(
       key: "settings",
       iconPath: "assets/icons/settings.svg",
@@ -128,7 +136,7 @@ class HomeController extends BaseController {
   void openChat(ChatContact model) {
     chatService.activeChat.value = model;
 
-    Get.toNamed(AppRoutes.CHAT);
+    Get.toNamed(AppRoutes.chat);
 
     // TODO remove
     if (chatService.unreadMessages.containsKey(model.id)) {
@@ -145,9 +153,7 @@ class HomeController extends BaseController {
 
     if (pageScrollController.containsKey(key) && activeTabKey.value == key) {
       if (key == "chats" && pageScrollController[key]?.position.pixels == 0) {
-        chatTabsController?.animateTo(
-          0,
-        );
+        chatTabsController?.animateTo(0);
       } else {
         pageScrollController[key]?.animateTo(
           0.0,
