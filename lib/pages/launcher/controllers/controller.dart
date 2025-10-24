@@ -1,6 +1,6 @@
 import 'package:messenger/AppConfig.dart';
 import 'package:messenger/AppRoutes.dart';
-import 'package:messenger/src/bindings/bindings.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../BaseController.dart';

@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:messenger/AppConfig.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:rinf/rinf.dart';
 
 import 'AppBinding.dart';
 import 'AppPages.dart';
 import 'AppRoutes.dart';
 import 'i18n/Messages.dart';
-import 'src/bindings/signals/signals.dart';
 import 'themes/default.dart';
 
 void main() async {

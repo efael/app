@@ -26,6 +26,7 @@ dependencies:
   path_provider: ^2.1.5
   tuple: ^2.0.2
   flutter_web_auth_2: ^5.0.0-alpha.7
+  widgetbook: ^3.18.0
 
 dev_dependencies:
   flutter_test:
@@ -44,4 +45,4 @@ flutter:
 rinf:
   gen_input_crates:
     - hub
-  gen_output_dir: lib/src/bindings
+  gen_output_dir: lib/rinf/bindings

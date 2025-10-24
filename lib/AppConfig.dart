@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:messenger/src/bindings/bindings.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 
 class AppConfig {
   static const appName = "Efael";

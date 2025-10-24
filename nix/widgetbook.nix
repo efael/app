@@ -7,7 +7,7 @@
   widgetbookSrc = pkgs.stdenv.mkDerivation {
     pname = "efael-app-widgetbook-src";
     version = "0.1.0";
-    src = ./.;
+    src = ../.;
     nativeBuildInputs = [
       rinf
     ];
@@ -25,7 +25,7 @@ in
       version = widgetbookSrc.version;
 
       src = widgetbookSrc;
-      autoPubspecLock = ./widgetbook/pubspec.lock;
+      autoPubspecLock = ../widgetbook/pubspec.lock;
       sourceRoot = "widgetbook";
       flutterBuildFlags = [
         "--base-href"
