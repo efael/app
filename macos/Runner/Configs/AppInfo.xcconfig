@@ -8,7 +8,7 @@
 PRODUCT_NAME = messenger
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = uz.efael.messenger
+PRODUCT_BUNDLE_IDENTIFIER = uz.uzinfocom.efael
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 uz.efael. All rights reserved.

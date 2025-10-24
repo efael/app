@@ -17,6 +17,7 @@ pub struct Actors {
     pub matrix: Address<Matrix>,
 }
 
+#[tracing::instrument]
 pub async fn create_actors() -> Actors {
     let matrix_context = Context::new();
     let matrix_addr = matrix_context.address();

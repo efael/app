@@ -108,9 +108,11 @@ lib/generated_plugin_registrant.dart
 /target/
 
 # Generated signals
-/lib/src/bincode
-/lib/src/serde
-/lib/src/bindings
+/lib/rinf/bincode
+/lib/rinf/serde
+/lib/rinf/bindings
 
 test_polygon
 /result
+
+.idea

@@ -13,7 +13,6 @@ use ruma::{api::client::discovery::get_authorization_server_metadata::v1::Prompt
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-
 /// The configuration to use when authenticating with OIDC.
 #[derive(Serialize, Deserialize, SignalPiece, Debug)]
 pub struct OidcConfiguration {
@@ -44,9 +43,10 @@ impl OidcConfiguration {
         let registration_data = self.registration_data()?;
         let redirect_uri = self.redirect_uri()?;
 
-        let mut url_builder = client
-            .oauth()
-            .login(redirect_uri, None, Some(registration_data));
+        let mut url_builder =
+            client
+                .oauth()
+                .login(redirect_uri, None, Some(registration_data), None);
 
         url_builder = url_builder.prompt(vec![Prompt::from("consent")]);
         Ok(url_builder.build().await?)

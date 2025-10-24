@@ -1,6 +1,7 @@
+use std::time::Duration;
+
 use matrix_sdk::config::SyncSettings;
 use ruma::api::client::filter::{FilterDefinition, LazyLoadOptions, RoomEventFilter, RoomFilter};
-
 
 pub fn build_sync_settings(sync_token: Option<String>) -> SyncSettings {
     let mut state_filter = RoomEventFilter::empty();
@@ -14,7 +15,9 @@ pub fn build_sync_settings(sync_token: Option<String>) -> SyncSettings {
     let mut filter = FilterDefinition::empty();
     filter.room = room_filter;
 
-    let mut sync_settings = SyncSettings::default().filter(filter.into());
+    let mut sync_settings = SyncSettings::default()
+        .filter(filter.into())
+        .timeout(Duration::from_secs(3));
 
     if let Some(token) = sync_token {
         sync_settings = sync_settings.token(token);
@@ -22,3 +25,4 @@ pub fn build_sync_settings(sync_token: Option<String>) -> SyncSettings {
 
     sync_settings
 }
+

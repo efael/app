@@ -1,18 +1,15 @@
 use async_trait::async_trait;
 use messages::prelude::{Context, Notifiable};
-use rinf::debug_print;
 
 use crate::{actors::matrix::Matrix, signals::MatrixRefreshTokenRequest};
 
 #[async_trait]
 impl Notifiable<MatrixRefreshTokenRequest> for Matrix {
+    #[tracing::instrument(skip(self))]
     async fn notify(&mut self, _msg: MatrixRefreshTokenRequest, _: &Context<Self>) {
-        let client = match self.client.as_mut() {
-            Some(client) => client,
-            None => {
-                debug_print!("MatrixRefreshTokenRequest: client is not initialized");
-                return;
-            }
+        let Some(_client) = self.client.as_mut() else {
+            tracing::error!("client is not initialized");
+            return;
         };
 
         // match client.refresh_access_token().await {
