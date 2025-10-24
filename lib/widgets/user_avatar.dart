@@ -5,13 +5,18 @@ class UserAvatar extends StatelessWidget {
   final String userInitials;
   final double size;
 
-  const UserAvatar({super.key, this.imagePath, required this.userInitials, this.size = 56});
+  const UserAvatar({
+    super.key,
+    this.imagePath,
+    required this.userInitials,
+    this.size = 56,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: this.size,
-      height: this.size,
+      width: size,
+      height: size,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
@@ -29,7 +34,10 @@ class UserAvatar extends StatelessWidget {
                   padding: EdgeInsets.all(20),
                   child: Text(
                     userInitials,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 100),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 100,
+                    ),
                   ),
                 ),
               )

@@ -4,15 +4,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:messenger/AppConfig.dart';
+import 'package:messenger/binding.dart';
+import 'package:messenger/config.dart';
+import 'package:messenger/i18n/messages.dart';
+import 'package:messenger/pages.dart';
 import 'package:messenger/rinf/bindings/bindings.dart';
+import 'package:messenger/routes.dart';
+import 'package:messenger/themes/default.dart';
 import 'package:rinf/rinf.dart';
-
-import 'AppBinding.dart';
-import 'AppPages.dart';
-import 'AppRoutes.dart';
-import 'i18n/Messages.dart';
-import 'themes/default.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:messenger/pages/chat/controllers/controller.dart';
-import 'package:messenger/widgets/UserAvatar.dart';
+import 'package:messenger/widgets/user_avatar.dart';
 
 class UserDetailsPage extends GetView<ChatController> {
   const UserDetailsPage({super.key});
@@ -24,7 +24,8 @@ class UserDetailsPage extends GetView<ChatController> {
                   child: Hero(
                     tag: "userImage",
                     child: UserAvatar(
-                      userInitials: controller.chatService.activeChat.value?.initials,
+                      userInitials:
+                          controller.chatService.activeChat.value?.initials,
                       imagePath: controller.chatService.activeChat.value?.photo,
                       size: 100,
                     ),
@@ -38,7 +39,10 @@ class UserDetailsPage extends GetView<ChatController> {
                       type: MaterialType.transparency,
                       child: Text(
                         controller.chatService.activeChat.value?.fullName,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -52,7 +56,10 @@ class UserDetailsPage extends GetView<ChatController> {
                       type: MaterialType.transparency,
                       child: Text(
                         controller.chatService.activeChat.value?.lastSeen ?? "",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),

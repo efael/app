@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:messenger/models/ChatContact.dart';
-import 'package:messenger/widgets/SvgImage.dart';
-import 'package:messenger/widgets/TimeAgoText.dart';
-import 'package:messenger/widgets/UserAvatar.dart';
+import 'package:messenger/models/chat_contact.dart';
+import 'package:messenger/widgets/svg_image.dart';
+import 'package:messenger/widgets/time_ago_text.dart';
+import 'package:messenger/widgets/user_avatar.dart';
 
 class ChatContactTile extends StatelessWidget {
   final ChatContact model;
@@ -35,12 +35,22 @@ class ChatContactTile extends StatelessWidget {
                   SizedBox(width: 3),
                   Text(
                     model.fullName,
-                    style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF35C47C)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF35C47C),
+                    ),
                   ),
                 ],
               )
-            : Text(model.fullName, style: TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(model.lastMessage, maxLines: 2, style: TextStyle(color: Color(0xFF6C808C))),
+            : Text(
+                model.fullName,
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+        subtitle: Text(
+          model.lastMessage,
+          maxLines: 2,
+          style: TextStyle(color: Color(0xFF6C808C)),
+        ),
         leading: Stack(
           children: [
             UserAvatar(imagePath: model.photo, userInitials: model.initials),
@@ -54,7 +64,10 @@ class ChatContactTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Color(0xFF35C47C),
                     shape: BoxShape.circle,
-                    border: Border.all(color: theme.scaffoldBackgroundColor, width: 3),
+                    border: Border.all(
+                      color: theme.scaffoldBackgroundColor,
+                      width: 3,
+                    ),
                   ),
                 ),
               ),
@@ -67,7 +80,11 @@ class ChatContactTile extends StatelessWidget {
             TimeAgoText(dateTime: model.time),
             (unreadMessages > 0)
                 ? Container(
-                    constraints: const BoxConstraints(minWidth: 24, minHeight: 24, maxWidth: 24),
+                    constraints: const BoxConstraints(
+                      minWidth: 24,
+                      minHeight: 24,
+                      maxWidth: 24,
+                    ),
                     padding: EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
                       color: Colors.blue,
@@ -76,7 +93,10 @@ class ChatContactTile extends StatelessWidget {
                     child: Center(
                       child: Text(
                         unreadMessages.toString(),
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   )

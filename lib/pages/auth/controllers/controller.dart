@@ -1,10 +1,10 @@
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:messenger/AppConfig.dart';
-import 'package:messenger/AppRoutes.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-
-import '../../BaseController.dart';
 import 'package:get/get.dart';
+import 'package:messenger/config.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
+import 'package:messenger/routes.dart';
+
+import '../../base_controller.dart';
 
 class AuthController extends BaseController {
   var loading = false.obs;

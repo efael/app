@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:messenger/widgets/SvgImage.dart';
+import 'package:messenger/widgets/svg_image.dart';
 
 class ChatMessageBar extends StatefulWidget {
   final Function(String) onSendMessage;

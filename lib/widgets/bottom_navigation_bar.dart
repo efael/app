@@ -7,7 +7,12 @@ class NavItem {
   final String iconPath;
   final int? count;
 
-  const NavItem({required this.key, required this.label, required this.iconPath, this.count});
+  const NavItem({
+    required this.key,
+    required this.label,
+    required this.iconPath,
+    this.count,
+  });
 }
 
 class CustomBottomNavigationBar extends StatelessWidget {
@@ -48,7 +53,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 onTap: () => onTap(item.key),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 6),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 0,
+                    horizontal: 6,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -60,7 +68,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
                             height: 32,
                             padding: const EdgeInsets.all(4.0),
                             decoration: BoxDecoration(
-                              color: selected ? activeItemBg : Colors.transparent,
+                              color: selected
+                                  ? activeItemBg
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(32),
                             ),
                             child: SvgPicture.asset(
@@ -76,16 +86,26 @@ class CustomBottomNavigationBar extends StatelessWidget {
                             top: 2,
                             child: (item.count != null && item.count! > 0)
                                 ? Container(
-                                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                                    padding: EdgeInsets.symmetric(horizontal: 2),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 18,
+                                      minHeight: 18,
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.blue,
                                       borderRadius: BorderRadius.circular(32),
                                     ),
                                     child: Center(
                                       child: Text(
-                                        (item.count! > 99) ? "99+" : item.count.toString(),
-                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                        (item.count! > 99)
+                                            ? "99+"
+                                            : item.count.toString(),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   )

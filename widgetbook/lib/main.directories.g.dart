@@ -11,8 +11,8 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
-import 'package:widgetbook_workspace/user_avatar.dart'
-    as _widgetbook_workspace_user_avatar;
+import 'package:widgetbook_workspace/widgets/user_avatar.dart'
+    as _widgetbook_workspace_widgets_user_avatar;
 
 final directories = <_widgetbook.WidgetbookNode>[
   _widgetbook.WidgetbookFolder(
@@ -23,7 +23,7 @@ final directories = <_widgetbook.WidgetbookNode>[
         useCases: [
           _widgetbook.WidgetbookUseCase(
             name: 'Default',
-            builder: _widgetbook_workspace_user_avatar.buildUseCase,
+            builder: _widgetbook_workspace_widgets_user_avatar.buildUseCase,
           ),
         ],
       ),

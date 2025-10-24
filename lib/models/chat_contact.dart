@@ -30,7 +30,7 @@ class ChatContact {
   get fullName => "$firstName $lastName";
 
   get initials =>
-      ("${(firstName + ' ')[0].toUpperCase()}${(lastName + ' ')[0].toUpperCase()}")
+      ("${('$firstName ')[0].toUpperCase()}${('$lastName ')[0].toUpperCase()}")
           .trim();
 
   factory ChatContact.fromJson(Map<String, dynamic> json) {

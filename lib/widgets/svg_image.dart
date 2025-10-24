@@ -11,7 +11,9 @@ class SvgImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SvgPicture.asset(
       path,
-      colorFilter: (color != null) ? ColorFilter.mode(color!, BlendMode.srcIn) : null,
+      colorFilter: (color != null)
+          ? ColorFilter.mode(color!, BlendMode.srcIn)
+          : null,
     );
   }
 }

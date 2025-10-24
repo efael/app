@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
-import 'package:messenger/enums/MessageState.dart';
-import 'package:messenger/enums/MessageType.dart';
+import 'package:messenger/enums/message_state.dart';
+import 'package:messenger/enums/message_type.dart';
 
 class BaseMessageType {
   final int id;

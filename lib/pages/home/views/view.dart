@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:messenger/widgets/CustomBottomNavigationBar.dart';
+import 'package:messenger/widgets/bottom_navigation_bar.dart';
 
 import '../controllers/controller.dart';
 
@@ -12,7 +12,9 @@ class HomePage extends GetView<HomeController> {
     return Obx(
       () => Scaffold(
         body: IndexedStack(
-          index: controller.findTabIndexByActiveTabKey(controller.activeTabKey.value),
+          index: controller.findTabIndexByActiveTabKey(
+            controller.activeTabKey.value,
+          ),
           children: controller.pageTabs.map((item) => item.page).toList(),
         ),
         bottomNavigationBar: CustomBottomNavigationBar(

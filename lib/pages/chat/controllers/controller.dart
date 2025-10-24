@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
-import 'package:messenger/AppRoutes.dart';
-import 'package:messenger/enums/MessageState.dart';
-import 'package:messenger/enums/MessageType.dart';
-import 'package:messenger/models/MessageTypes.dart';
-import 'package:messenger/services/ChatService.dart';
+import 'package:messenger/enums/message_state.dart';
+import 'package:messenger/enums/message_type.dart';
+import 'package:messenger/models/message_types.dart';
+import 'package:messenger/routes.dart';
+import 'package:messenger/services/chat_service.dart';
 
-import '../../BaseController.dart';
+import '../../base_controller.dart';
 
 class ChatController extends BaseController {
   final chatService = Get.find<ChatService>();

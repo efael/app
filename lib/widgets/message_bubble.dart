@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:messenger/enums/MessageState.dart';
-import 'package:messenger/models/MessageTypes.dart';
+import 'package:messenger/enums/message_state.dart';
+import 'package:messenger/models/message_types.dart';
 
 class MessageBubble extends StatelessWidget {
   final BaseMessageType model;
@@ -34,9 +34,12 @@ class MessageBubble extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(model.formatedTime, style: TextStyle(color: Colors.white, fontSize: 10)),
+                Text(
+                  model.formatedTime,
+                  style: TextStyle(color: Colors.white, fontSize: 10),
+                ),
                 SizedBox(width: 4),
-                (fromMe) ? Icon(model.status.icon, size: 14,) : SizedBox()
+                (fromMe) ? Icon(model.status.icon, size: 14) : SizedBox(),
               ],
             ),
           ],

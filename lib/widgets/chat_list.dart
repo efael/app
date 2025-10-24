@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:messenger/models/ChatContact.dart';
-import 'package:messenger/widgets/ChatContactTile.dart';
+import 'package:messenger/models/chat_contact.dart';
+import 'package:messenger/widgets/chat_contact_tile.dart';
 
 class ChatsList extends StatelessWidget {
   final List<ChatContact> models;
@@ -25,7 +25,11 @@ class ChatsList extends StatelessWidget {
             padding: EdgeInsets.zero,
             itemCount: models.length,
             separatorBuilder: (BuildContext context, int index) {
-              return const Divider(color: Color(0x55314356), height: 1, thickness: 1);
+              return const Divider(
+                color: Color(0x55314356),
+                height: 1,
+                thickness: 1,
+              );
             },
             itemBuilder: (context, i) {
               var item = models[i];
