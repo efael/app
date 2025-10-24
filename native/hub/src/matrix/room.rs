@@ -7,6 +7,7 @@ use ruma::events::room::message::MessageType;
 use serde::{Deserialize, Serialize};
 
 use crate::matrix::events;
+use crate::matrix::room_avatar::{RoomPreviewAvatar, AVATAR_THUMBNAIL_FORMAT};
 
 #[derive(Debug, Clone, Serialize, Deserialize, SignalPiece)]
 pub struct Room {
@@ -14,6 +15,7 @@ pub struct Room {
     // pub inner: SdkRoom,
     pub id: String,
     pub name: String,
+    pub avatar: RoomPreviewAvatar,
 
     pub is_visited: bool,
     pub is_favourite: bool,
@@ -54,9 +56,17 @@ impl Room {
 
         let is_encrypted = !matches!(sdk_room.encryption_state(), EncryptionState::NotEncrypted);
 
+        let avatar = match sdk_room.avatar(AVATAR_THUMBNAIL_FORMAT.into()).await {
+            Ok(Some(avatar)) => RoomPreviewAvatar::Image(avatar),
+            _ => {
+                RoomPreviewAvatar::Text("A".to_string())
+            }
+        };
+
         let mut room = Room {
             id: sdk_room.room_id().to_string(),
             name: name.to_room_alias_name(),
+            avatar,
             is_visited: false,
             is_encrypted,
             is_favourite: sdk_room.is_favourite(),

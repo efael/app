@@ -73,7 +73,7 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
         let room_list_service = sync_service.room_list_service();
 
         let rooms_list = room_list_service.all_rooms().await.expect("failed to fetch room-list");
-        self.room_list.as_ref().listen_to_updates(rooms_list);
+        self.room_list.as_ref().listen_to_updates(rooms_list, &mut self.owned_tasks);
 
         self.owned_tasks.spawn(async move {
             // let mut loading_state = rooms.map(|r| r.loading_state());

@@ -4,4 +4,5 @@ pub mod sync;
 pub mod sas_verification;
 pub mod room;
 pub mod room_list;
+pub mod room_avatar;
 pub mod events;

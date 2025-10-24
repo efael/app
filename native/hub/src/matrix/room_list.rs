@@ -7,9 +7,10 @@ use matrix_sdk_ui::eyeball_im::VectorDiff;
 use matrix_sdk_ui::room_list_service::RoomList as SdkRoomList;
 use rinf::{debug_print, RustSignal};
 use ruma::events::AnyTimelineEvent;
+use tokio::task::JoinSet;
 
 use crate::matrix::room::Room;
-use crate::signals::MatrixRoomListUpdate;
+use crate::signals::MatrixListChatsResponse;
 
 #[derive(Debug)]
 pub struct RoomList {
@@ -27,11 +28,11 @@ impl Default for RoomList {
 }
 
 impl RoomList {
-    pub fn listen_to_updates(&self, room_list: SdkRoomList) {
+    pub fn listen_to_updates(&self, room_list: SdkRoomList, owned_tasks: &mut JoinSet<()>) {
         debug_print!("started listening to updates");
         let cached_rooms = self.rooms.clone();
 
-        tokio::spawn(async move {
+        owned_tasks.spawn(async move {
             let (stream, controller) = room_list.entries_with_dynamic_adapters(50);
 
             // don't really know what this is doing, copied from robrix
@@ -40,7 +41,8 @@ impl RoomList {
             pin_mut!(stream);
             while let Some(all_diffs) = stream.next().await {
                 RoomList::handle_diff(all_diffs, cached_rooms.clone()).await;
-                MatrixRoomListUpdate {
+
+                MatrixListChatsResponse::Ok {
                     rooms: cached_rooms.lock().clone()
                 }.send_signal_to_dart();
             }
@@ -96,6 +98,7 @@ impl RoomList {
                         .map(|sdk_room| async move { Room::from_sdk_room(sdk_room).await });
 
                     let new_rooms = futures::future::join_all(new_rooms).await;
+                    debug_print!("rooms: {new_rooms:?}");
                     *cached_rooms.lock() = new_rooms;
                 }
             }
