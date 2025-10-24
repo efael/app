@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 use matrix_sdk::Client;
 use matrix_sdk_ui::sync_service::SyncService;
@@ -69,22 +70,24 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
             url: "".to_string(),
         });
 
-        self.owned_tasks.spawn(async move {
-            let rls = sync_service.room_list_service();
-            let rooms = rls.all_rooms().await;
+        let room_list_service = sync_service.room_list_service();
 
-            let mut loading_state = rooms.map(|r| r.loading_state());
+        let rooms_list = room_list_service.all_rooms().await.expect("failed to fetch room-list");
+        self.room_list.as_ref().listen_to_updates(rooms_list);
+
+        self.owned_tasks.spawn(async move {
+            // let mut loading_state = rooms.map(|r| r.loading_state());
 
             loop {
                 if let Some(_state) = sync_service.state().next().await {
                     // tracing::trace!("[sync] new state {state:?}");
                 }
 
-                if let Ok(loading_state) = loading_state.as_mut()
-                    && let Some(state) = loading_state.next().await
-                {
-                    tracing::info!("new room state {state:?}");
-                }
+                // if let Ok(loading_state) = loading_state.as_mut()
+                //     && let Some(state) = loading_state.next().await
+                // {
+                //     tracing::info!("new room state {state:?}");
+                // }
             }
         });
     }

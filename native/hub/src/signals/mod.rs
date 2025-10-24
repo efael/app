@@ -90,9 +90,8 @@ pub enum MatrixListChatsResponse {
 }
 
 #[derive(Serialize, RustSignal)]
-pub enum MatrixRoomListUpdate {
-    List { rooms: Vec<Room> },
-    Remove { indices: Vec<u32> },
+pub struct MatrixRoomListUpdate {
+    pub rooms: Vec<Room>,
 }
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]

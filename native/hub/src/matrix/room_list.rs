@@ -1,34 +1,117 @@
-use crate::matrix::room::Room;
+use std::sync::Arc;
+use futures::{StreamExt, pin_mut};
 use matrix_sdk::locks::Mutex;
 use matrix_sdk::room::Room as SdkRoom;
 use matrix_sdk::{Client, RoomState as SdkRoomState};
-use rinf::debug_print;
+use matrix_sdk_ui::eyeball_im::VectorDiff;
+use matrix_sdk_ui::room_list_service::RoomList as SdkRoomList;
+use rinf::{debug_print, RustSignal};
 use ruma::events::AnyTimelineEvent;
+
+use crate::matrix::room::Room;
+use crate::signals::MatrixRoomListUpdate;
 
 #[derive(Debug)]
 pub struct RoomList {
-    rooms: Mutex<Vec<Room>>,
+    rooms: Arc<Mutex<Vec<Room>>>,
+    last_updated: u128,
 }
 
 impl Default for RoomList {
     fn default() -> Self {
         RoomList {
-            rooms: Mutex::new(vec![]),
+            rooms: Arc::new(Mutex::new(vec![])),
+            last_updated: 0,
         }
     }
 }
 
 impl RoomList {
+    pub fn listen_to_updates(&self, room_list: SdkRoomList) {
+        debug_print!("started listening to updates");
+        let cached_rooms = self.rooms.clone();
+
+        tokio::spawn(async move {
+            let (stream, controller) = room_list.entries_with_dynamic_adapters(50);
+
+            // don't really know what this is doing, copied from robrix
+            controller.set_filter(Box::new(|_room| true));
+
+            pin_mut!(stream);
+            while let Some(all_diffs) = stream.next().await {
+                RoomList::handle_diff(all_diffs, cached_rooms.clone()).await;
+                MatrixRoomListUpdate {
+                    rooms: cached_rooms.lock().clone()
+                }.send_signal_to_dart();
+            }
+        });
+    }
+
+    async fn handle_diff(all_diffs: Vec<VectorDiff<SdkRoom>>, cached_rooms: Arc<Mutex<Vec<Room>>>) {
+        for diff in all_diffs {
+            match diff {
+                VectorDiff::Append { values: new_rooms } => {
+                    debug_print!("[diff] got APPEND");
+                }
+                VectorDiff::Clear => {
+                    debug_print!("[diff] got CLEAR");
+                }
+                VectorDiff::PushFront { value: new_room } => {
+                    debug_print!("[diff] got CLEAR");
+                }
+                VectorDiff::Insert { index, value: new_room } => {
+                    debug_print!("[diff] got INSERT");
+                }
+
+                VectorDiff::PopFront => {
+                    debug_print!("[diff] got PopFront");
+                }
+
+                VectorDiff::PopBack => {
+                    debug_print!("[diff] got PopBack");
+                }
+
+                VectorDiff::PushBack { value } => {
+                    debug_print!("[diff] got PushBack");
+                },
+
+                VectorDiff::Set { index, value } => {
+                    debug_print!("[diff] got Set");
+                }
+
+                VectorDiff::Remove { index } => {
+                    debug_print!("[diff] got Remove");
+                }
+
+                VectorDiff::Truncate { length } => {
+                    debug_print!("[diff] got Truncate");
+                }
+
+                VectorDiff::Reset { values: new_rooms } => {
+                    debug_print!("[diff] got RESET");
+
+                    cached_rooms.lock().clear();
+                    let new_rooms = new_rooms
+                        .into_iter()
+                        .map(|sdk_room| async move { Room::from_sdk_room(sdk_room).await });
+
+                    let new_rooms = futures::future::join_all(new_rooms).await;
+                    *cached_rooms.lock() = new_rooms;
+                }
+            }
+        }
+    }
+
     pub async fn populate(&self, client: &Client) {
         debug_print!("[room-list] populating room cache");
 
-        let rooms = client
-            .joined_rooms()
-            .into_iter()
-            .map(|sdk_room| async move { Room::from_sdk_room(sdk_room.clone()).await });
+        // let rooms = client
+        //     .joined_rooms()
+        //     .into_iter()
+        //     .map(|sdk_room| async move { Room::from_sdk_room(sdk_room.clone()).await });
 
-        let rooms = futures::future::join_all(rooms).await;
-        *self.rooms.lock() = rooms;
+        // let rooms = futures::future::join_all(rooms).await;
+        // *self.rooms.lock() = rooms;
 
         debug_print!("[room-list] room cache populated successfully");
     }
