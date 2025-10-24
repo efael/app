@@ -20,6 +20,7 @@ class HomePage extends GetView<HomeController> {
           activeItemBg: Color(0xFF314356),
           inactiveItemColor: Color(0xFF6C808C),
           items: controller.pageTabs
+              .where((it) => !it.disabled)
               .map(
                 (it) => NavItem(
                   key: it.key,
@@ -30,8 +31,9 @@ class HomePage extends GetView<HomeController> {
               )
               .toList(),
           activeItemKey: controller.activeTabKey.value,
-          onTap: (value) {
-            controller.activeTabKey.value = value;
+          onTap: (key) {
+            controller.scrollToTop(key);
+            controller.activeTabKey.value = key;
           },
         ),
       ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:messenger/models/ChatContact.dart';
+import 'package:messenger/widgets/SvgImage.dart';
 import 'package:messenger/widgets/TimeAgoText.dart';
 import 'package:messenger/widgets/UserAvatar.dart';
 
@@ -23,9 +23,7 @@ class ChatContactTile extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Theme(
-      data: Theme.of(context).copyWith(
-        splashColor: Colors.transparent,
-      ),
+      data: Theme.of(context).copyWith(splashColor: Colors.transparent),
       child: ListTile(
         tileColor: (isActiveChat) ? Color(0xFF2B415A) : null,
         contentPadding: EdgeInsets.symmetric(horizontal: 16),
@@ -33,10 +31,7 @@ class ChatContactTile extends StatelessWidget {
         title: (model.isSecretChat)
             ? Row(
                 children: [
-                  SvgPicture.asset(
-                    "assets/icons/lock.svg",
-                    colorFilter: ColorFilter.mode(Color(0xFF35C47C), BlendMode.srcIn),
-                  ),
+                  SvgImage("assets/icons/lock.svg", color: Color(0xFF35C47C)),
                   SizedBox(width: 3),
                   Text(
                     model.fullName,

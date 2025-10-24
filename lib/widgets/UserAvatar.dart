@@ -21,14 +21,14 @@ class UserAvatar extends StatelessWidget {
         ),
       ),
       child: CircleAvatar(
-        backgroundImage: (this.imagePath != null) ? AssetImage(this.imagePath!) : null,
+        backgroundImage: (imagePath != null) ? AssetImage(imagePath!) : null,
         backgroundColor: Colors.transparent,
-        child: (this.imagePath == null)
+        child: (imagePath == null)
             ? FittedBox(
                 child: Padding(
                   padding: EdgeInsets.all(20),
                   child: Text(
-                    this.userInitials,
+                    userInitials,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 100),
                   ),
                 ),

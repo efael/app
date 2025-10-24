@@ -5,6 +5,7 @@ class ChatContact {
   final String lastName;
   final String lastMessage;
   final DateTime time;
+  final String lastSeen;
 
   bool isOnline;
   final bool isGroup;
@@ -19,16 +20,17 @@ class ChatContact {
     required this.lastMessage,
     required this.time,
 
+    this.lastSeen = "last seen long time ago",
     this.isOnline = false,
     this.isGroup = false,
     this.isPinned = false,
     this.isSecretChat = false,
   });
 
-  get fullName => "${this.firstName} ${this.lastName}";
+  get fullName => "$firstName $lastName";
 
   get initials =>
-      ("${(this.firstName + ' ')[0].toUpperCase()}${(this.lastName + ' ')[0].toUpperCase()}")
+      ("${(firstName + ' ')[0].toUpperCase()}${(lastName + ' ')[0].toUpperCase()}")
           .trim();
 
   factory ChatContact.fromJson(Map<String, dynamic> json) {
@@ -63,15 +65,15 @@ class ChatContact {
   }
 
   Map<String, dynamic> toJson() => {
-    "id": this.id,
-    "photo": this.photo,
-    "firstName": this.firstName,
-    "lastName": this.lastName,
-    "lastMessage": this.lastMessage,
-    "time": this.time,
+    "id": id,
+    "photo": photo,
+    "firstName": firstName,
+    "lastName": lastName,
+    "lastMessage": lastMessage,
+    "time": time,
 
-    "isGroup": this.isGroup,
-    "isPinned": this.isPinned,
-    "isSecretChat": this.isSecretChat,
+    "isGroup": isGroup,
+    "isPinned": isPinned,
+    "isSecretChat": isSecretChat,
   };
 }

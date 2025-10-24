@@ -47,7 +47,6 @@ class CustomBottomNavigationBar extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
                 onTap: () => onTap(item.key),
-                hoverColor: Colors.blue,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 6),
                   child: Column(
@@ -67,7 +66,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                             child: SvgPicture.asset(
                               item.iconPath,
                               colorFilter: ColorFilter.mode(
-                                selected ? this.activeItemColor : this.inactiveItemColor,
+                                selected ? activeItemColor : inactiveItemColor,
                                 BlendMode.srcIn,
                               ),
                             ),
@@ -99,7 +98,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                         item.label,
                         style: TextStyle(
                           fontSize: 12,
-                          color: selected ? this.activeItemColor : this.inactiveItemColor,
+                          color: selected ? activeItemColor : inactiveItemColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
