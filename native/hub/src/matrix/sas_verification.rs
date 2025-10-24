@@ -1,10 +1,17 @@
 use matrix_sdk::{
+    Client,
     crypto::{Emoji as SdkEmoji, SasState},
-    encryption::verification::SasVerification,
+    encryption::verification::{SasVerification, Verification},
     stream::StreamExt,
 };
 use messages::prelude::Address;
 use rinf::{SignalPiece, debug_print};
+use ruma::events::{
+    key::verification::{
+        request::ToDeviceKeyVerificationRequestEvent, start::ToDeviceKeyVerificationStartEvent,
+    },
+    room::message::{MessageType, OriginalSyncRoomMessageEvent},
+};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -12,7 +19,7 @@ use crate::{
     signals::{MatrixListChatsRequest, MatrixSASConfirmRequest},
 };
 
-pub fn handler(verification: SasVerification, flow_id: String, mut notifier: Address<Matrix>) {
+pub fn sas_handler(verification: SasVerification, flow_id: String, mut notifier: Address<Matrix>) {
     tokio::spawn(async move {
         verification
             .accept()
@@ -62,6 +69,72 @@ pub fn handler(verification: SasVerification, flow_id: String, mut notifier: Add
             }
         }
     });
+}
+
+pub async fn to_device_key_verification_request_handler(
+    event: ToDeviceKeyVerificationRequestEvent,
+    client: Client,
+) {
+    debug_print!("[event] ToDeviceKeyVerificationRequestEvent: received request: {event:?}");
+    let request = match client
+        .encryption()
+        .get_verification_request(&event.sender, &event.content.transaction_id)
+        .await
+    {
+        Some(req) => req,
+        None => {
+            debug_print!("[event] ToDeviceKeyVerificationRequestEvent: could not create request");
+            return;
+        }
+    };
+
+    debug_print!("[event] ToDeviceKeyVerificationRequestEvent: accepting request");
+    request
+        .accept()
+        .await
+        .expect("[event] ToDeviceKeyVerificationRequestEvent:  can't accept verification request");
+}
+
+pub async fn to_device_key_verification_start_handler(
+    event: ToDeviceKeyVerificationStartEvent,
+    client: Client,
+    notifier: Address<Matrix>,
+) {
+    debug_print!("[event] ToDeviceKeyVerificationStartEvent: received request: {event:?}");
+    if let Some(Verification::SasV1(sas)) = client
+        .encryption()
+        .get_verification(&event.sender, event.content.transaction_id.as_str())
+        .await
+    {
+        debug_print!("[event] ToDeviceKeyVerificationStartEvent: received SAS");
+        sas_handler(sas, event.content.transaction_id.to_string(), notifier);
+    };
+}
+
+pub async fn original_sync_message_room_handler(
+    event: OriginalSyncRoomMessageEvent,
+    client: Client,
+) {
+    debug_print!("[event] OriginalSyncRoomMessageEvent: received request: {event:?}");
+    if let MessageType::VerificationRequest(_) = &event.content.msgtype {
+        let request = match client
+            .encryption()
+            .get_verification_request(&event.sender, &event.event_id)
+            .await
+        {
+            Some(req) => req,
+            None => {
+                debug_print!("[event] OriginalSyncRoomMessageEvent: could not create request");
+                return;
+            }
+        };
+
+        debug_print!("[event] OriginalSyncRoomMessageEvent: accepting request");
+        request
+            .accept()
+            .await
+            .expect("[event] OriginalSyncRoomMessageEvent: can't accept verification request");
+    }
 }
 
 /// An emoji that is used for interactive verification using a short auth

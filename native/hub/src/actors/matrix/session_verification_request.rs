@@ -17,7 +17,7 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
         };
 
         let Some(session) = self.session.as_ref() else {
-            tracing::error!("client does have session");
+            tracing::error!("client does not have session");
             return;
         };
 

@@ -161,9 +161,11 @@ impl Matrix {
             tracing::trace!("client session was successfully restored");
             self.session = Some(session.clone());
 
-            self.emit(MatrixSyncOnceRequest {
-                sync_token: session.sync_token,
-            });
+            // self.emit(MatrixSyncOnceRequest {
+            //     sync_token: session.sync_token,
+            // });
+
+            self.emit(MatrixSyncBackgroundRequest::Start);
         };
 
         self.client = Some(sdk_client);
