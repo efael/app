@@ -8,6 +8,7 @@ use matrix_sdk_ui::room_list_service::RoomList as SdkRoomList;
 use rinf::{debug_print, RustSignal};
 use ruma::events::AnyTimelineEvent;
 use tokio::task::JoinSet;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::matrix::room::Room;
 use crate::signals::MatrixListChatsResponse;
@@ -15,14 +16,14 @@ use crate::signals::MatrixListChatsResponse;
 #[derive(Debug)]
 pub struct RoomList {
     rooms: Arc<Mutex<Vec<Room>>>,
-    last_updated: u128,
+    last_updated: Arc<Mutex<u128>>,
 }
 
 impl Default for RoomList {
     fn default() -> Self {
         RoomList {
             rooms: Arc::new(Mutex::new(vec![])),
-            last_updated: 0,
+            last_updated: Arc::new(Mutex::new(0)),
         }
     }
 }
@@ -31,6 +32,7 @@ impl RoomList {
     pub fn listen_to_updates(&self, room_list: SdkRoomList, owned_tasks: &mut JoinSet<()>) {
         debug_print!("started listening to updates");
         let cached_rooms = self.rooms.clone();
+        let last_updated = self.last_updated.clone();
 
         owned_tasks.spawn(async move {
             let (stream, controller) = room_list.entries_with_dynamic_adapters(50);
@@ -45,6 +47,19 @@ impl RoomList {
                 MatrixListChatsResponse::Ok {
                     rooms: cached_rooms.lock().clone()
                 }.send_signal_to_dart();
+
+                *last_updated.lock() = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .expect("failed to fetch system-time")
+                    .as_millis();
+
+                for r in cached_rooms.lock().iter() {
+                    debug_print!("* room - {:?}", r.name);
+                    debug_print!("{:?}", r);
+                    debug_print!("");
+                }
+
+                debug_print!("* room list last updated at - {:?}", last_updated.lock());
             }
         });
     }
@@ -98,7 +113,6 @@ impl RoomList {
                         .map(|sdk_room| async move { Room::from_sdk_room(sdk_room).await });
 
                     let new_rooms = futures::future::join_all(new_rooms).await;
-                    debug_print!("rooms: {new_rooms:?}");
                     *cached_rooms.lock() = new_rooms;
                 }
             }
@@ -106,7 +120,7 @@ impl RoomList {
     }
 
     pub async fn populate(&self, client: &Client) {
-        debug_print!("[room-list] populating room cache");
+        // debug_print!("[room-list] populating room cache");
 
         // let rooms = client
         //     .joined_rooms()
@@ -116,7 +130,7 @@ impl RoomList {
         // let rooms = futures::future::join_all(rooms).await;
         // *self.rooms.lock() = rooms;
 
-        debug_print!("[room-list] room cache populated successfully");
+        // debug_print!("[room-list] room cache populated successfully");
     }
 
     pub fn get_rooms(&self) -> Vec<Room> {
