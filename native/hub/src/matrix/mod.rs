@@ -6,3 +6,4 @@ pub mod room;
 pub mod room_list;
 pub mod room_avatar;
 pub mod events;
+pub mod media;
