@@ -4,7 +4,7 @@ use messages::prelude::{Context, Notifiable};
 use rinf::RustSignal;
 
 use crate::{
-    actors::matrix::Matrix, matrix::session::Session, signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncBackgroundRequest, MatrixSyncOnceRequest}
+    actors::matrix::Matrix, matrix::session::Session, signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncBackgroundRequest}
 };
 
 #[async_trait]
@@ -45,8 +45,6 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
                     .expect("failed to save session to disk");
 
                 self.session = Some(session);
-
-                // self.emit(MatrixSyncOnceRequest { sync_token: None });
 
                 self.emit(MatrixSyncBackgroundRequest::Start);
                 MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();

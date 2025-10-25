@@ -3,15 +3,12 @@ pub mod list_chats_request;
 pub mod logout_request;
 pub mod oidc_auth_request;
 pub mod oidc_finish_request;
-pub mod refresh_token_request;
 pub mod sas_confirm_request;
 pub mod session_verification_request;
-// pub mod sync_background_request;
+pub mod sync_background_request;
 pub mod refresh_session_request;
 pub mod session_callbacks;
 pub mod sync_completed_request;
-pub mod sync_new;
-pub mod sync_once_request;
 
 use std::{io::ErrorKind, path::PathBuf, sync::Arc};
 
@@ -35,8 +32,8 @@ use crate::{
     signals::{
         MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
         MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshSessionRequest,
-        MatrixRefreshTokenRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest,
-        MatrixSyncBackgroundRequest, MatrixSyncCompleted, MatrixSyncOnceRequest,
+        MatrixSASConfirmRequest, MatrixSessionVerificationRequest,
+        MatrixSyncBackgroundRequest, MatrixSyncCompleted,
         init_client_error::InitClientError,
     },
 };
@@ -85,9 +82,7 @@ impl Matrix {
         actor.listen_to_notification::<MatrixOidcAuthFinishRequest>();
         actor.listen_to_notification::<MatrixListChatsRequest>();
         actor.listen_to_notification::<MatrixLogoutRequest>();
-        actor.listen_to_notification::<MatrixRefreshTokenRequest>();
         actor.listen_to_notification::<MatrixSyncBackgroundRequest>();
-        actor.listen_to_notification::<MatrixSyncOnceRequest>();
         actor.listen_to_notification::<MatrixSessionVerificationRequest>();
         actor.listen_to_notification::<MatrixSASConfirmRequest>();
         actor.listen_to_notification::<MatrixSyncCompleted>();
@@ -160,10 +155,6 @@ impl Matrix {
 
             tracing::trace!("client session was successfully restored");
             self.session = Some(session.clone());
-
-            // self.emit(MatrixSyncOnceRequest {
-            //     sync_token: session.sync_token,
-            // });
 
             self.emit(MatrixSyncBackgroundRequest::Start);
         };

@@ -1,8 +1,5 @@
 pub mod init_client_error;
-pub mod save_session_error;
 
-use matrix_sdk::{Client, config::SyncSettings, ruma::api::client::sync::sync_events};
-use matrix_sdk_ui::sync_service::SyncService;
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
@@ -43,34 +40,7 @@ pub enum MatrixOidcAuthFinishResponse {
 }
 
 #[derive(Deserialize, DartSignal, Debug)]
-pub enum MatrixSyncRequest {
-    #[serde(skip)]
-    Init {
-        client: Client,
-        sync_token: Option<String>,
-    },
-    #[serde(skip)]
-    Continue {
-        sync_settings: SyncSettings,
-        sync_token: Option<String>,
-    },
-    OK,
-}
-
-#[derive(Deserialize, DartSignal, Debug)]
-pub enum MatrixProcessSyncResponseRequest {
-    #[serde(skip)]
-    Response(sync_events::v3::Response),
-    OK,
-}
-
-#[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixLogoutRequest {}
-
-#[derive(Deserialize, DartSignal, Debug)]
-pub struct MatrixRefreshTokenRequest {
-    pub sync_token: Option<String>,
-}
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixLogoutResponse {
@@ -92,11 +62,6 @@ pub enum MatrixListChatsResponse {
 #[derive(Serialize, RustSignal)]
 pub struct MatrixRoomListUpdate {
     pub rooms: Vec<Room>,
-}
-
-#[derive(Deserialize, Serialize, DartSignal, Debug)]
-pub struct MatrixSyncOnceRequest {
-    pub sync_token: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
