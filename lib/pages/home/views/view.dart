@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:messenger/widgets/bottom_navigation_bar.dart';
 
 import '../controllers/controller.dart';
+import '../models/nav_item.dart';
+import '../widgets/bottom_navigation_bar.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -17,10 +18,7 @@ class HomePage extends GetView<HomeController> {
           ),
           children: controller.pageTabs.map((item) => item.page).toList(),
         ),
-        bottomNavigationBar: CustomBottomNavigationBar(
-          activeItemColor: Colors.white,
-          activeItemBg: Color(0xFF314356),
-          inactiveItemColor: Color(0xFF6C808C),
+        bottomNavigationBar: HomeBottomNavigationBar(
           items: controller.pageTabs
               .where((it) => !it.disabled)
               .map(

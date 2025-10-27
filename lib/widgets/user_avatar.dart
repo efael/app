@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:messenger/constants.dart';
 
 class UserAvatar extends StatelessWidget {
   final String? imagePath;
@@ -20,13 +21,16 @@ class UserAvatar extends StatelessWidget {
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
-          colors: [Color(0xFF6D0EB5), Color(0xFF4059F1)],
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
+          colors: [
+            Color.fromRGBO(180, 147, 248, 1),
+            Color.fromRGBO(111, 99, 224, 1),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
       ),
       child: CircleAvatar(
-        backgroundImage: (imagePath != null) ? AssetImage(imagePath!) : null,
+        backgroundImage: (imagePath != null) ? NetworkImage(imagePath!) : null,
         backgroundColor: Colors.transparent,
         child: (imagePath == null)
             ? FittedBox(
@@ -35,8 +39,9 @@ class UserAvatar extends StatelessWidget {
                   child: Text(
                     userInitials,
                     style: TextStyle(
+                      color: consts.colors.accent.white.dark,
                       fontWeight: FontWeight.bold,
-                      fontSize: 100,
+                      fontSize: 64,
                     ),
                   ),
                 ),

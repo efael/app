@@ -1,6 +1,6 @@
 class ChatContact {
   final int id;
-  final String? photo;
+  String? photo;
   final String firstName;
   final String lastName;
   final String lastMessage;

@@ -12,27 +12,28 @@ import 'package:messenger/services/chat_service.dart';
 import 'package:messenger/services/storage_service.dart';
 
 import '../../base_controller.dart';
+import '../models/stack_page.dart';
 
 class HomeController extends BaseController {
   var activeTabKey = "chats".obs;
-  var pageTabs = <StackPages>[
-    StackPages(
+  var pageTabs = <StackPage>[
+    StackPage(
       key: "contacts",
       iconPath: "assets/icons/users.svg",
       page: const ContactsListView(),
     ),
-    StackPages(
+    StackPage(
       key: "calls",
       iconPath: "assets/icons/phone.svg",
       page: const CallsListView(),
       disabled: true,
     ),
-    StackPages(
+    StackPage(
       key: "chats",
       iconPath: "assets/icons/message.svg",
       page: const ChatListView(),
     ),
-    StackPages(
+    StackPage(
       key: "settings",
       iconPath: "assets/icons/settings.svg",
       page: const SettingsView(),
@@ -168,22 +169,6 @@ class HomeController extends BaseController {
     storageService.clear();
     chatService.clear();
   }
-}
-
-class StackPages {
-  final String key;
-  final Widget page;
-  final String iconPath;
-  bool disabled;
-  int notificationsCount;
-
-  StackPages({
-    required this.key,
-    required this.page,
-    required this.iconPath,
-    this.disabled = false,
-    this.notificationsCount = 0,
-  });
 }
 
 class ChatTabs {

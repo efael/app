@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:messenger/constants.dart';
 import 'package:messenger/models/chat_contact.dart';
 import 'package:messenger/widgets/svg_image.dart';
 import 'package:messenger/widgets/time_ago_text.dart';
 import 'package:messenger/widgets/user_avatar.dart';
 
-class ChatContactTile extends StatelessWidget {
+class ChatTile extends StatelessWidget {
   final ChatContact model;
   final ValueChanged<ChatContact> onSelectChat;
   final bool isActiveChat;
   final int unreadMessages;
 
-  const ChatContactTile({
+  const ChatTile({
     super.key,
     required this.model,
     required this.onSelectChat,
@@ -20,8 +21,6 @@ class ChatContactTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Theme(
       data: Theme.of(context).copyWith(splashColor: Colors.transparent),
       child: ListTile(
@@ -31,25 +30,31 @@ class ChatContactTile extends StatelessWidget {
         title: (model.isSecretChat)
             ? Row(
                 children: [
-                  SvgImage("assets/icons/lock.svg", color: Color(0xFF35C47C)),
+                  SvgImage(
+                    "assets/icons/lock.svg",
+                    color: consts.colors.accent.green.dark,
+                  ),
                   SizedBox(width: 3),
                   Text(
                     model.fullName,
-                    style: TextStyle(
+                    style: consts.typography.text1.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF35C47C),
+                      color: consts.colors.accent.green.dark,
                     ),
                   ),
                 ],
               )
             : Text(
                 model.fullName,
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: consts.typography.text1.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: consts.colors.accent.white.dark,
+                ),
               ),
         subtitle: Text(
           model.lastMessage,
           maxLines: 2,
-          style: TextStyle(color: Color(0xFF6C808C)),
+          style: consts.typography.text2,
         ),
         leading: Stack(
           children: [
@@ -59,13 +64,13 @@ class ChatContactTile extends StatelessWidget {
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  width: 15,
-                  height: 15,
+                  width: 16,
+                  height: 16,
                   decoration: BoxDecoration(
-                    color: Color(0xFF35C47C),
+                    color: consts.colors.accent.green.dark,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: theme.scaffoldBackgroundColor,
+                      color: consts.colors.dominant.bgMediumContrast.dark,
                       width: 3,
                     ),
                   ),
@@ -77,7 +82,7 @@ class ChatContactTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            TimeAgoText(dateTime: model.time),
+            TimeAgoText(dateTime: model.time, style: consts.typography.text3),
             (unreadMessages > 0)
                 ? Container(
                     constraints: const BoxConstraints(
@@ -87,14 +92,17 @@ class ChatContactTile extends StatelessWidget {
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: Colors.blue,
+                      color: consts.colors.accent.bluePrimary.dark,
                       borderRadius: BorderRadius.circular(32),
                     ),
                     child: Center(
                       child: Text(
-                        unreadMessages.toString(),
+                        (unreadMessages > 99)
+                            ? "99+"
+                            : unreadMessages.toString(),
                         style: TextStyle(
-                          fontSize: 11,
+                          color: consts.colors.accent.white.dark,
+                          fontSize: unreadMessages < 10 ? 12 : 10,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

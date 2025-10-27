@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:messenger/pages/home/controllers/controller.dart';
-import 'package:messenger/widgets/chat_list.dart';
+import 'package:messenger/pages/home/widgets/chat_list.dart';
+import 'package:messenger/pages/home/widgets/chat_tile.dart';
 
 class ChatListView extends GetView<HomeController> {
   const ChatListView({super.key});
@@ -54,21 +55,17 @@ class ChatListView extends GetView<HomeController> {
                 body: Obx(
                   () => TabBarView(
                     children: [
-                      ChatsList(
-                        models: controller.chatService.chatContacts,
-                        onSelectChat: controller.openChat,
-                        activeChatModel:
-                            controller.chatService.activeChat.value,
-                        unreadMessages: controller.chatService.unreadMessages,
-                      ),
-                      ...controller.chatTabs.map(
-                        (it) => ChatsList(
-                          models: it.chats,
-                          onSelectChat: controller.openChat,
-                          activeChatModel:
-                              controller.chatService.activeChat.value,
-                          unreadMessages: controller.chatService.unreadMessages,
-                        ),
+                      ChatList(
+                        itemCount: controller.chatService.chatContacts.length,
+                        itemBuilder: (context, index) {
+                          final item =
+                              controller.chatService.chatContacts[index];
+
+                          return ChatTile(
+                            model: item,
+                            onSelectChat: controller.openChat,
+                          );
+                        },
                       ),
                     ],
                   ),
