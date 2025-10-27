@@ -5,7 +5,11 @@ class CustomPopupMenuItem extends StatelessWidget {
   final String icon;
   final String label;
 
-  const CustomPopupMenuItem({super.key, required this.icon, required this.label});
+  const CustomPopupMenuItem({
+    super.key,
+    required this.icon,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +17,10 @@ class CustomPopupMenuItem extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsets.only(right: 16, left: 5),
-          child: SvgPicture.asset(icon, colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn)),
+          child: SvgPicture.asset(
+            icon,
+            colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          ),
         ),
         Text(label, style: TextStyle(fontSize: 16)),
       ],

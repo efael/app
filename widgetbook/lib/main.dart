@@ -16,6 +16,7 @@ class WidgetbookApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Widgetbook.material(
+      lightTheme: kDefaultTheme,
       darkTheme: kDarkDefaultTheme,
       themeMode: ThemeMode.dark,
       directories: directories,

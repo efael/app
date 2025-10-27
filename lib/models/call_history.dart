@@ -1,4 +1,4 @@
-import 'package:messenger/enums/CallStatus.dart';
+import 'package:messenger/enums/call_status.dart';
 
 class CallHistory {
   final int userId;
@@ -19,7 +19,9 @@ class CallHistory {
 
   get fullName => "$firstName $lastName";
 
-  get initials => ("${(firstName + ' ')[0].toUpperCase()}${(lastName + ' ')[0].toUpperCase()}").trim();
+  get initials =>
+      ("${('$firstName ')[0].toUpperCase()}${('$lastName ')[0].toUpperCase()}")
+          .trim();
 
   factory CallHistory.fromJson(Map<String, dynamic> json) {
     return CallHistory(

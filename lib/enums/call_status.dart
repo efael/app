@@ -1,10 +1,13 @@
 enum CallStatus { incoming, outgoing, missed }
 
 CallStatus phoneCallStatusFromString(String value) {
-  return CallStatus.values.firstWhere((e) => e.name == value, orElse: () => CallStatus.missed);
+  return CallStatus.values.firstWhere(
+    (e) => e.name == value,
+    orElse: () => CallStatus.missed,
+  );
 }
 
-extension extentions on CallStatus {
+extension Extentions on CallStatus {
   String get label {
     switch (this) {
       case CallStatus.incoming:

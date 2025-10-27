@@ -1,6 +1,6 @@
 class ChatContact {
   final int id;
-  final String? photo;
+  String? photo;
   final String firstName;
   final String lastName;
   final String lastMessage;
@@ -30,7 +30,7 @@ class ChatContact {
   get fullName => "$firstName $lastName";
 
   get initials =>
-      ("${(firstName + ' ')[0].toUpperCase()}${(lastName + ' ')[0].toUpperCase()}")
+      ("${('$firstName ')[0].toUpperCase()}${('$lastName ')[0].toUpperCase()}")
           .trim();
 
   factory ChatContact.fromJson(Map<String, dynamic> json) {

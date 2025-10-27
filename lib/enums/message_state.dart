@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 enum MessageState { waiting, sent, read, failed }
 
-extension extentions on MessageState {
+extension Extentions on MessageState {
   IconData get icon {
     switch (this) {
       case MessageState.waiting:

@@ -22,3 +22,4 @@ class AppLocalizationsRu {
     "message": "Сообшения",
   };
 }
+

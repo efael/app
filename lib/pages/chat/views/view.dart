@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:messenger/models/MessageTypes.dart';
-import 'package:messenger/widgets/ChatMessageBar.dart';
-import 'package:messenger/widgets/CustomPopupMenuItem.dart';
-import 'package:messenger/widgets/MessageBubble.dart';
-import 'package:messenger/widgets/UserAvatar.dart';
+import 'package:messenger/models/message_types.dart';
+import 'package:messenger/widgets/chat_message_bar.dart';
+import 'package:messenger/widgets/message_bubble.dart';
+import 'package:messenger/widgets/popup_menu_item.dart';
+import 'package:messenger/widgets/user_avatar.dart';
 
 import '../controllers/controller.dart';
 
@@ -28,7 +28,11 @@ class ChatPage extends GetView<ChatController> {
               children: [
                 Hero(
                   tag: "userImage",
-                  child: UserAvatar(size: 48, userInitials: model?.initials, imagePath: model?.photo),
+                  child: UserAvatar(
+                    size: 48,
+                    userInitials: model?.initials,
+                    imagePath: model?.photo,
+                  ),
                 ),
                 SizedBox(width: 15),
                 Column(
@@ -40,7 +44,10 @@ class ChatPage extends GetView<ChatController> {
                         type: MaterialType.transparency,
                         child: Text(
                           model?.fullName,
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
                           maxLines: 1,
                         ),
                       ),
@@ -67,15 +74,24 @@ class ChatPage extends GetView<ChatController> {
             itemBuilder: (c) => [
               const PopupMenuItem(
                 value: 'search',
-                child: CustomPopupMenuItem(icon: "assets/icons/search.svg", label: "Search"),
+                child: CustomPopupMenuItem(
+                  icon: "assets/icons/search.svg",
+                  label: "Search",
+                ),
               ),
               const PopupMenuItem(
                 value: 'clear',
-                child: CustomPopupMenuItem(icon: "assets/icons/clear.svg", label: "Clear history"),
+                child: CustomPopupMenuItem(
+                  icon: "assets/icons/clear.svg",
+                  label: "Clear history",
+                ),
               ),
               const PopupMenuItem(
                 value: 'delete',
-                child: CustomPopupMenuItem(icon: "assets/icons/trash.svg", label: "Delete chat"),
+                child: CustomPopupMenuItem(
+                  icon: "assets/icons/trash.svg",
+                  label: "Delete chat",
+                ),
               ),
             ],
             onSelected: controller.onPopupMenu,
@@ -98,7 +114,10 @@ class ChatPage extends GetView<ChatController> {
                       padding: EdgeInsets.symmetric(vertical: 1),
                       child: MessageBubble(
                         model: item,
-                        child: Text(item.message, style: TextStyle(color: Colors.white)),
+                        child: Text(
+                          item.message,
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     );
                   },

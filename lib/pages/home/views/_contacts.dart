@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:messenger/pages/home/controllers/controller.dart';
-import 'package:messenger/widgets/UserAvatar.dart';
+import 'package:messenger/widgets/user_avatar.dart';
 
 class ContactsListView extends GetView<HomeController> {
   const ContactsListView({super.key});
@@ -18,24 +18,36 @@ class ContactsListView extends GetView<HomeController> {
                 padding: EdgeInsets.zero,
                 itemCount: controller.chatService.userContacts.length,
                 separatorBuilder: (BuildContext context, int index) {
-                  return const Divider(color: Color(0x55314356), height: 1, thickness: 1);
+                  return const Divider(
+                    color: Color(0x55314356),
+                    height: 1,
+                    thickness: 1,
+                  );
                 },
                 itemBuilder: (context, i) {
                   var item = controller.chatService.userContacts[i];
 
                   return Theme(
-                    data: Theme.of(context).copyWith(splashColor: Colors.transparent),
+                    data: Theme.of(
+                      context,
+                    ).copyWith(splashColor: Colors.transparent),
                     child: ListTile(
                       contentPadding: EdgeInsets.symmetric(horizontal: 16),
                       onTap: () => controller.openChat(item),
-                      title: Text(item.fullName, style: TextStyle(fontWeight: FontWeight.w600)),
+                      title: Text(
+                        item.fullName,
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       leading: UserAvatar(
                         imagePath: item.photo,
                         userInitials: item.initials,
                         size: 42,
                       ),
                       trailing: Obx(() {
-                        var msgCount = (controller.chatService.unreadMessages.containsKey(item.id))
+                        var msgCount =
+                            (controller.chatService.unreadMessages.containsKey(
+                              item.id,
+                            ))
                             ? controller.chatService.unreadMessages[item.id]!
                             : 0;
 
@@ -50,7 +62,9 @@ class ContactsListView extends GetView<HomeController> {
                                       minHeight: 24,
                                       maxWidth: 24,
                                     ),
-                                    padding: EdgeInsets.symmetric(horizontal: 2),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.blue,
                                       borderRadius: BorderRadius.circular(32),
@@ -58,7 +72,10 @@ class ContactsListView extends GetView<HomeController> {
                                     child: Center(
                                       child: Text(
                                         msgCount.toString(),
-                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   )
@@ -78,7 +95,10 @@ class ContactsListView extends GetView<HomeController> {
                       "assets/icons/users.svg",
                       width: 128,
                       height: 128,
-                      colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                      colorFilter: ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
+                      ),
                     ),
                     Text("empty".tr, style: TextStyle(fontSize: 24)),
                   ],
