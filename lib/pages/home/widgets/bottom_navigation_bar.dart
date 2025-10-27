@@ -1,42 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:messenger/constants.dart';
 
-class NavItem {
-  final String key;
-  final String label;
-  final String iconPath;
-  final int? count;
+import '../models/nav_item.dart';
 
-  const NavItem({required this.key, required this.label, required this.iconPath, this.count});
-}
-
-class CustomBottomNavigationBar extends StatelessWidget {
+class HomeBottomNavigationBar extends StatelessWidget {
   final String activeItemKey;
   final List<NavItem> items;
   final ValueChanged<String> onTap;
-  final Color activeItemColor;
-  final Color activeItemBg;
-  final Color inactiveItemColor;
 
-  const CustomBottomNavigationBar({
+  const HomeBottomNavigationBar({
     super.key,
     required this.activeItemKey,
     required this.items,
     required this.onTap,
-    required this.activeItemColor,
-    required this.activeItemBg,
-    required this.inactiveItemColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final double height = 64.0;
 
     return SafeArea(
       child: Container(
         height: height,
-        decoration: BoxDecoration(color: theme.colorScheme.surface),
+        decoration: BoxDecoration(
+          color: consts.colors.dominant.bgMediumContrast.dark,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: List.generate(items.length, (index) {
@@ -48,7 +37,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 onTap: () => onTap(item.key),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 6),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 0,
+                    horizontal: 6,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -60,13 +52,17 @@ class CustomBottomNavigationBar extends StatelessWidget {
                             height: 32,
                             padding: const EdgeInsets.all(4.0),
                             decoration: BoxDecoration(
-                              color: selected ? activeItemBg : Colors.transparent,
+                              color: selected
+                                  ? consts.colors.dominant.bgLowContrast.dark
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(32),
                             ),
                             child: SvgPicture.asset(
                               item.iconPath,
                               colorFilter: ColorFilter.mode(
-                                selected ? activeItemColor : inactiveItemColor,
+                                selected
+                                    ? consts.colors.content.highContrast.dark
+                                    : consts.colors.content.mediumContrast.dark,
                                 BlendMode.srcIn,
                               ),
                             ),
@@ -76,16 +72,27 @@ class CustomBottomNavigationBar extends StatelessWidget {
                             top: 2,
                             child: (item.count != null && item.count! > 0)
                                 ? Container(
-                                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                                    padding: EdgeInsets.symmetric(horizontal: 2),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 18,
+                                      minHeight: 18,
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue,
+                                      color:
+                                          consts.colors.accent.bluePrimary.dark,
                                       borderRadius: BorderRadius.circular(32),
                                     ),
                                     child: Center(
                                       child: Text(
-                                        (item.count! > 99) ? "99+" : item.count.toString(),
-                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                        (item.count! > 99)
+                                            ? "99+"
+                                            : item.count.toString(),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   )
@@ -98,7 +105,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
                         item.label,
                         style: TextStyle(
                           fontSize: 12,
-                          color: selected ? activeItemColor : inactiveItemColor,
+                          color: selected
+                              ? consts.colors.content.highContrast.dark
+                              : consts.colors.content.mediumContrast.dark,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

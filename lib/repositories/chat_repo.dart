@@ -1,6 +1,6 @@
-import 'package:messenger/enums/CallStatus.dart';
-import 'package:messenger/models/CallHistory.dart';
-import 'package:messenger/models/ChatContact.dart';
+import 'package:messenger/enums/call_status.dart';
+import 'package:messenger/models/call_history.dart';
+import 'package:messenger/models/chat_contact.dart';
 
 class ChatRepo {
   Future<List<ChatContact>> loadChatContacts() async {
@@ -101,17 +101,68 @@ class ChatRepo {
 
   Future<List<ChatContact>> loadUserContacts() async {
     var apiData = [
-      {"id": 1, "photo": "assets/tmp/user0.png", "firstName": "Ilya", "lastName": ""},
-      {"id": 2, "photo": "assets/tmp/user1.png", "firstName": "Ar", "lastName": ""},
-      {"id": 3, "photo": "assets/tmp/user2.png", "firstName": "Моя", "lastName": "муза"},
-      {"id": 4, "photo": "assets/tmp/user3.png", "firstName": "Danial", "lastName": "Siddiki"},
-      {"id": 5, "photo": "assets/tmp/user4.png", "firstName": "Mikhail", "lastName": "Naer"},
+      {
+        "id": 1,
+        "photo": "assets/tmp/user0.png",
+        "firstName": "Ilya",
+        "lastName": "",
+      },
+      {
+        "id": 2,
+        "photo": "assets/tmp/user1.png",
+        "firstName": "Ar",
+        "lastName": "",
+      },
+      {
+        "id": 3,
+        "photo": "assets/tmp/user2.png",
+        "firstName": "Моя",
+        "lastName": "муза",
+      },
+      {
+        "id": 4,
+        "photo": "assets/tmp/user3.png",
+        "firstName": "Danial",
+        "lastName": "Siddiki",
+      },
+      {
+        "id": 5,
+        "photo": "assets/tmp/user4.png",
+        "firstName": "Mikhail",
+        "lastName": "Naer",
+      },
       {"id": 6, "firstName": "Mihail", "lastName": "Guryev"},
-      {"id": 7, "photo": "assets/tmp/user6.png", "firstName": "Alexander", "lastName": "Zimin"},
-      {"id": 8, "photo": "assets/tmp/user7.png", "firstName": "Kirill", "lastName": "Karmanov"},
-      {"id": 9, "photo": "assets/tmp/user8.png", "firstName": "Illia", "lastName": "Pyshniak"},
-      {"id": 10, "photo": "assets/tmp/user9.png", "firstName": "Edward", "lastName": "B."},
-      {"id": 11, "photo": "assets/tmp/user0.png", "firstName": "Daniel", "lastName": "Menakhovsky", "isOnline": true},
+      {
+        "id": 7,
+        "photo": "assets/tmp/user6.png",
+        "firstName": "Alexander",
+        "lastName": "Zimin",
+      },
+      {
+        "id": 8,
+        "photo": "assets/tmp/user7.png",
+        "firstName": "Kirill",
+        "lastName": "Karmanov",
+      },
+      {
+        "id": 9,
+        "photo": "assets/tmp/user8.png",
+        "firstName": "Illia",
+        "lastName": "Pyshniak",
+      },
+      {
+        "id": 10,
+        "photo": "assets/tmp/user9.png",
+        "firstName": "Edward",
+        "lastName": "B.",
+      },
+      {
+        "id": 11,
+        "photo": "assets/tmp/user0.png",
+        "firstName": "Daniel",
+        "lastName": "Menakhovsky",
+        "isOnline": true,
+      },
     ];
 
     return apiData.map((it) => ChatContact.fromUserContactsJson(it)).toList();

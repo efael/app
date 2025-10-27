@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:messenger/enums/CallStatus.dart';
+import 'package:messenger/enums/call_status.dart';
 import 'package:messenger/pages/home/controllers/controller.dart';
-import 'package:messenger/widgets/UserAvatar.dart';
+import 'package:messenger/widgets/user_avatar.dart';
 
 class CallsListView extends GetView<HomeController> {
   const CallsListView({super.key});
@@ -19,13 +19,19 @@ class CallsListView extends GetView<HomeController> {
                 padding: EdgeInsets.zero,
                 itemCount: controller.chatService.callHistory.length,
                 separatorBuilder: (BuildContext context, int index) {
-                  return const Divider(color: Color(0x55314356), height: 1, thickness: 1);
+                  return const Divider(
+                    color: Color(0x55314356),
+                    height: 1,
+                    thickness: 1,
+                  );
                 },
                 itemBuilder: (context, i) {
                   var item = controller.chatService.callHistory[i];
 
                   return Theme(
-                    data: Theme.of(context).copyWith(splashColor: Colors.transparent),
+                    data: Theme.of(
+                      context,
+                    ).copyWith(splashColor: Colors.transparent),
                     child: ListTile(
                       contentPadding: EdgeInsets.symmetric(horizontal: 16),
                       onTap: () => {},
@@ -33,7 +39,9 @@ class CallsListView extends GetView<HomeController> {
                         item.fullName,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: (item.status == CallStatus.missed) ? Colors.red : Colors.white,
+                          color: (item.status == CallStatus.missed)
+                              ? Colors.red
+                              : Colors.white,
                         ),
                       ),
                       subtitle: Text(item.status.label.tr),
@@ -44,10 +52,16 @@ class CallsListView extends GetView<HomeController> {
                             (item.status == CallStatus.outgoing)
                                 ? Icons.call_made
                                 : Icons.call_received,
-                            color: (item.status == CallStatus.missed) ? Colors.red : null,
+                            color: (item.status == CallStatus.missed)
+                                ? Colors.red
+                                : null,
                           ),
                           SizedBox(width: 15),
-                          UserAvatar(imagePath: item.photo, userInitials: item.initials, size: 42),
+                          UserAvatar(
+                            imagePath: item.photo,
+                            userInitials: item.initials,
+                            size: 42,
+                          ),
                         ],
                       ),
                     ),
@@ -62,7 +76,10 @@ class CallsListView extends GetView<HomeController> {
                       "assets/icons/phone.svg",
                       width: 128,
                       height: 128,
-                      colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                      colorFilter: ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
+                      ),
                     ),
                     Text("empty".tr, style: TextStyle(fontSize: 24)),
                   ],

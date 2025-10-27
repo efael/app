@@ -19,7 +19,10 @@ class SettingsCardBlock extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 12),
-              Text(title!, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(
+                title!,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         Card(
@@ -32,7 +35,11 @@ class SettingsCardBlock extends StatelessWidget {
               shrinkWrap: true,
               itemBuilder: (context, i) => children[i],
               separatorBuilder: (BuildContext context, int index) {
-                return Divider(color: theme.scaffoldBackgroundColor, height: 1, thickness: 1);
+                return Divider(
+                  color: theme.scaffoldBackgroundColor,
+                  height: 1,
+                  thickness: 1,
+                );
               },
               itemCount: children.length,
             ),
@@ -70,10 +77,16 @@ class SettingsInfoTile extends StatelessWidget {
       child: ListTile(
         title: Text(title, style: TextStyle(fontSize: 14, color: color)),
         subtitle: (subtitle != null)
-            ? Text(subtitle!, style: TextStyle(fontSize: 12, color: Colors.blueGrey))
+            ? Text(
+                subtitle!,
+                style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+              )
             : null,
         leading: (icon != null)
-            ? SvgPicture.asset(icon!, colorFilter: ColorFilter.mode(color, BlendMode.srcIn))
+            ? SvgPicture.asset(
+                icon!,
+                colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              )
             : null,
         onTap: (switcher != null)
             ? () {
@@ -87,7 +100,10 @@ class SettingsInfoTile extends StatelessWidget {
             ? Transform.scale(
                 scale: 0.8,
                 alignment: Alignment.centerRight,
-                child: Switch(value: switcher!.value, onChanged: switcher!.onChanged),
+                child: Switch(
+                  value: switcher!.value,
+                  onChanged: switcher!.onChanged,
+                ),
               )
             : trailing,
       ),

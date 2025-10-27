@@ -7,3 +7,4 @@ class StorageService extends GetxService {
     enableCalls.value = false;
   }
 }
+

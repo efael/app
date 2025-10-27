@@ -27,6 +27,7 @@ dependencies:
   tuple: ^2.0.2
   flutter_web_auth_2: ^5.0.0-alpha.7
   widgetbook: ^3.18.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

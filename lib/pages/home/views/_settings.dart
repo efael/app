@@ -2,10 +2,10 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:messenger/i18n/Messages.dart';
+import 'package:messenger/i18n/messages.dart';
 import 'package:messenger/pages/home/controllers/controller.dart';
-import 'package:messenger/widgets/SettingsCardBlock.dart';
-import 'package:messenger/widgets/UserAvatar.dart';
+import 'package:messenger/widgets/settings_card_block.dart';
+import 'package:messenger/widgets/user_avatar.dart';
 
 class SettingsView extends GetView<HomeController> {
   const SettingsView({super.key});
@@ -35,7 +35,10 @@ class SettingsView extends GetView<HomeController> {
                   Center(
                     child: Text(
                       "Azamat",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -62,28 +65,58 @@ class SettingsView extends GetView<HomeController> {
 
                   SettingsCardBlock(
                     children: [
-                      SettingsInfoTile(title: "Избранное", icon: "assets/icons/bookmark.svg"),
-                      SettingsInfoTile(title: "Кошелёк", icon: "assets/icons/bookmark.svg"),
-                      SettingsInfoTile(title: "Wallet", icon: "assets/icons/face-smile.svg"),
-                      SettingsInfoTile(title: "Звонки и контакты", icon: "assets/icons/phone.svg"),
+                      SettingsInfoTile(
+                        title: "Избранное",
+                        icon: "assets/icons/bookmark.svg",
+                      ),
+                      SettingsInfoTile(
+                        title: "Кошелёк",
+                        icon: "assets/icons/bookmark.svg",
+                      ),
+                      SettingsInfoTile(
+                        title: "Wallet",
+                        icon: "assets/icons/face-smile.svg",
+                      ),
+                      SettingsInfoTile(
+                        title: "Звонки и контакты",
+                        icon: "assets/icons/phone.svg",
+                      ),
                     ],
                   ),
                   SettingsCardBlock(
                     title: "settings".tr,
                     children: [
-                      SettingsInfoTile(title: "Настройки чатов", icon: "assets/icons/message.svg"),
+                      SettingsInfoTile(
+                        title: "Настройки чатов",
+                        icon: "assets/icons/message.svg",
+                      ),
                       SettingsInfoTile(
                         title: "Конфиденциальность",
                         icon: "assets/icons/lock_2.svg",
                       ),
-                      SettingsInfoTile(title: "Уведомления и звуки", icon: "assets/icons/bell.svg"),
-                      SettingsInfoTile(title: "Данные и память", icon: "assets/icons/database.svg"),
-                      SettingsInfoTile(title: "Папки с чатами", icon: "assets/icons/folder.svg"),
-                      SettingsInfoTile(title: "Устройства", icon: "assets/icons/monitor.svg"),
+                      SettingsInfoTile(
+                        title: "Уведомления и звуки",
+                        icon: "assets/icons/bell.svg",
+                      ),
+                      SettingsInfoTile(
+                        title: "Данные и память",
+                        icon: "assets/icons/database.svg",
+                      ),
+                      SettingsInfoTile(
+                        title: "Папки с чатами",
+                        icon: "assets/icons/folder.svg",
+                      ),
+                      SettingsInfoTile(
+                        title: "Устройства",
+                        icon: "assets/icons/monitor.svg",
+                      ),
                       SettingsInfoTile(
                         title: "language".tr,
                         icon: "assets/icons/globe.svg",
-                        trailing: Text(Messages.activeLangLabel, style: TextStyle(fontSize: 14)),
+                        trailing: Text(
+                          Messages.activeLangLabel,
+                          style: TextStyle(fontSize: 14),
+                        ),
                         onTap: () => {
                           showDialog(
                             context: context,
@@ -103,7 +136,9 @@ class SettingsView extends GetView<HomeController> {
                                             Get.updateLocale(Locale(it.key));
                                             Navigator.of(dialogContext).pop();
                                           },
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 24),
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -129,7 +164,8 @@ class SettingsView extends GetView<HomeController> {
                           switcher: SettingsSwitchTileType(
                             value: controller.storageService.enableCalls.value,
                             onChanged: (state) =>
-                                controller.storageService.enableCalls.value = state,
+                                controller.storageService.enableCalls.value =
+                                    state,
                           ),
                         ),
                       ),
@@ -158,7 +194,10 @@ class SettingsView extends GetView<HomeController> {
                         title: "Выход",
                         trailing: SvgPicture.asset(
                           "assets/icons/log-out.svg",
-                          colorFilter: ColorFilter.mode(Colors.red, BlendMode.srcIn),
+                          colorFilter: ColorFilter.mode(
+                            Colors.red,
+                            BlendMode.srcIn,
+                          ),
                         ),
                         color: Colors.red,
                         onTap: () => showOkCancelAlertDialog(
