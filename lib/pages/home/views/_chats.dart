@@ -56,13 +56,12 @@ class ChatListView extends GetView<HomeController> {
                   () => TabBarView(
                     children: [
                       ChatList(
-                        itemCount: controller.chatService.chatContacts.length,
+                        itemCount: controller.chatService.rooms.length,
                         itemBuilder: (context, index) {
-                          final item =
-                              controller.chatService.chatContacts[index];
+                          final room = controller.chatService.rooms[index];
 
                           return ChatTile(
-                            model: item,
+                            room: room,
                             onSelectChat: controller.openChat,
                           );
                         },

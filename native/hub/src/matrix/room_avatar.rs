@@ -25,11 +25,11 @@ impl std::fmt::Debug for RoomPreviewAvatar {
     }
 }
 
-pub const AVATAR_THUMBNAIL_FORMAT: MediaFormatConst = MediaFormatConst::Thumbnail(
-    MediaThumbnailSettingsConst {
+pub const AVATAR_THUMBNAIL_FORMAT: MediaFormatConst =
+    MediaFormatConst::Thumbnail(MediaThumbnailSettingsConst {
         method: Method::Scale,
         width: 40,
         height: 40,
         animated: false,
-    }
-);
+    });
+

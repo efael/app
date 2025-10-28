@@ -10,8 +10,10 @@ use ruma::events::{
 };
 
 use crate::{
-    actors::matrix::Matrix, extensions::easy_listener::EasyListener, matrix::sas_verification,
-    signals::{MatrixListChatsRequest, MatrixSessionVerificationRequest, MatrixSyncBackgroundRequest},
+    actors::matrix::Matrix,
+    extensions::easy_listener::EasyListener,
+    matrix::sas_verification,
+    signals::{MatrixSessionVerificationRequest, MatrixSyncBackgroundRequest},
 };
 
 #[async_trait]
@@ -65,14 +67,16 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
 
         self.emit(MatrixSessionVerificationRequest::Start);
 
-        self.emit(MatrixListChatsRequest {
-            url: "".to_string(),
-        });
-
         let room_list_service = sync_service.room_list_service();
 
-        let rooms_list = room_list_service.all_rooms().await.expect("failed to fetch room-list");
-        self.room_list.as_ref().listen_to_updates(rooms_list, &mut self.owned_tasks);
+        let rooms_list = room_list_service
+            .all_rooms()
+            .await
+            .expect("failed to fetch room-list");
+
+        self.room_list
+            .as_ref()
+            .listen_to_updates(rooms_list, &mut self.owned_tasks);
 
         self.owned_tasks.spawn(async move {
             // let mut loading_state = rooms.map(|r| r.loading_state());

@@ -3,7 +3,9 @@ pub mod init_client_error;
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
-use crate::matrix::{oidc::OidcConfiguration, room::Room, sas_verification::Emoji};
+use crate::matrix::{
+    oidc::OidcConfiguration, room::Room, sas_verification::Emoji, vector_diff::VectorDiffRoom,
+};
 
 #[derive(Deserialize, DartSignal, Debug)]
 pub struct MatrixInitRequest {
@@ -48,14 +50,9 @@ pub enum MatrixLogoutResponse {
     Err { message: String },
 }
 
-#[derive(Deserialize, DartSignal, Debug)]
-pub struct MatrixListChatsRequest {
-    pub url: String,
-}
-
 #[derive(Serialize, RustSignal)]
-pub enum MatrixListChatsResponse {
-    Ok { rooms: Vec<Room> },
+pub enum MatrixRoomDiffResponse {
+    Ok { diffs: Vec<VectorDiffRoom> },
     Err { message: String },
 }
 

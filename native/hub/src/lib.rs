@@ -7,7 +7,7 @@ mod matrix;
 mod signals;
 
 use actors::create_actors;
-use rinf::{dart_shutdown, write_interface};
+use rinf::{dart_shutdown, debug_print, write_interface};
 use tokio::spawn;
 use tracing_subscriber::FmtSubscriber;
 
@@ -30,7 +30,9 @@ async fn main() {
         .compact()
         .finish();
 
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    if let Err(err) = tracing::subscriber::set_global_default(subscriber) {
+        debug_print!("setting default subscriber failed, err = {err:?}");
+    }
 
     std::panic::set_hook(Box::new(tracing_panic::panic_hook));
 

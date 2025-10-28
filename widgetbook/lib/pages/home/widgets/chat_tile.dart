@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:messenger/models/chat_contact.dart';
 import 'package:messenger/pages/home/widgets/chat_tile.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
 
@@ -8,34 +8,28 @@ import '../common.dart';
 
 @widgetbook.UseCase(name: 'Default', type: ChatTile, path: "$path/widgets")
 Widget buildUseCase(BuildContext context) {
-  var contact = ChatContact(
-    id: 1,
-    firstName: context.knobs.string(
-      label: "First Name",
-      initialValue: "Asilbek",
+  var room = Room(
+    id: "1",
+    name: context.knobs.string(label: "Name", initialValue: "Asilbek"),
+    lastTs: Uint128.fromBigInt(
+      BigInt.from(DateTime.now().toUtc().millisecondsSinceEpoch),
     ),
-    lastName: context.knobs.string(
-      label: "Last Name",
-      initialValue: "Abdullayev",
-    ),
-    lastMessage: context.knobs.string(
-      label: "Last Message",
-      initialValue: "Salom!",
-    ),
-    time: context.knobs.dateTime(
-      label: "Last Message Date",
-      initialValue: DateTime.now(),
-      start: DateTime.now().subtract(Duration(days: 3650)),
-      end: DateTime.now(),
-    ),
-    isGroup: context.knobs.boolean(label: "Is Group", initialValue: false),
-    isOnline: context.knobs.boolean(label: "Is Online", initialValue: false),
-    isPinned: context.knobs.boolean(label: "Is Pinned", initialValue: false),
-    isSecretChat: context.knobs.boolean(
-      label: "Is Secret Chat",
+    isVisited: context.knobs.boolean(label: "Is Visited", initialValue: false),
+    avatar: RoomPreviewAvatarText(value: "T"),
+    isFavourite: context.knobs.boolean(
+      label: "Is Favourite",
       initialValue: false,
     ),
+    isEncrypted: context.knobs.boolean(
+      label: "Is Encrypted",
+      initialValue: false,
+    ),
+    unreadNotificationCounts: UnreadNotificationsCount(
+      highlightCount: Uint64.fromBigInt(BigInt.from(0)),
+      notificationCount: Uint64.fromBigInt(BigInt.from(0)),
+    ),
   );
+
   final photoChoice = context.knobs.object.dropdown(
     label: "Photo (choice)",
     options: [
@@ -61,10 +55,10 @@ Widget buildUseCase(BuildContext context) {
 
   final photoCustomUrl = context.knobs.stringOrNull(label: "Custom photo url");
 
-  contact.photo = photoChoice["url"] ?? photoCustomUrl;
+  // contact.photo = photoChoice["url"] ?? photoCustomUrl;
 
   return ChatTile(
-    model: contact,
+    room: room,
     onSelectChat: (contact) {},
     unreadMessages: context.knobs.int.slider(
       label: "Unread messages",

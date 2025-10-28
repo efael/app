@@ -1,13 +1,12 @@
 pub mod init_request;
-pub mod list_chats_request;
 pub mod logout_request;
 pub mod oidc_auth_request;
 pub mod oidc_finish_request;
+pub mod refresh_session_request;
 pub mod sas_confirm_request;
+pub mod session_callbacks;
 pub mod session_verification_request;
 pub mod sync_background_request;
-pub mod refresh_session_request;
-pub mod session_callbacks;
 pub mod sync_completed_request;
 
 use std::{io::ErrorKind, path::PathBuf, sync::Arc};
@@ -30,11 +29,9 @@ use crate::{
     extensions::easy_listener::EasyListener,
     matrix::{room_list::RoomList, session::Session},
     signals::{
-        MatrixInitRequest, MatrixListChatsRequest, MatrixLogoutRequest,
-        MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixRefreshSessionRequest,
-        MatrixSASConfirmRequest, MatrixSessionVerificationRequest,
-        MatrixSyncBackgroundRequest, MatrixSyncCompleted,
-        init_client_error::InitClientError,
+        MatrixInitRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest,
+        MatrixRefreshSessionRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest,
+        MatrixSyncBackgroundRequest, MatrixSyncCompleted, init_client_error::InitClientError,
     },
 };
 
@@ -80,7 +77,6 @@ impl Matrix {
         actor.listen_to_handler::<MatrixInitRequest>();
         actor.listen_to_notification::<MatrixOidcAuthRequest>();
         actor.listen_to_notification::<MatrixOidcAuthFinishRequest>();
-        actor.listen_to_notification::<MatrixListChatsRequest>();
         actor.listen_to_notification::<MatrixLogoutRequest>();
         actor.listen_to_notification::<MatrixSyncBackgroundRequest>();
         actor.listen_to_notification::<MatrixSessionVerificationRequest>();

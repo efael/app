@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:messenger/pages/home/controllers/controller.dart';
+import 'package:messenger/rinf/bindings/signals/signals.dart';
 import 'package:messenger/widgets/user_avatar.dart';
 
 class ContactsListView extends GetView<HomeController> {
@@ -33,14 +34,13 @@ class ContactsListView extends GetView<HomeController> {
                     ).copyWith(splashColor: Colors.transparent),
                     child: ListTile(
                       contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                      onTap: () => controller.openChat(item),
+                      // onTap: () => controller.openChat(item),
                       title: Text(
                         item.fullName,
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       leading: UserAvatar(
-                        imagePath: item.photo,
-                        userInitials: item.initials,
+                        avatar: RoomPreviewAvatarText(value: item.initials),
                         size: 42,
                       ),
                       trailing: Obx(() {

@@ -2,10 +2,7 @@ use async_trait::async_trait;
 use messages::prelude::{Context, Notifiable};
 use ruma::events::key::verification::VerificationMethod;
 
-use crate::{
-    actors::matrix::Matrix,
-    signals::{MatrixListChatsRequest, MatrixSessionVerificationRequest},
-};
+use crate::{actors::matrix::Matrix, signals::MatrixSessionVerificationRequest};
 
 #[async_trait]
 impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
@@ -33,9 +30,6 @@ impl Notifiable<MatrixSessionVerificationRequest> for Matrix {
             Ok(Some(identity)) => {
                 if identity.is_verified() {
                     tracing::trace!("identity verified ✅");
-                    self.emit(MatrixListChatsRequest {
-                        url: "".to_string(),
-                    });
                     return;
                 }
 

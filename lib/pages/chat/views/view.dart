@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:messenger/models/message_types.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/widgets/chat_message_bar.dart';
 import 'package:messenger/widgets/message_bubble.dart';
 import 'package:messenger/widgets/popup_menu_item.dart';
@@ -13,8 +14,7 @@ class ChatPage extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final model = controller.chatService.activeChat.value;
+    final room = controller.chatService.activeChat.value;
 
     return Scaffold(
       appBar: AppBar(
@@ -29,9 +29,8 @@ class ChatPage extends GetView<ChatController> {
                 Hero(
                   tag: "userImage",
                   child: UserAvatar(
+                    avatar: room?.avatar ?? RoomPreviewAvatarText(value: " "),
                     size: 48,
-                    userInitials: model?.initials,
-                    imagePath: model?.photo,
                   ),
                 ),
                 SizedBox(width: 15),
@@ -43,7 +42,7 @@ class ChatPage extends GetView<ChatController> {
                       child: Material(
                         type: MaterialType.transparency,
                         child: Text(
-                          model?.fullName,
+                          room?.name ?? "",
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -57,7 +56,8 @@ class ChatPage extends GetView<ChatController> {
                       child: Material(
                         type: MaterialType.transparency,
                         child: Text(
-                          model?.lastSeen ?? "",
+                          // room?.lastSeen ?? "",
+                          "",
                           style: TextStyle(fontSize: 12),
                           maxLines: 1,
                         ),

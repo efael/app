@@ -82,10 +82,19 @@
   # };
   pinnedJDK = pkgs.jdk17_headless;
   pinnedFlutter = pkgs.flutter;
+  rustupOnly = pkgs.stdenv.mkDerivation {
+    name = "rustup";
+    unpackPhase = ''
+      mkdir -p "$out/bin"
+      cp -r "${pkgs.rustup}/bin/rustup" "$out/bin"
+      cp -r "${pkgs.rustup}/nix-support" $out
+      cp -r "${pkgs.rustup}/share" $out
+    '';
+  };
   commonInputs = [
     rinf
-    pkgs.rustup
     rustToolchain
+    rustupOnly
     androidCustomPackage
     pinnedJDK
   ];

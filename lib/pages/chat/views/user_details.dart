@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:messenger/pages/chat/controllers/controller.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/widgets/user_avatar.dart';
 
 class UserDetailsPage extends GetView<ChatController> {
@@ -24,9 +25,9 @@ class UserDetailsPage extends GetView<ChatController> {
                   child: Hero(
                     tag: "userImage",
                     child: UserAvatar(
-                      userInitials:
-                          controller.chatService.activeChat.value?.initials,
-                      imagePath: controller.chatService.activeChat.value?.photo,
+                      avatar:
+                          controller.chatService.activeChat.value?.avatar ??
+                          RoomPreviewAvatarText(value: " "),
                       size: 100,
                     ),
                   ),
@@ -38,7 +39,7 @@ class UserDetailsPage extends GetView<ChatController> {
                     child: Material(
                       type: MaterialType.transparency,
                       child: Text(
-                        controller.chatService.activeChat.value?.fullName,
+                        controller.chatService.activeChat.value?.name ?? "",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
@@ -55,7 +56,8 @@ class UserDetailsPage extends GetView<ChatController> {
                     child: Material(
                       type: MaterialType.transparency,
                       child: Text(
-                        controller.chatService.activeChat.value?.lastSeen ?? "",
+                        // controller.chatService.activeChat.value?.lastSeen ?? "",
+                        "",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 12,

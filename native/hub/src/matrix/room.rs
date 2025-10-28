@@ -7,7 +7,7 @@ use ruma::events::room::message::MessageType;
 use serde::{Deserialize, Serialize};
 
 use crate::matrix::events;
-use crate::matrix::room_avatar::{RoomPreviewAvatar, AVATAR_THUMBNAIL_FORMAT};
+use crate::matrix::room_avatar::{AVATAR_THUMBNAIL_FORMAT, RoomPreviewAvatar};
 
 #[derive(Debug, Clone, Serialize, Deserialize, SignalPiece)]
 pub struct Room {
@@ -59,13 +59,13 @@ impl Room {
         let avatar = match sdk_room.avatar(AVATAR_THUMBNAIL_FORMAT.into()).await {
             Ok(Some(avatar)) => RoomPreviewAvatar::Image(avatar),
             _ => {
-                RoomPreviewAvatar::Text("A".to_string())
+                RoomPreviewAvatar::Text(name.to_string().chars().next().unwrap_or(' ').to_string())
             }
         };
 
         let mut room = Room {
             id: sdk_room.room_id().to_string(),
-            name: name.to_room_alias_name(),
+            name: name.to_string(),
             avatar,
             is_visited: false,
             is_encrypted,
@@ -158,4 +158,3 @@ impl From<SdkUnreadNotificationsCount> for UnreadNotificationsCount {
         }
     }
 }
-

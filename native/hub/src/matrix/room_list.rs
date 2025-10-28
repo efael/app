@@ -1,17 +1,19 @@
-use std::sync::Arc;
 use futures::{StreamExt, pin_mut};
 use matrix_sdk::locks::Mutex;
 use matrix_sdk::room::Room as SdkRoom;
 use matrix_sdk::{Client, RoomState as SdkRoomState};
 use matrix_sdk_ui::eyeball_im::VectorDiff;
 use matrix_sdk_ui::room_list_service::RoomList as SdkRoomList;
-use rinf::{debug_print, RustSignal};
+use rinf::{RustSignal, debug_print};
 use ruma::events::AnyTimelineEvent;
-use tokio::task::JoinSet;
+use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tokio::task::JoinSet;
 
+use crate::extensions::iter_await::IterAwait;
 use crate::matrix::room::Room;
-use crate::signals::MatrixListChatsResponse;
+use crate::matrix::vector_diff::VectorDiffRoom;
+use crate::signals::MatrixRoomDiffResponse;
 
 #[derive(Debug)]
 pub struct RoomList {
@@ -29,6 +31,7 @@ impl Default for RoomList {
 }
 
 impl RoomList {
+    #[tracing::instrument(skip(self))]
     pub fn listen_to_updates(&self, room_list: SdkRoomList, owned_tasks: &mut JoinSet<()>) {
         debug_print!("started listening to updates");
         let cached_rooms = self.rooms.clone();
@@ -40,13 +43,18 @@ impl RoomList {
             // don't really know what this is doing, copied from robrix
             controller.set_filter(Box::new(|_room| true));
 
+            // this is required to call when initializing (e.g. hard reset in flutter or other cases)
+            // controller.reset_to_one_page();
+
             pin_mut!(stream);
             while let Some(all_diffs) = stream.next().await {
-                RoomList::handle_diff(all_diffs, cached_rooms.clone()).await;
+                // RoomList::handle_diff(all_diffs.clone(), cached_rooms.clone()).await;
+                let diffs = IterAwait::new(all_diffs.into_iter().map(VectorDiffRoom::from_sdk))
+                    .join_all_sorted()
+                    .await;
 
-                MatrixListChatsResponse::Ok {
-                    rooms: cached_rooms.lock().clone()
-                }.send_signal_to_dart();
+                tracing::trace!("sending diff to dart");
+                MatrixRoomDiffResponse::Ok { diffs }.send_signal_to_dart();
 
                 *last_updated.lock() = SystemTime::now()
                     .duration_since(UNIX_EPOCH)
@@ -76,7 +84,10 @@ impl RoomList {
                 VectorDiff::PushFront { value: new_room } => {
                     debug_print!("[diff] got CLEAR");
                 }
-                VectorDiff::Insert { index, value: new_room } => {
+                VectorDiff::Insert {
+                    index,
+                    value: new_room,
+                } => {
                     debug_print!("[diff] got INSERT");
                 }
 
@@ -90,7 +101,7 @@ impl RoomList {
 
                 VectorDiff::PushBack { value } => {
                     debug_print!("[diff] got PushBack");
-                },
+                }
 
                 VectorDiff::Set { index, value } => {
                     debug_print!("[diff] got Set");

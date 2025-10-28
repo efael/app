@@ -25,4 +25,3 @@ pub fn build_sync_settings(sync_token: Option<String>) -> SyncSettings {
 
     sync_settings
 }
-
