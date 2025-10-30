@@ -7,9 +7,8 @@ pub mod sas_confirm_request;
 pub mod session_callbacks;
 pub mod session_verification_request;
 pub mod sync_background_request;
-pub mod sync_completed_request;
 
-use std::{io::ErrorKind, path::PathBuf, sync::Arc};
+use std::{io::ErrorKind, path::PathBuf};
 
 use matrix_sdk::{
     AuthSession, Client as SdkClient,
@@ -17,32 +16,31 @@ use matrix_sdk::{
     encryption::{BackupDownloadStrategy, EncryptionSettings},
     sliding_sync::VersionBuilder,
 };
-use messages::{
-    actor::Actor,
-    prelude::{Address, Notifiable},
-};
-use rinf::DartSignal;
+use messages::{actor::Actor, prelude::Address};
 use tokio::task::JoinSet;
 
 use crate::{
     actors::matrix::session_callbacks::{reload_session_callback, save_session_callback},
-    extensions::easy_listener::EasyListener,
+    extensions::{easy_listener::EasyListener, emitter::Emitter},
     matrix::{room_list::RoomList, session::Session},
     signals::{
-        MatrixInitRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest,
-        MatrixRefreshSessionRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest,
-        MatrixSyncBackgroundRequest, MatrixSyncCompleted, init_client_error::InitClientError,
+        dart::{
+            MatrixInitRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest,
+            MatrixOidcAuthRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest,
+        },
+        init_client_error::InitClientError,
+        internal::{InternalRefreshSessionRequest, InternalSyncBackgroundRequest},
     },
 };
 
 #[derive(Debug)]
 pub struct Matrix {
-    self_addr: Address<Self>,
     client: Option<SdkClient>,
     owned_tasks: JoinSet<()>,
+    self_addr: Address<Self>,
     application_support_directory: Option<PathBuf>,
     session: Option<Session>,
-    room_list: Arc<RoomList>,
+    room_list: RoomList,
 }
 
 impl Actor for Matrix {}
@@ -71,18 +69,18 @@ impl Matrix {
             self_addr,
             application_support_directory: None,
             session: None,
-            room_list: Arc::new(RoomList::default()),
+            room_list: RoomList::default(),
         };
 
         actor.listen_to_handler::<MatrixInitRequest>();
         actor.listen_to_notification::<MatrixOidcAuthRequest>();
         actor.listen_to_notification::<MatrixOidcAuthFinishRequest>();
         actor.listen_to_notification::<MatrixLogoutRequest>();
-        actor.listen_to_notification::<MatrixSyncBackgroundRequest>();
         actor.listen_to_notification::<MatrixSessionVerificationRequest>();
         actor.listen_to_notification::<MatrixSASConfirmRequest>();
-        actor.listen_to_notification::<MatrixSyncCompleted>();
-        actor.listen_to_notification::<MatrixRefreshSessionRequest>();
+
+        actor.listen_to_notification::<InternalSyncBackgroundRequest>();
+        actor.listen_to_notification::<InternalRefreshSessionRequest>();
 
         actor
     }
@@ -152,7 +150,8 @@ impl Matrix {
             tracing::trace!("client session was successfully restored");
             self.session = Some(session.clone());
 
-            self.emit(MatrixSyncBackgroundRequest::Start);
+            self.get_address()
+                .emit(InternalSyncBackgroundRequest::Start);
         };
 
         self.client = Some(sdk_client);
@@ -176,21 +175,6 @@ impl Matrix {
         Ok(())
     }
 
-    #[tracing::instrument(skip(self, request))]
-    pub fn emit<Signal>(&mut self, request: Signal)
-    where
-        Self: Notifiable<Signal>,
-        Signal: DartSignal + Send + 'static,
-    {
-        tracing::trace!("emitting {}", std::any::type_name_of_val(&request));
-        let mut addr = self.self_addr.clone();
-        self.owned_tasks.spawn(async move {
-            let _ = addr.notify(request).await;
-        });
-    }
-}
-
-impl Matrix {
     pub fn session_path(&self) -> PathBuf {
         let mut dir = self.application_support_directory.clone().unwrap().clone();
 

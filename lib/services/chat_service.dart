@@ -25,37 +25,32 @@ class ChatService extends GetxService {
     ) {
       print("room list upd");
       print(message);
-      switch (message.message) {
-        case MatrixRoomDiffResponseOk(diffs: final diffs):
-          for (final diff in diffs) {
-            switch (diff) {
-              case VectorDiffRoomAppend(values: final values):
-                rooms.addAll(values);
-              case VectorDiffRoomClear():
-                rooms.clear();
-              case VectorDiffRoomPushFront(value: final value):
-                rooms.add(value);
-              case VectorDiffRoomPushBack(value: final value):
-                rooms.insert(0, value);
-              case VectorDiffRoomPopFront():
-                rooms.removeLast();
-              case VectorDiffRoomPopBack():
-                rooms.removeAt(0);
-              case VectorDiffRoomInsert(index: final index, value: final value):
-                rooms.insert(index.toInt(), value);
-              case VectorDiffRoomSet(index: final index, value: final value):
-                rooms.setAll(index.toInt(), [value]);
-              case VectorDiffRoomRemove(index: final index):
-                rooms.removeAt(index.toInt());
-              case VectorDiffRoomTruncate(length: final length):
-                rooms.removeRange(length.toInt(), rooms.length);
-              case VectorDiffRoomReset(values: final values):
-                rooms.clear();
-                rooms.addAll(values);
-            }
-          }
-        case MatrixRoomDiffResponseErr(message: final message):
-          print(message);
+      for (final diff in message.message.value) {
+        switch (diff) {
+          case VectorDiffRoomAppend(values: final values):
+            rooms.addAll(values);
+          case VectorDiffRoomClear():
+            rooms.clear();
+          case VectorDiffRoomPushFront(value: final value):
+            rooms.add(value);
+          case VectorDiffRoomPushBack(value: final value):
+            rooms.insert(0, value);
+          case VectorDiffRoomPopFront():
+            rooms.removeLast();
+          case VectorDiffRoomPopBack():
+            rooms.removeAt(0);
+          case VectorDiffRoomInsert(index: final index, value: final value):
+            rooms.insert(index.toInt(), value);
+          case VectorDiffRoomSet(index: final index, value: final value):
+            rooms.setAll(index.toInt(), [value]);
+          case VectorDiffRoomRemove(index: final index):
+            rooms.removeAt(index.toInt());
+          case VectorDiffRoomTruncate(length: final length):
+            rooms.removeRange(length.toInt(), rooms.length);
+          case VectorDiffRoomReset(values: final values):
+            rooms.clear();
+            rooms.addAll(values);
+        }
       }
     });
   }

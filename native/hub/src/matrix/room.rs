@@ -9,10 +9,10 @@ use serde::{Deserialize, Serialize};
 use crate::matrix::events;
 use crate::matrix::room_avatar::{AVATAR_THUMBNAIL_FORMAT, RoomPreviewAvatar};
 
-#[derive(Debug, Clone, Serialize, Deserialize, SignalPiece)]
+#[derive(Debug, Clone, Serialize, SignalPiece)]
 pub struct Room {
-    // #[serde(skip)]
-    // pub inner: SdkRoom,
+    #[serde(skip)]
+    pub inner: SdkRoom,
     pub id: String,
     pub name: String,
     pub avatar: RoomPreviewAvatar,
@@ -64,6 +64,7 @@ impl Room {
         };
 
         let mut room = Room {
+            inner: sdk_room.clone(),
             id: sdk_room.room_id().to_string(),
             name: name.to_string(),
             avatar,

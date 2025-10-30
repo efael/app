@@ -4,7 +4,7 @@ use rinf::RustSignal;
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixLogoutRequest, MatrixLogoutResponse},
+    signals::dart::{MatrixLogoutRequest, MatrixLogoutResponse},
 };
 
 #[async_trait]

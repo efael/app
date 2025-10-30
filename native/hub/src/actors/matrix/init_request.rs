@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixInitRequest, MatrixInitResponse},
+    signals::dart::{MatrixInitRequest, MatrixInitResponse},
 };
 
 #[async_trait]

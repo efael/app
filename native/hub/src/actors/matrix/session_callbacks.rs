@@ -5,7 +5,8 @@ use matrix_sdk::{Client, SessionTokens};
 use messages::prelude::{Address, Notifiable};
 
 use crate::{
-    extensions::emitter::Emitter, matrix::session::Session, signals::MatrixRefreshSessionRequest,
+    extensions::emitter::Emitter, matrix::session::Session,
+    signals::internal::InternalRefreshSessionRequest,
 };
 
 pub(crate) type SessionCallbackError = Box<dyn std::error::Error + Send + Sync>;
@@ -30,7 +31,7 @@ pub fn save_session_callback<A>(
 ) -> Box<SaveSessionCallback>
 where
     Address<A>: Emitter<A>,
-    A: Notifiable<MatrixRefreshSessionRequest>,
+    A: Notifiable<InternalRefreshSessionRequest>,
 {
     Box::new(move |client| {
         tracing::trace!("session save start");
@@ -45,7 +46,7 @@ where
             .save_to_disk()
             .map_err(|err| Box::new(err) as Box<dyn std::error::Error + Send + Sync + 'static>)?;
 
-        address.clone().emit(MatrixRefreshSessionRequest);
+        address.clone().emit(InternalRefreshSessionRequest);
 
         Ok(())
     })
@@ -58,7 +59,7 @@ pub fn reload_session_callback<A>(
 ) -> Box<ReloadSessionCallback>
 where
     Address<A>: Emitter<A>,
-    A: Notifiable<MatrixRefreshSessionRequest>,
+    A: Notifiable<InternalRefreshSessionRequest>,
 {
     Box::new(move |_client| {
         tracing::trace!("session reload start");
@@ -66,7 +67,7 @@ where
         let session = Session::load_from_disk(session_path.clone())
             .map_err(|err| Box::new(err) as Box<dyn std::error::Error + Send + Sync + 'static>)?;
 
-        address.clone().emit(MatrixRefreshSessionRequest);
+        address.clone().emit(InternalRefreshSessionRequest);
 
         Ok(session.user_session.tokens)
     })

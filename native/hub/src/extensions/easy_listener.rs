@@ -30,8 +30,7 @@ where
     where
         Self: messages::prelude::Handler<IN>,
         IN: DartSignal + Send + 'static,
-        <Self as messages::prelude::Handler<IN>>::Result:
-            std::marker::Send + std::marker::Sync + RustSignal,
+        <Self as messages::prelude::Handler<IN>>::Result: Send + Sync + RustSignal,
     {
         let mut address = self.get_address();
         self.spawn_listener(async move {

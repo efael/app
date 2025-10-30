@@ -1,12 +1,15 @@
+pub mod error;
 pub mod events;
 pub mod media;
 pub mod oidc;
 pub mod room;
 pub mod room_avatar;
-pub mod room_info;
+pub mod room_details;
 pub mod room_list;
+pub mod ruma;
 pub mod sas_verification;
 pub mod session;
 pub mod sync;
-pub mod vector_diff;
-
+pub mod timeline;
+pub mod vector_diff_room;
+pub mod vector_diff_timeline_item;

@@ -11,15 +11,15 @@ use ruma::events::{
 
 use crate::{
     actors::matrix::Matrix,
-    extensions::easy_listener::EasyListener,
+    extensions::{easy_listener::EasyListener, emitter::Emitter},
     matrix::sas_verification,
-    signals::{MatrixSessionVerificationRequest, MatrixSyncBackgroundRequest},
+    signals::{dart::MatrixSessionVerificationRequest, internal::InternalSyncBackgroundRequest},
 };
 
 #[async_trait]
-impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
+impl Notifiable<InternalSyncBackgroundRequest> for Matrix {
     #[tracing::instrument(skip(self))]
-    async fn notify(&mut self, _msg: MatrixSyncBackgroundRequest, _: &Context<Self>) {
+    async fn notify(&mut self, _msg: InternalSyncBackgroundRequest, _: &Context<Self>) {
         let Some(client) = self.client.as_ref() else {
             tracing::error!("client is not initialized");
             return;
@@ -65,7 +65,8 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
         sync_service.start().await;
         tracing::info!("started sync-service");
 
-        self.emit(MatrixSessionVerificationRequest::Start);
+        self.get_address()
+            .emit(MatrixSessionVerificationRequest::Start);
 
         let room_list_service = sync_service.room_list_service();
 
@@ -75,7 +76,6 @@ impl Notifiable<MatrixSyncBackgroundRequest> for Matrix {
             .expect("failed to fetch room-list");
 
         self.room_list
-            .as_ref()
             .listen_to_updates(rooms_list, &mut self.owned_tasks);
 
         self.owned_tasks.spawn(async move {

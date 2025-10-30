@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use messages::prelude::{Context, Notifiable};
 use ruma::events::key::verification::VerificationMethod;
 
-use crate::{actors::matrix::Matrix, signals::MatrixSessionVerificationRequest};
+use crate::{actors::matrix::Matrix, signals::dart::MatrixSessionVerificationRequest};
 
 #[async_trait]
 impl Notifiable<MatrixSessionVerificationRequest> for Matrix {

@@ -14,7 +14,7 @@ use ruma::events::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{actors::matrix::Matrix, signals::MatrixSASConfirmRequest};
+use crate::{actors::matrix::Matrix, signals::dart::MatrixSASConfirmRequest};
 
 pub fn sas_handler(verification: SasVerification, flow_id: String, mut notifier: Address<Matrix>) {
     tokio::spawn(async move {

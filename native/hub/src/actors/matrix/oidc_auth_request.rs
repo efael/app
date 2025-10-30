@@ -5,7 +5,7 @@ use rinf::RustSignal;
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixOidcAuthRequest, MatrixOidcAuthResponse},
+    signals::dart::{MatrixOidcAuthRequest, MatrixOidcAuthResponse},
 };
 
 #[async_trait]

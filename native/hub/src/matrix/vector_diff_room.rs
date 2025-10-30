@@ -1,8 +1,11 @@
-use matrix_sdk_ui::eyeball_im::VectorDiff as OriginVectorDiff;
+use matrix_sdk_ui::eyeball_im::{Vector, VectorDiff as OriginVectorDiff};
 use rinf::SignalPiece;
 use serde::Serialize;
 
-use crate::{extensions::iter_await::IterAwait, matrix::room::Room};
+use crate::{
+    extensions::{iter_await::IterAwait, usize::Usize},
+    matrix::room::Room,
+};
 
 #[derive(Debug, Clone, Serialize, SignalPiece)]
 pub enum VectorDiffRoom {
@@ -100,18 +103,42 @@ impl VectorDiffRoom {
             },
         }
     }
-}
 
-struct Usize(usize);
-
-impl From<usize> for Usize {
-    fn from(value: usize) -> Self {
-        Self(value)
-    }
-}
-
-impl From<Usize> for u64 {
-    fn from(value: Usize) -> Self {
-        value.0.try_into().expect("should convert to u64")
+    pub fn apply(self, vec: &mut Vector<Room>) {
+        match self {
+            Self::Append { values } => {
+                vec.append(values.into());
+            }
+            Self::Clear => {
+                vec.clear();
+            }
+            Self::PushFront { value } => {
+                vec.push_front(value);
+            }
+            Self::PushBack { value } => {
+                vec.push_back(value);
+            }
+            Self::PopFront => {
+                vec.pop_front();
+            }
+            Self::PopBack => {
+                vec.pop_back();
+            }
+            Self::Insert { index, value } => {
+                vec.insert(index.try_into().unwrap(), value);
+            }
+            Self::Set { index, value } => {
+                vec.set(index.try_into().unwrap(), value);
+            }
+            Self::Remove { index } => {
+                vec.remove(index.try_into().unwrap());
+            }
+            Self::Truncate { length } => {
+                vec.truncate(length.try_into().unwrap());
+            }
+            Self::Reset { values } => {
+                *vec = values.into();
+            }
+        }
     }
 }
