@@ -1,3 +1,4 @@
+pub mod fetch_room_request;
 pub mod init_request;
 pub mod logout_request;
 pub mod oidc_auth_request;
@@ -22,11 +23,12 @@ use tokio::task::JoinSet;
 use crate::{
     actors::matrix::session_callbacks::{reload_session_callback, save_session_callback},
     extensions::{easy_listener::EasyListener, emitter::Emitter},
-    matrix::{room_list::RoomList, session::Session},
+    matrix::{session::Session, sync::Sync},
     signals::{
         dart::{
-            MatrixInitRequest, MatrixLogoutRequest, MatrixOidcAuthFinishRequest,
-            MatrixOidcAuthRequest, MatrixSASConfirmRequest, MatrixSessionVerificationRequest,
+            MatrixFetchRoomRequest, MatrixInitRequest, MatrixLogoutRequest,
+            MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixSASConfirmRequest,
+            MatrixSessionVerificationRequest,
         },
         init_client_error::InitClientError,
         internal::{InternalRefreshSessionRequest, InternalSyncBackgroundRequest},
@@ -40,7 +42,7 @@ pub struct Matrix {
     self_addr: Address<Self>,
     application_support_directory: Option<PathBuf>,
     session: Option<Session>,
-    room_list: RoomList,
+    sync: Sync,
 }
 
 impl Actor for Matrix {}
@@ -69,7 +71,7 @@ impl Matrix {
             self_addr,
             application_support_directory: None,
             session: None,
-            room_list: RoomList::default(),
+            sync: Sync::default(),
         };
 
         actor.listen_to_handler::<MatrixInitRequest>();
@@ -78,6 +80,7 @@ impl Matrix {
         actor.listen_to_notification::<MatrixLogoutRequest>();
         actor.listen_to_notification::<MatrixSessionVerificationRequest>();
         actor.listen_to_notification::<MatrixSASConfirmRequest>();
+        actor.listen_to_handler::<MatrixFetchRoomRequest>();
 
         actor.listen_to_notification::<InternalSyncBackgroundRequest>();
         actor.listen_to_notification::<InternalRefreshSessionRequest>();

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use matrix_sdk_ui::eyeball_im::{Vector, VectorDiff as OriginVectorDiff};
 use rinf::SignalPiece;
 use serde::Serialize;
@@ -63,23 +65,27 @@ pub enum VectorDiffTimelineItem {
 }
 
 impl VectorDiffTimelineItem {
-    pub async fn from_sdk(value: OriginVectorDiff<TimelineItem>) -> Self {
+    pub fn from_sdk(value: OriginVectorDiff<Arc<matrix_sdk_ui::timeline::TimelineItem>>) -> Self {
         match value {
             OriginVectorDiff::Append { values } => Self::Append {
-                values: values.into_iter().collect(),
+                values: values.into_iter().map(Into::into).collect(),
             },
             OriginVectorDiff::Clear => Self::Clear,
-            OriginVectorDiff::PushFront { value } => Self::PushFront { value },
-            OriginVectorDiff::PushBack { value } => Self::PushBack { value },
+            OriginVectorDiff::PushFront { value } => Self::PushFront {
+                value: value.into(),
+            },
+            OriginVectorDiff::PushBack { value } => Self::PushBack {
+                value: value.into(),
+            },
             OriginVectorDiff::PopFront => Self::PopFront,
             OriginVectorDiff::PopBack => Self::PopBack,
             OriginVectorDiff::Insert { index, value } => Self::Insert {
                 index: Usize::from(index).into(),
-                value,
+                value: value.into(),
             },
             OriginVectorDiff::Set { index, value } => Self::Set {
                 index: Usize::from(index).into(),
-                value,
+                value: value.into(),
             },
             OriginVectorDiff::Remove { index } => Self::Remove {
                 index: Usize::from(index).into(),
@@ -88,7 +94,7 @@ impl VectorDiffTimelineItem {
                 length: Usize::from(length).into(),
             },
             OriginVectorDiff::Reset { values } => Self::Reset {
-                values: values.into_iter().collect(),
+                values: values.into_iter().map(Into::into).collect(),
             },
         }
     }

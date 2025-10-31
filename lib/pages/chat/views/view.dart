@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:messenger/constants.dart';
 import 'package:messenger/models/message_types.dart';
 import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/widgets/chat_message_bar.dart';
 import 'package:messenger/widgets/message_bubble.dart';
 import 'package:messenger/widgets/popup_menu_item.dart';
+import 'package:messenger/widgets/timeline_item_render.dart';
 import 'package:messenger/widgets/user_avatar.dart';
 
 import '../controllers/controller.dart';
@@ -17,6 +19,7 @@ class ChatPage extends GetView<ChatController> {
     final room = controller.chatService.activeChat.value;
 
     return Scaffold(
+      backgroundColor: consts.colors.dominant.bgHighContrast.dark,
       appBar: AppBar(
         centerTitle: false,
         title: GestureDetector(
@@ -106,19 +109,14 @@ class ChatPage extends GetView<ChatController> {
                 () => ListView.builder(
                   padding: EdgeInsets.symmetric(vertical: 5),
                   reverse: true,
-                  itemCount: controller.messages.length,
+                  itemCount: controller.chatService.activeChatItems.length,
                   itemBuilder: (c, i) {
-                    final item = controller.messages[i] as TextMessageTypes;
+                    final item = controller.chatService.activeChatItems[i];
+                    print(item);
 
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: 1),
-                      child: MessageBubble(
-                        model: item,
-                        child: Text(
-                          item.message,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
+                    return TimelineItemRender(
+                      item: item,
+                      currentUserId: controller.chatService.currentUserId.value,
                     );
                   },
                 ),

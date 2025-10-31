@@ -138,7 +138,7 @@ class HomeController extends BaseController {
   }
 
   void openChat(Room room) {
-    chatService.activeChat.value = room;
+    chatService.loadChat(room);
 
     Get.toNamed(AppRoutes.chat);
   }

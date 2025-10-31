@@ -48,6 +48,11 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
                     .full_session()
                     .expect("after login, should have session");
 
+                let user_id = client
+                    .user_id()
+                    .expect("user should be authorized")
+                    .to_string();
+
                 let session = Session::from_oauth(oauth_session, self.session_path());
                 session
                     .save_to_disk()
@@ -58,7 +63,7 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
                 self.get_address()
                     .emit(InternalSyncBackgroundRequest::Start);
 
-                MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
+                MatrixOidcAuthFinishResponse::Ok { user_id }.send_signal_to_dart();
             }
             Err(err) => {
                 tracing::error!(error = %err, "failed to finish login");

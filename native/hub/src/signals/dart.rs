@@ -1,8 +1,10 @@
+#![allow(dead_code, clippy::large_enum_variant)]
 use rinf::{DartSignal, RustSignal};
 use serde::{Deserialize, Serialize};
 
 use crate::matrix::{
     oidc::OidcConfiguration, sas_verification::Emoji, vector_diff_room::VectorDiffRoom,
+    vector_diff_timeline_item::VectorDiffTimelineItem,
 };
 
 // ---
@@ -15,7 +17,8 @@ pub struct MatrixInitRequest {
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixInitResponse {
-    Ok { is_active: bool, is_logged_in: bool },
+    LoggedIn(String),
+    NotLoggedIn,
     Err { message: String },
 }
 
@@ -41,7 +44,7 @@ pub struct MatrixOidcAuthFinishRequest {
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixOidcAuthFinishResponse {
-    Ok,
+    Ok { user_id: String },
     Err { message: String },
 }
 
@@ -61,6 +64,9 @@ pub enum MatrixLogoutResponse {
 #[derive(Serialize, RustSignal)]
 pub struct MatrixRoomDiffResponse(pub Vec<VectorDiffRoom>);
 
+#[derive(Serialize, RustSignal)]
+pub struct MatrixTimelineItemDiffResponse(pub String, pub Vec<VectorDiffTimelineItem>);
+
 // ---
 
 #[derive(Deserialize, Serialize, DartSignal, Debug)]
@@ -74,3 +80,23 @@ pub struct MatrixSASConfirmRequest {
     pub flow_id: String,
     pub emojis: Vec<Emoji>,
 }
+
+// ---
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixFetchRoomRequest {
+    pub room_id: String,
+}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixFetchRoomResponse {
+    Ok {
+        room_id: String,
+        diff: VectorDiffTimelineItem,
+    },
+    Err {
+        message: String,
+    },
+}
+
+// ---

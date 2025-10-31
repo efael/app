@@ -20,6 +20,9 @@ impl Notifiable<MatrixLogoutRequest> for Matrix {
             return;
         };
 
+        self.sync.stop().await;
+        self.sync.should_sync = false;
+
         let homeserver_url = client.homeserver();
 
         if (self.clean_storage().await).is_err() {

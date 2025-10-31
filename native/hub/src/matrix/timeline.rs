@@ -1,15 +1,14 @@
 #![allow(dead_code, clippy::large_enum_variant)]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use matrix_sdk_ui::timeline::{
-    EmbeddedEvent, EncryptedMessage as SdkEncryptedMessage,
-    EventTimelineItem as SdkEventTimelineItem, InReplyToDetails as SdkInReplyToDetails,
-    MemberProfileChange as SdkMemberProfileChange, MembershipChange as SdkMembershipChange,
-    Message as SdkMessage, MsgLikeContent as SdkMsgLikeContent, MsgLikeKind as SdkMsgLikeKind,
+    EncryptedMessage as SdkEncryptedMessage, EventTimelineItem as SdkEventTimelineItem,
+    InReplyToDetails as SdkInReplyToDetails, MemberProfileChange as SdkMemberProfileChange,
+    MembershipChange as SdkMembershipChange, Message as SdkMessage,
+    MsgLikeContent as SdkMsgLikeContent, MsgLikeKind as SdkMsgLikeKind,
     OtherState as SdkOtherState, PollState as SdkPollState, Profile as SdkProfile,
-    ReactionInfo as SdkReactionInfo, ReactionStatus as SdkReactionStatus,
-    ReactionsByKeyBySender as SdkReactionsByKeyBySender,
+    ReactionInfo as SdkReactionInfo, ReactionsByKeyBySender as SdkReactionsByKeyBySender,
     RoomMembershipChange as SdkRoomMembershipChange, Sticker as SdkSticker,
     ThreadSummary as SdkThreadSummary, TimelineDetails, TimelineItem as SdkTimelineItem,
     TimelineItemContent as SdkTimelineItemContent, TimelineItemKind as SdkTimelineItemKind,
@@ -29,8 +28,8 @@ pub struct TimelineItem {
     pub internal_id: String,
 }
 
-impl From<SdkTimelineItem> for TimelineItem {
-    fn from(value: SdkTimelineItem) -> Self {
+impl From<Arc<SdkTimelineItem>> for TimelineItem {
+    fn from(value: Arc<SdkTimelineItem>) -> Self {
         Self {
             kind: value.kind().clone().into(),
             internal_id: value.unique_id().0.clone(),
@@ -404,11 +403,13 @@ impl From<SdkReactionsByKeyBySender> for ReactionsByKeyBySender {
     fn from(value: SdkReactionsByKeyBySender) -> Self {
         Self(
             value
-                .into_iter()
+                .iter()
                 .map(|(k, v)| {
                     (
                         k.into(),
-                        v.into_iter().map(|(k, v)| (k.into(), v.into())).collect(),
+                        v.into_iter()
+                            .map(|(k, v)| (k.clone().into(), v.clone().into()))
+                            .collect(),
                     )
                 })
                 .collect(),

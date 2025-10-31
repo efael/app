@@ -3,10 +3,12 @@ import 'package:get/get.dart';
 import 'package:messenger/config.dart';
 import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/routes.dart';
+import 'package:messenger/services/chat_service.dart';
 
 import '../../base_controller.dart';
 
 class AuthController extends BaseController {
+  final chatService = Get.find<ChatService>();
   var loading = false.obs;
 
   void authorize() async {
@@ -46,7 +48,8 @@ class AuthController extends BaseController {
               await MatrixOidcAuthFinishResponse.rustSignalStream.first;
 
           switch (response.message) {
-            case MatrixOidcAuthFinishResponseOk():
+            case MatrixOidcAuthFinishResponseOk(userId: final userId):
+              chatService.currentUserId.value = userId;
               Get.offAndToNamed(AppRoutes.home);
               return;
             case MatrixOidcAuthFinishResponseErr():
