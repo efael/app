@@ -92,23 +92,48 @@ class ChatService extends GetxService {
   }
 
   void consumeTimelineItemDiff(VectorDiffTimelineItem diff) {
+    print("-------");
+    print(diff);
+    for (var i = 0; i < activeChatItems.length; i++) {
+      print("${i} - - - ${activeChatItems[i]}");
+    }
+    print("-------");
+
     switch (diff) {
       case VectorDiffTimelineItemAppend(values: final values):
         activeChatItems.addAll(values);
       case VectorDiffTimelineItemClear():
         activeChatItems.clear();
       case VectorDiffTimelineItemPushFront(value: final value):
-        activeChatItems.add(value);
-      case VectorDiffTimelineItemPushBack(value: final value):
         activeChatItems.insert(0, value);
+      case VectorDiffTimelineItemPushBack(value: final value):
+        activeChatItems.add(value);
       case VectorDiffTimelineItemPopFront():
-        activeChatItems.removeLast();
-      case VectorDiffTimelineItemPopBack():
         activeChatItems.removeAt(0);
+      case VectorDiffTimelineItemPopBack():
+        activeChatItems.removeLast();
       case VectorDiffTimelineItemInsert(index: final index, value: final value):
         activeChatItems.insert(index.toInt(), value);
-      case VectorDiffTimelineItemSet(index: final index, value: final value):
-        activeChatItems.setAll(index.toInt(), [value]);
+      case VectorDiffTimelineItemSet(index: final _index, value: final value):
+        final index = _index.toInt();
+
+        if (index > activeChatItems.length - 1) {
+          print("invalid index set");
+          print("old ${index}, ${activeChatItems.length - 1}");
+          return;
+        }
+
+        final oldElement = activeChatItems.elementAt(index);
+
+        if (value.internalId != oldElement.internalId) {
+          print("wrong id set");
+          print("old ${oldElement}");
+          print("--");
+          print("new ${value}");
+          return;
+        }
+
+        activeChatItems.setAll(index, [value]);
       case VectorDiffTimelineItemRemove(index: final index):
         activeChatItems.removeAt(index.toInt());
       case VectorDiffTimelineItemTruncate(length: final length):

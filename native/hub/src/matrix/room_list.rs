@@ -142,9 +142,13 @@ impl RoomList {
         let room_id = OwnedRoomId::from_str(room.room_id()).expect("should parse room id");
         let room_name = &room.name;
 
-        if rooms.lock().await.get(&room_id).is_some() {
-            return;
-        }
+        let is_subsrcibed = {
+            rooms
+                .lock()
+                .await
+                .get(&room_id)
+                .map_or_else(|| false, |d| d.subscription.is_some())
+        };
 
         match room.inner.state() {
             SdkRoomState::Knocked => {
@@ -165,6 +169,11 @@ impl RoomList {
             }
             SdkRoomState::Joined => {}
         };
+
+        if is_subsrcibed {
+            return;
+        }
+
         let timeline = room
             .inner
             .timeline_builder()
@@ -189,8 +198,9 @@ impl RoomList {
             let (items, mut subscriber) = s_timeline.subscribe().await;
             tracing::trace!("i am spawned {s_room_id}");
             {
-                let items: Vector<TimelineItem> = items.into_iter().map(Into::into).rev().collect();
+                let items: Vector<TimelineItem> = items.into_iter().map(Into::into).collect();
                 let mut rooms = s_rooms.lock().await;
+                // FIXME: data race promise. needs to revisit in the future
                 let room_details = rooms.get_mut(&s_room_id).expect("should exist already");
                 if room_details.initial_items.is_empty() {
                     room_details.initial_items.append(items);
@@ -201,8 +211,9 @@ impl RoomList {
                     .into_iter()
                     .map(VectorDiffTimelineItem::from_sdk)
                     .collect();
-                tracing::trace!("i received new message {s_room_id}");
-                tracing::trace!("something {diffs:?}");
+                tracing::trace!("timeline received new message {s_room_id}");
+                tracing::trace!("timeline something {diffs:?}");
+                
                 let mut rooms = s_rooms.lock().await;
                 let room_details = rooms.get_mut(&s_room_id).expect("should exist already");
 

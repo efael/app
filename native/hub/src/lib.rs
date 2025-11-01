@@ -25,7 +25,7 @@ async fn main() {
     let subscriber = FmtSubscriber::builder()
         // https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html
         .with_env_filter("error,hub=trace")
-        // .with_ansi(false)
+        .with_ansi(false)
         .with_writer(RinfWriter)
         .compact()
         .finish();

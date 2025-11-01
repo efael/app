@@ -103,21 +103,39 @@ class ChatPage extends GetView<ChatController> {
       ),
       body: SafeArea(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Expanded(
-              child: Obx(
-                () => ListView.builder(
-                  padding: EdgeInsets.symmetric(vertical: 5),
-                  reverse: true,
-                  itemCount: controller.chatService.activeChatItems.length,
-                  itemBuilder: (c, i) {
-                    final item = controller.chatService.activeChatItems[i];
-                    return TimelineItemRender(
-                      item: item,
-                      currentUserId: controller.chatService.currentUserId.value,
-                    );
-                  },
-                ),
+              child: Stack(
+                children: [
+                  Obx(
+                    () => ListView.builder(
+                      controller: controller.scroll,
+                      padding: EdgeInsets.symmetric(vertical: 5),
+                      reverse: false,
+                      itemCount: controller.chatService.activeChatItems.length,
+                      itemBuilder: (c, i) {
+                        final item = controller.chatService.activeChatItems[i];
+                        return TimelineItemRender(
+                          item: item,
+                          currentUserId:
+                              controller.chatService.currentUserId.value,
+                        );
+                      },
+                    ),
+                  ),
+                  Obx(
+                    () => AnimatedPositioned(
+                      bottom: controller.showScrollToBottom.value ? 8 : -60,
+                      right: 8,
+                      duration: Duration(milliseconds: 200),
+                      child: IconButton.filledTonal(
+                        onPressed: () {},
+                        icon: Icon(Icons.arrow_downward),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             ChatMessageBar(onSendMessage: controller.chatService.sendMessage),

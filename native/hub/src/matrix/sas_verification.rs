@@ -105,7 +105,7 @@ pub async fn original_sync_message_room_handler(
     event: OriginalSyncRoomMessageEvent,
     client: Client,
 ) {
-    debug_print!("[event] OriginalSyncRoomMessageEvent: received request: {event:?}");
+    // debug_print!("[event] OriginalSyncRoomMessageEvent: received request: {event:?}");
     if let MessageType::VerificationRequest(_) = &event.content.msgtype {
         let request = match client
             .encryption()
@@ -114,12 +114,12 @@ pub async fn original_sync_message_room_handler(
         {
             Some(req) => req,
             None => {
-                debug_print!("[event] OriginalSyncRoomMessageEvent: could not create request");
+                // debug_print!("[event] OriginalSyncRoomMessageEvent: could not create request");
                 return;
             }
         };
 
-        debug_print!("[event] OriginalSyncRoomMessageEvent: accepting request");
+        // debug_print!("[event] OriginalSyncRoomMessageEvent: accepting request");
         request
             .accept()
             .await

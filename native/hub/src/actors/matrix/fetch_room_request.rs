@@ -48,7 +48,12 @@ impl Handler<MatrixFetchRoomRequest> for Matrix {
             };
         };
 
-        let items = room.initial_items.iter().cloned().collect();
+        tracing::info!("----------------");
+        let items: Vec<crate::matrix::timeline::TimelineItem> = room.initial_items.iter().cloned().collect();
+        for (i, v) in items.iter().enumerate() {
+            tracing::info!("{i} = {v:?}");
+        };
+        tracing::info!("----------------");
         let diff = VectorDiffTimelineItem::Reset { values: items };
 
         MatrixFetchRoomResponse::Ok {
