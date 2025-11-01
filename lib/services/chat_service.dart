@@ -29,13 +29,6 @@ class ChatService extends GetxService {
     roomDiffListener = MatrixRoomDiffResponse.rustSignalStream.listen((
       message,
     ) {
-      print("----------------");
-      print("----------------");
-      print("----------------");
-      print("CONSUMING ROOM DIFF");
-      print("----------------");
-      print("----------------");
-      print("----------------");
       for (final diff in message.message.value) {
         consumeRoomDiff(diff);
       }
@@ -45,13 +38,6 @@ class ChatService extends GetxService {
           if (message.message.field0 != activeChat.value?.id) {
             return;
           }
-          print("----------------");
-          print("----------------");
-          print("----------------");
-          print("CONSUMING TIMELINE DIFF");
-          print("----------------");
-          print("----------------");
-          print("----------------");
           for (final diff in message.message.field1) {
             consumeTimelineItemDiff(diff);
           }
@@ -61,13 +47,6 @@ class ChatService extends GetxService {
     ) {
       switch (message.message) {
         case MatrixFetchRoomResponseOk(diff: final diff):
-          print("----------------");
-          print("----------------");
-          print("----------------");
-          print("CONSUMING TIMELINE DIFF FROM FETCH ROOM");
-          print("----------------");
-          print("----------------");
-          print("----------------");
           consumeTimelineItemDiff(diff);
       }
     });
@@ -138,6 +117,16 @@ class ChatService extends GetxService {
         activeChatItems.clear();
         activeChatItems.addAll(values);
     }
+  }
+
+  void sendMessage(MatrixSendMessageContent content) {
+    if (activeChat.value == null) {
+      return;
+    }
+    MatrixSendMessageRequest(
+      roomId: activeChat.value!.id,
+      content: content,
+    ).sendSignalToRust();
   }
 
   void loadChat(Room room) {

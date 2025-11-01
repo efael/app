@@ -5,6 +5,7 @@ pub mod oidc_auth_request;
 pub mod oidc_finish_request;
 pub mod refresh_session_request;
 pub mod sas_confirm_request;
+pub mod send_message_request;
 pub mod session_callbacks;
 pub mod session_verification_request;
 pub mod sync_background_request;
@@ -28,7 +29,7 @@ use crate::{
         dart::{
             MatrixFetchRoomRequest, MatrixInitRequest, MatrixLogoutRequest,
             MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixSASConfirmRequest,
-            MatrixSessionVerificationRequest,
+            MatrixSendMessageRequest, MatrixSessionVerificationRequest,
         },
         init_client_error::InitClientError,
         internal::{InternalRefreshSessionRequest, InternalSyncBackgroundRequest},
@@ -81,6 +82,7 @@ impl Matrix {
         actor.listen_to_notification::<MatrixSessionVerificationRequest>();
         actor.listen_to_notification::<MatrixSASConfirmRequest>();
         actor.listen_to_handler::<MatrixFetchRoomRequest>();
+        actor.listen_to_handler::<MatrixSendMessageRequest>();
 
         actor.listen_to_notification::<InternalSyncBackgroundRequest>();
         actor.listen_to_notification::<InternalRefreshSessionRequest>();

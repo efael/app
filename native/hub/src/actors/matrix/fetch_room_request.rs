@@ -28,7 +28,7 @@ impl Handler<MatrixFetchRoomRequest> for Matrix {
         };
 
         tracing::trace!("waiting for lock");
-        let rooms = self.sync.room_list.rooms.lock();
+        let rooms = self.sync.room_list.rooms.lock().await;
         tracing::trace!("lock working");
 
         let room_id = match OwnedRoomId::from_str(&msg.room_id) {

@@ -28,7 +28,7 @@ class MessageBubble extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         padding: const EdgeInsets.all(12),
-        constraints: BoxConstraints(maxWidth: maxWidth),
+        constraints: BoxConstraints(minWidth: 80, maxWidth: maxWidth),
         decoration: BoxDecoration(
           color: (sentByCurrentUser)
               ? consts.colors.accent.bluePrimary.dark
@@ -50,6 +50,7 @@ class MessageBubble extends StatelessWidget {
                 ),
                 SizedBox(width: 4),
                 // (fromMe) ? Icon(model.status.icon, size: 14) : SizedBox(),
+                (sentByCurrentUser) ? SizedBox() : SizedBox(),
               ],
             ),
           ],

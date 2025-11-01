@@ -26,6 +26,7 @@ pub struct Sync {
 impl Sync {
     #[tracing::instrument(skip(self))]
     pub async fn start(&mut self, mut address: Address<Matrix>, client: Client) {
+        tracing::trace!("sync start started");
         if !self.should_sync {
             tracing::error!("called start sync without setting should_sync flag");
             return;
@@ -97,14 +98,17 @@ impl Sync {
             }
         });
 
-        self.sync_listener = Some(listener.abort_handle())
+        self.sync_listener = Some(listener.abort_handle());
+        tracing::trace!("sync start finished");
     }
 
     pub async fn stop(&mut self) {
+        tracing::trace!("sync stop started");
         if let Some(listener) = self.sync_listener.take() {
             listener.abort();
         }
 
-        self.room_list.cleanup();
+        self.room_list.cleanup().await;
+        tracing::trace!("sync stop finished");
     }
 }

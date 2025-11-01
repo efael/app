@@ -1,15 +1,16 @@
 use futures::{StreamExt, pin_mut};
 use matrix_sdk::RoomState as SdkRoomState;
-use matrix_sdk::locks::Mutex;
 use matrix_sdk_ui::eyeball_im::Vector;
 use matrix_sdk_ui::room_list_service::RoomList as SdkRoomList;
 use matrix_sdk_ui::timeline::RoomExt;
 use rinf::{RustSignal, debug_print};
 use ruma::OwnedRoomId;
 use std::collections::BTreeMap;
+use std::ops::DerefMut;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tokio::sync::Mutex;
 use tokio::task::AbortHandle;
 
 use crate::extensions::iter_await::IterAwait;
@@ -64,12 +65,14 @@ impl RoomList {
                 tracing::trace!("sending diff to dart");
                 MatrixRoomDiffResponse(diffs).send_signal_to_dart();
 
-                *last_updated.lock() = SystemTime::now()
+                let mut last_updated = last_updated.lock().await;
+                let last_updated = last_updated.deref_mut();
+                *last_updated = SystemTime::now()
                     .duration_since(UNIX_EPOCH)
                     .expect("failed to fetch system-time")
                     .as_millis();
 
-                tracing::trace!("room list last updated at - {:?}", last_updated.lock());
+                tracing::trace!("room list last updated at - {:?}", last_updated);
             }
         });
 
@@ -93,7 +96,7 @@ impl RoomList {
                     .await;
                 }
                 VectorDiffRoom::Clear => {
-                    rooms.clone().lock().clear();
+                    rooms.clone().lock().await.clear();
                 }
                 VectorDiffRoom::PushFront { value } => {
                     Self::handle_new_room(rooms.clone(), value).await;
@@ -118,7 +121,7 @@ impl RoomList {
                 VectorDiffRoom::Remove { index: _index } => {}
                 VectorDiffRoom::Truncate { length: _length } => {}
                 VectorDiffRoom::Reset { values } => {
-                    rooms.clone().lock().clear();
+                    rooms.clone().lock().await.clear();
                     IterAwait::new(
                         values
                             .into_iter()
@@ -138,6 +141,10 @@ impl RoomList {
     ) {
         let room_id = OwnedRoomId::from_str(room.room_id()).expect("should parse room id");
         let room_name = &room.name;
+
+        if rooms.lock().await.get(&room_id).is_some() {
+            return;
+        }
 
         match room.inner.state() {
             SdkRoomState::Knocked => {
@@ -180,20 +187,23 @@ impl RoomList {
         let s_timeline = timeline.clone();
         let subscription = tokio::spawn(async move {
             let (items, mut subscriber) = s_timeline.subscribe().await;
-            // tracing::trace!("items {items:?}");
+            tracing::trace!("i am spawned {s_room_id}");
             {
-                let items: Vector<TimelineItem> = items.into_iter().map(Into::into).collect();
-                let mut rooms = s_rooms.lock();
+                let items: Vector<TimelineItem> = items.into_iter().map(Into::into).rev().collect();
+                let mut rooms = s_rooms.lock().await;
                 let room_details = rooms.get_mut(&s_room_id).expect("should exist already");
-                room_details.initial_items.append(items);
+                if room_details.initial_items.is_empty() {
+                    room_details.initial_items.append(items);
+                }
             }
             while let Some(diffs) = subscriber.next().await {
                 let diffs: Vec<VectorDiffTimelineItem> = diffs
                     .into_iter()
                     .map(VectorDiffTimelineItem::from_sdk)
                     .collect();
+                tracing::trace!("i received new message {s_room_id}");
                 tracing::trace!("something {diffs:?}");
-                let mut rooms = s_rooms.lock();
+                let mut rooms = s_rooms.lock().await;
                 let room_details = rooms.get_mut(&s_room_id).expect("should exist already");
 
                 let diffs_for_send = diffs.clone();
@@ -207,7 +217,7 @@ impl RoomList {
             }
         });
 
-        rooms.lock().insert(
+        rooms.lock().await.insert(
             room_id,
             RoomDetails {
                 room,
@@ -218,8 +228,12 @@ impl RoomList {
         );
     }
 
-    pub fn cleanup(&mut self) {
-        let mut rooms = self.rooms.lock();
+    pub async fn cleanup(&mut self) {
+        if let Some(listener) = self.listener.take() {
+            listener.abort();
+        }
+
+        let mut rooms = self.rooms.lock().await;
         for (_, room) in rooms.iter_mut() {
             if let Some(subscription) = room.subscription.take() {
                 subscription.abort();

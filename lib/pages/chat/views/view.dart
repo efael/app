@@ -112,8 +112,6 @@ class ChatPage extends GetView<ChatController> {
                   itemCount: controller.chatService.activeChatItems.length,
                   itemBuilder: (c, i) {
                     final item = controller.chatService.activeChatItems[i];
-                    print(item);
-
                     return TimelineItemRender(
                       item: item,
                       currentUserId: controller.chatService.currentUserId.value,
@@ -122,7 +120,7 @@ class ChatPage extends GetView<ChatController> {
                 ),
               ),
             ),
-            ChatMessageBar(onSendMessage: controller.onNewMessage),
+            ChatMessageBar(onSendMessage: controller.chatService.sendMessage),
           ],
         ),
       ),

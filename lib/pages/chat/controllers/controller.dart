@@ -25,18 +25,4 @@ class ChatController extends BaseController {
   void openDetails() {
     Get.toNamed(AppRoutes.chatDetails);
   }
-
-  void onNewMessage(String msg) {
-    // messages.insert(
-    //   0,
-    //   TextMessageTypes(
-    //     id: 9,
-    //     type: MessageType.text,
-    //     status: MessageState.read,
-    //     time: DateTime.now(),
-    //     sender: 777,
-    //     message: msg,
-    //   ),
-    // );
-  }
 }

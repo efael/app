@@ -1,5 +1,6 @@
 #![allow(dead_code, clippy::large_enum_variant)]
-use rinf::{DartSignal, RustSignal};
+use rinf::{DartSignal, RustSignal, SignalPiece};
+use ruma::events::AnyMessageLikeEventContent;
 use serde::{Deserialize, Serialize};
 
 use crate::matrix::{
@@ -100,3 +101,20 @@ pub enum MatrixFetchRoomResponse {
 }
 
 // ---
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixSendMessageRequest {
+    pub room_id: String,
+    pub content: MatrixSendMessageContent,
+}
+
+#[derive(Deserialize, SignalPiece, Debug)]
+pub enum MatrixSendMessageContent {
+    Message { body: String },
+}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixSendMessageResponse {
+    Ok {},
+    Err { message: String },
+}
