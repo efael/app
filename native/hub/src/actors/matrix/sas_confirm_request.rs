@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use messages::prelude::{Context, Notifiable};
 
-use crate::{actors::matrix::Matrix, signals::MatrixSASConfirmRequest};
+use crate::{actors::matrix::Matrix, signals::dart::MatrixSASConfirmRequest};
 
 #[async_trait]
 impl Notifiable<MatrixSASConfirmRequest> for Matrix {

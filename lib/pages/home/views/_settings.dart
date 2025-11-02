@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:messenger/i18n/messages.dart';
 import 'package:messenger/pages/home/controllers/controller.dart';
+import 'package:messenger/rinf/bindings/signals/signals.dart';
 import 'package:messenger/widgets/settings_card_block.dart';
 import 'package:messenger/widgets/user_avatar.dart';
 
@@ -26,8 +27,7 @@ class SettingsView extends GetView<HomeController> {
                 children: [
                   Center(
                     child: UserAvatar(
-                      userInitials: "AZ",
-                      imagePath: "assets/tmp/user.png",
+                      avatar: RoomPreviewAvatarText(value: "AZ"),
                       size: 100,
                     ),
                   ),

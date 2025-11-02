@@ -14,10 +14,7 @@ use ruma::events::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    actors::matrix::Matrix,
-    signals::{MatrixListChatsRequest, MatrixSASConfirmRequest},
-};
+use crate::{actors::matrix::Matrix, signals::dart::MatrixSASConfirmRequest};
 
 pub fn sas_handler(verification: SasVerification, flow_id: String, mut notifier: Address<Matrix>) {
     tokio::spawn(async move {
@@ -40,7 +37,7 @@ pub fn sas_handler(verification: SasVerification, flow_id: String, mut notifier:
                         .expect("[sas-verification] only emoji verification is supported")
                         .emojis
                         .into_iter()
-                        .map(|sdk_emoji| Emoji::from(sdk_emoji))
+                        .map(Emoji::from)
                         .collect::<Vec<Emoji>>();
 
                     notifier
@@ -53,13 +50,6 @@ pub fn sas_handler(verification: SasVerification, flow_id: String, mut notifier:
                 }
                 SasState::Done { .. } => {
                     debug_print!("[sas-verification] done");
-
-                    notifier
-                        .notify(MatrixListChatsRequest {
-                            url: "".to_string(),
-                        })
-                        .await
-                        .unwrap();
                 }
                 SasState::Started { .. } => debug_print!("[sas-verification] started"),
                 SasState::Accepted { .. } => debug_print!("[sas-verification] accepted"),
@@ -115,7 +105,7 @@ pub async fn original_sync_message_room_handler(
     event: OriginalSyncRoomMessageEvent,
     client: Client,
 ) {
-    debug_print!("[event] OriginalSyncRoomMessageEvent: received request: {event:?}");
+    // debug_print!("[event] OriginalSyncRoomMessageEvent: received request: {event:?}");
     if let MessageType::VerificationRequest(_) = &event.content.msgtype {
         let request = match client
             .encryption()
@@ -124,12 +114,12 @@ pub async fn original_sync_message_room_handler(
         {
             Some(req) => req,
             None => {
-                debug_print!("[event] OriginalSyncRoomMessageEvent: could not create request");
+                // debug_print!("[event] OriginalSyncRoomMessageEvent: could not create request");
                 return;
             }
         };
 
-        debug_print!("[event] OriginalSyncRoomMessageEvent: accepting request");
+        // debug_print!("[event] OriginalSyncRoomMessageEvent: accepting request");
         request
             .accept()
             .await

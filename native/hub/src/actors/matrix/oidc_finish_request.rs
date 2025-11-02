@@ -4,7 +4,13 @@ use messages::prelude::{Context, Notifiable};
 use rinf::RustSignal;
 
 use crate::{
-    actors::matrix::Matrix, matrix::session::Session, signals::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse, MatrixSyncBackgroundRequest, MatrixSyncOnceRequest}
+    actors::matrix::Matrix,
+    extensions::{easy_listener::EasyListener, emitter::Emitter},
+    matrix::session::Session,
+    signals::{
+        dart::{MatrixOidcAuthFinishRequest, MatrixOidcAuthFinishResponse},
+        internal::InternalSyncBackgroundRequest,
+    },
 };
 
 #[async_trait]
@@ -32,12 +38,20 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
 
         match client.oauth().finish_login(url.into()).await {
             Ok(_) => {
-                tracing::trace!("logged in as - {}", client.session().unwrap().meta().user_id);
+                tracing::trace!(
+                    "logged in as - {}",
+                    client.session().unwrap().meta().user_id
+                );
 
                 let oauth_session = client
                     .oauth()
                     .full_session()
                     .expect("after login, should have session");
+
+                let user_id = client
+                    .user_id()
+                    .expect("user should be authorized")
+                    .to_string();
 
                 let session = Session::from_oauth(oauth_session, self.session_path());
                 session
@@ -46,10 +60,10 @@ impl Notifiable<MatrixOidcAuthFinishRequest> for Matrix {
 
                 self.session = Some(session);
 
-                // self.emit(MatrixSyncOnceRequest { sync_token: None });
+                self.get_address()
+                    .emit(InternalSyncBackgroundRequest::Start);
 
-                self.emit(MatrixSyncBackgroundRequest::Start);
-                MatrixOidcAuthFinishResponse::Ok {}.send_signal_to_dart();
+                MatrixOidcAuthFinishResponse::Ok { user_id }.send_signal_to_dart();
             }
             Err(err) => {
                 tracing::error!(error = %err, "failed to finish login");

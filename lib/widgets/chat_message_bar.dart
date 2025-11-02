@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/widgets/svg_image.dart';
 
 class ChatMessageBar extends StatefulWidget {
-  final Function(String) onSendMessage;
+  final Function(MatrixSendMessageContent) onSendMessage;
 
   const ChatMessageBar({super.key, required this.onSendMessage});
 
@@ -32,7 +33,9 @@ class _ChatMessageBarState extends State<ChatMessageBar> {
   }
 
   void sendMessage() {
-    widget.onSendMessage(textController.text);
+    widget.onSendMessage(
+      MatrixSendMessageContentMessage(body: textController.text),
+    );
     textController.clear();
   }
 
@@ -52,13 +55,14 @@ class _ChatMessageBarState extends State<ChatMessageBar> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          IconButton(
-            onPressed: () => {},
-            icon: SvgPicture.asset(
-              "assets/icons/face-smile.svg",
-              colorFilter: ColorFilter.mode(Color(0xFF6C808C), BlendMode.srcIn),
-            ),
-          ),
+          // IconButton(
+          //   onPressed: () => {},
+          //   icon: SvgPicture.asset(
+          //     "assets/icons/face-smile.svg",
+          //     colorFilter: ColorFilter.mode(Color(0xFF6C808C), BlendMode.srcIn),
+          //   ),
+          // ),
+          SizedBox(width: 8),
           Expanded(
             child: TextField(
               minLines: 1,

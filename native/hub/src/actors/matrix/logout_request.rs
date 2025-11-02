@@ -4,7 +4,7 @@ use rinf::RustSignal;
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixLogoutRequest, MatrixLogoutResponse},
+    signals::dart::{MatrixLogoutRequest, MatrixLogoutResponse},
 };
 
 #[async_trait]
@@ -19,6 +19,9 @@ impl Notifiable<MatrixLogoutRequest> for Matrix {
             .send_signal_to_dart();
             return;
         };
+
+        self.sync.stop().await;
+        self.sync.should_sync = false;
 
         let homeserver_url = client.homeserver();
 

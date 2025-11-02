@@ -7,6 +7,7 @@ import 'package:messenger/pages/home/views/_chats.dart';
 import 'package:messenger/pages/home/views/_contacts.dart';
 import 'package:messenger/pages/home/views/_settings.dart';
 import 'package:messenger/repositories/chat_repo.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/routes.dart';
 import 'package:messenger/services/chat_service.dart';
 import 'package:messenger/services/storage_service.dart';
@@ -63,6 +64,8 @@ class HomeController extends BaseController {
   @override
   void onReady() {
     super.onReady();
+
+    chatService.init();
 
     loadChatContacts();
     loadUserContacts();
@@ -134,15 +137,10 @@ class HomeController extends BaseController {
     }
   }
 
-  void openChat(ChatContact model) {
-    chatService.activeChat.value = model;
+  void openChat(Room room) {
+    chatService.loadChat(room);
 
     Get.toNamed(AppRoutes.chat);
-
-    // TODO remove
-    if (chatService.unreadMessages.containsKey(model.id)) {
-      chatService.unreadMessages.remove(model.id);
-    }
   }
 
   // var i = 1;

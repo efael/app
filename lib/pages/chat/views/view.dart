@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:messenger/constants.dart';
 import 'package:messenger/models/message_types.dart';
+import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/widgets/chat_message_bar.dart';
 import 'package:messenger/widgets/message_bubble.dart';
 import 'package:messenger/widgets/popup_menu_item.dart';
+import 'package:messenger/widgets/timeline_item_render.dart';
 import 'package:messenger/widgets/user_avatar.dart';
 
 import '../controllers/controller.dart';
@@ -13,10 +16,10 @@ class ChatPage extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final model = controller.chatService.activeChat.value;
+    final room = controller.chatService.activeChat.value;
 
     return Scaffold(
+      backgroundColor: consts.colors.dominant.bgHighContrast.dark,
       appBar: AppBar(
         centerTitle: false,
         title: GestureDetector(
@@ -29,9 +32,8 @@ class ChatPage extends GetView<ChatController> {
                 Hero(
                   tag: "userImage",
                   child: UserAvatar(
+                    avatar: room?.avatar ?? RoomPreviewAvatarText(value: " "),
                     size: 48,
-                    userInitials: model?.initials,
-                    imagePath: model?.photo,
                   ),
                 ),
                 SizedBox(width: 15),
@@ -43,7 +45,7 @@ class ChatPage extends GetView<ChatController> {
                       child: Material(
                         type: MaterialType.transparency,
                         child: Text(
-                          model?.fullName,
+                          room?.name ?? "",
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -57,7 +59,8 @@ class ChatPage extends GetView<ChatController> {
                       child: Material(
                         type: MaterialType.transparency,
                         child: Text(
-                          model?.lastSeen ?? "",
+                          // room?.lastSeen ?? "",
+                          "",
                           style: TextStyle(fontSize: 12),
                           maxLines: 1,
                         ),
@@ -100,31 +103,42 @@ class ChatPage extends GetView<ChatController> {
       ),
       body: SafeArea(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Expanded(
-              child: Obx(
-                () => ListView.builder(
-                  padding: EdgeInsets.symmetric(vertical: 5),
-                  reverse: true,
-                  itemCount: controller.messages.length,
-                  itemBuilder: (c, i) {
-                    final item = controller.messages[i] as TextMessageTypes;
-
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: 1),
-                      child: MessageBubble(
-                        model: item,
-                        child: Text(
-                          item.message,
-                          style: TextStyle(color: Colors.white),
-                        ),
+              child: Stack(
+                children: [
+                  Obx(
+                    () => ListView.builder(
+                      controller: controller.scroll,
+                      padding: EdgeInsets.symmetric(vertical: 5),
+                      reverse: false,
+                      itemCount: controller.chatService.activeChatItems.length,
+                      itemBuilder: (c, i) {
+                        final item = controller.chatService.activeChatItems[i];
+                        return TimelineItemRender(
+                          item: item,
+                          currentUserId:
+                              controller.chatService.currentUserId.value,
+                        );
+                      },
+                    ),
+                  ),
+                  Obx(
+                    () => AnimatedPositioned(
+                      bottom: controller.showScrollToBottom.value ? 8 : -60,
+                      right: 8,
+                      duration: Duration(milliseconds: 200),
+                      child: IconButton.filledTonal(
+                        onPressed: () {},
+                        icon: Icon(Icons.arrow_downward),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            ChatMessageBar(onSendMessage: controller.onNewMessage),
+            ChatMessageBar(onSendMessage: controller.chatService.sendMessage),
           ],
         ),
       ),

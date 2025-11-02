@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use crate::{
     actors::matrix::Matrix,
-    signals::{MatrixInitRequest, MatrixInitResponse},
+    signals::dart::{MatrixInitRequest, MatrixInitResponse},
 };
 
 #[async_trait]
@@ -32,9 +32,12 @@ impl Handler<MatrixInitRequest> for Matrix {
 
         let client = self.client.as_ref().expect("client should exist already");
 
-        MatrixInitResponse::Ok {
-            is_active: client.is_active(),
-            is_logged_in: client.oauth().user_session().is_some(),
+        if client.oauth().user_session().is_some()
+            && let Some(user_id) = client.user_id()
+        {
+            MatrixInitResponse::LoggedIn(user_id.to_string())
+        } else {
+            MatrixInitResponse::NotLoggedIn
         }
     }
 }

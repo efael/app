@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:messenger/enums/call_status.dart';
 import 'package:messenger/pages/home/controllers/controller.dart';
+import 'package:messenger/rinf/bindings/signals/signals.dart';
 import 'package:messenger/widgets/user_avatar.dart';
 
 class CallsListView extends GetView<HomeController> {
@@ -58,8 +59,7 @@ class CallsListView extends GetView<HomeController> {
                           ),
                           SizedBox(width: 15),
                           UserAvatar(
-                            imagePath: item.photo,
-                            userInitials: item.initials,
+                            avatar: RoomPreviewAvatarText(value: "S"),
                             size: 42,
                           ),
                         ],

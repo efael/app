@@ -7,13 +7,15 @@ use ruma::events::room::message::MessageType;
 use serde::{Deserialize, Serialize};
 
 use crate::matrix::events;
+use crate::matrix::room_avatar::{AVATAR_THUMBNAIL_FORMAT, RoomPreviewAvatar};
 
-#[derive(Debug, Clone, Serialize, Deserialize, SignalPiece)]
+#[derive(Debug, Clone, Serialize, SignalPiece)]
 pub struct Room {
-    // #[serde(skip)]
-    // pub inner: SdkRoom,
+    #[serde(skip)]
+    pub inner: SdkRoom,
     pub id: String,
     pub name: String,
+    pub avatar: RoomPreviewAvatar,
 
     pub is_visited: bool,
     pub is_favourite: bool,
@@ -54,9 +56,18 @@ impl Room {
 
         let is_encrypted = !matches!(sdk_room.encryption_state(), EncryptionState::NotEncrypted);
 
+        let avatar = match sdk_room.avatar(AVATAR_THUMBNAIL_FORMAT.into()).await {
+            Ok(Some(avatar)) => RoomPreviewAvatar::Image(avatar),
+            _ => {
+                RoomPreviewAvatar::Text(name.to_string().chars().next().unwrap_or(' ').to_string())
+            }
+        };
+
         let mut room = Room {
+            inner: sdk_room.clone(),
             id: sdk_room.room_id().to_string(),
-            name: name.to_room_alias_name(),
+            name: name.to_string(),
+            avatar,
             is_visited: false,
             is_encrypted,
             is_favourite: sdk_room.is_favourite(),
@@ -148,4 +159,3 @@ impl From<SdkUnreadNotificationsCount> for UnreadNotificationsCount {
         }
     }
 }
-
