@@ -10,19 +10,19 @@
 // **************************************************************************
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:messenger/pages/home/views/chats_wb.dart'
+    as _messenger_pages_home_views_chats_wb;
+import 'package:messenger/pages/home/widgets/bottom_navigation_wb.dart'
+    as _messenger_pages_home_widgets_bottom_navigation_wb;
+import 'package:messenger/pages/home/widgets/chat_list_header_wb.dart'
+    as _messenger_pages_home_widgets_chat_list_header_wb;
+import 'package:messenger/pages/home/widgets/chat_list_wb.dart'
+    as _messenger_pages_home_widgets_chat_list_wb;
+import 'package:messenger/pages/home/widgets/chat_tile_wb.dart'
+    as _messenger_pages_home_widgets_chat_tile_wb;
+import 'package:messenger/widgets/user_avatar_wb.dart'
+    as _messenger_widgets_user_avatar_wb;
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
-import 'package:widgetbook_workspace/pages/home/views/chats.dart'
-    as _widgetbook_workspace_pages_home_views_chats;
-import 'package:widgetbook_workspace/pages/home/widgets/bottom_navigation.dart'
-    as _widgetbook_workspace_pages_home_widgets_bottom_navigation;
-import 'package:widgetbook_workspace/pages/home/widgets/chat_list.dart'
-    as _widgetbook_workspace_pages_home_widgets_chat_list;
-import 'package:widgetbook_workspace/pages/home/widgets/chat_list_header.dart'
-    as _widgetbook_workspace_pages_home_widgets_chat_list_header;
-import 'package:widgetbook_workspace/pages/home/widgets/chat_tile.dart'
-    as _widgetbook_workspace_pages_home_widgets_chat_tile;
-import 'package:widgetbook_workspace/widgets/user_avatar.dart'
-    as _widgetbook_workspace_widgets_user_avatar;
 
 final directories = <_widgetbook.WidgetbookNode>[
   _widgetbook.WidgetbookFolder(
@@ -39,8 +39,7 @@ final directories = <_widgetbook.WidgetbookNode>[
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
                     name: 'Default',
-                    builder: _widgetbook_workspace_pages_home_views_chats
-                        .buildUseCase,
+                    builder: _messenger_pages_home_views_chats_wb.buildUseCase,
                   ),
                 ],
               ),
@@ -54,8 +53,8 @@ final directories = <_widgetbook.WidgetbookNode>[
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
                     name: 'Default',
-                    builder: _widgetbook_workspace_pages_home_widgets_chat_list
-                        .buildUseCase,
+                    builder:
+                        _messenger_pages_home_widgets_chat_list_wb.buildUseCase,
                   ),
                 ],
               ),
@@ -64,9 +63,8 @@ final directories = <_widgetbook.WidgetbookNode>[
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
                     name: 'Default',
-                    builder:
-                        _widgetbook_workspace_pages_home_widgets_chat_list_header
-                            .buildUseCase,
+                    builder: _messenger_pages_home_widgets_chat_list_header_wb
+                        .buildUseCase,
                   ),
                 ],
               ),
@@ -75,8 +73,8 @@ final directories = <_widgetbook.WidgetbookNode>[
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
                     name: 'Default',
-                    builder: _widgetbook_workspace_pages_home_widgets_chat_tile
-                        .buildUseCase,
+                    builder:
+                        _messenger_pages_home_widgets_chat_tile_wb.buildUseCase,
                   ),
                 ],
               ),
@@ -85,9 +83,8 @@ final directories = <_widgetbook.WidgetbookNode>[
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
                     name: 'Default',
-                    builder:
-                        _widgetbook_workspace_pages_home_widgets_bottom_navigation
-                            .buildUseCase,
+                    builder: _messenger_pages_home_widgets_bottom_navigation_wb
+                        .buildUseCase,
                   ),
                 ],
               ),
@@ -105,7 +102,7 @@ final directories = <_widgetbook.WidgetbookNode>[
         useCases: [
           _widgetbook.WidgetbookUseCase(
             name: 'Default',
-            builder: _widgetbook_workspace_widgets_user_avatar.buildUseCase,
+            builder: _messenger_widgets_user_avatar_wb.buildUseCase,
           ),
         ],
       ),
