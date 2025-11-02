@@ -12,8 +12,19 @@ import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/routes.dart';
 import 'package:messenger/themes/default.dart';
 import 'package:rinf/rinf.dart';
+import 'package:widgetbook/widgetbook.dart';
+import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
+import 'main.directories.g.dart';
+
+const widgetbookEnabled =
+    String.fromEnvironment('WIDGETBOOK', defaultValue: 'disable') == 'enable';
 
 void main() async {
+  if (widgetbookEnabled) {
+    runApp(WidgetbookApp());
+    return;
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
 
   await initializeRust(assignRustSignal);
@@ -78,6 +89,21 @@ class _AppState extends State<App> {
         Locale('ru', 'RU'),
         Locale('en', 'EN'),
       ],
+    );
+  }
+}
+
+@widgetbook.App()
+class WidgetbookApp extends StatelessWidget {
+  const WidgetbookApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Widgetbook.material(
+      lightTheme: kDefaultTheme,
+      darkTheme: kDarkDefaultTheme,
+      themeMode: ThemeMode.dark,
+      directories: directories,
     );
   }
 }

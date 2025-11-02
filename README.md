@@ -42,3 +42,17 @@ flutter run
 
 For detailed instructions on writing Rust and Flutter together,
 please refer to Rinf's [documentation](https://rinf.cunarist.com).
+
+## Using Widgetbook
+
+To run Widgetbook pass `--dart-define=WIDGETBOOK=enable` while running / building app
+
+```shell
+flutter run --dart-define=WIDGETBOOK=enable
+```
+
+To generate Widgetbook directories run
+
+```shell
+dart run build_runner build -d
+```

@@ -3,7 +3,7 @@ description: "Matrix client and it looks and feels like Telegram"
 
 publish_to: "none"
 
-version: 1.0.0+1
+version: 0.1.0
 
 environment:
   sdk: ^3.8.0
@@ -27,6 +27,7 @@ dependencies:
   tuple: ^2.0.2
   flutter_web_auth_2: ^5.0.0-alpha.7
   widgetbook: ^3.18.0
+  widgetbook_annotation: ^3.7.0
   intl: ^0.20.2
 
 dev_dependencies:
@@ -34,6 +35,8 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
+  widgetbook_generator: ^3.18.0
+  build_runner: ^2.10.1
 
 flutter:
   uses-material-design: true

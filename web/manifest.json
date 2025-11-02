@@ -1,11 +1,11 @@
 {
-    "name": "messenger",
-    "short_name": "messenger",
+    "name": "Efael",
+    "short_name": "efael",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Matrix client and it looks and feels like Telegram",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

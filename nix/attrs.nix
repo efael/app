@@ -98,4 +98,19 @@
     androidCustomPackage
     pinnedJDK
   ];
+
+  appSrc = pkgs.stdenv.mkDerivation {
+    pname = "efael-app-src";
+    version = "0.1.0";
+    src = ../.;
+    nativeBuildInputs = [
+      rinf
+    ];
+    buildPhase = ''
+      cp -r "$src/." .
+      rinf gen
+      mkdir -p $out
+      cp -r . $out
+    '';
+  };
 }
