@@ -11,6 +11,7 @@ import 'package:messenger/pages.dart';
 import 'package:messenger/rinf/bindings/bindings.dart';
 import 'package:messenger/routes.dart';
 import 'package:messenger/themes/default.dart';
+import 'package:messenger/widgetbook/localization_getx_addon.dart';
 import 'package:rinf/rinf.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
@@ -104,6 +105,31 @@ class WidgetbookApp extends StatelessWidget {
       darkTheme: kDarkDefaultTheme,
       themeMode: ThemeMode.dark,
       directories: directories,
+      addons: [
+        LocalizationGetxAddon(
+          translations: Messages(),
+          locale: Messages.defaultLang,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('uz', 'UZ'),
+            Locale('ru', 'RU'),
+            Locale('en', 'EN'),
+          ],
+        ),
+        ThemeAddon(
+          initialTheme: WidgetbookTheme(name: 'Dark', data: kDarkDefaultTheme),
+          themes: [
+            WidgetbookTheme(name: 'Light', data: kDefaultTheme),
+            WidgetbookTheme(name: 'Dark', data: kDarkDefaultTheme),
+          ],
+          themeBuilder: (context, theme, child) =>
+              Theme(data: theme, child: child),
+        ),
+      ],
     );
   }
 }
