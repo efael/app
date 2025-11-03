@@ -35,7 +35,9 @@ var kDefaultTheme = ThemeData(
     surface: lightApplicationTheme.dominantBgMediumContrast,
   ),
   scaffoldBackgroundColor: lightApplicationTheme.dominantBgMediumContrast,
-
+  dialogTheme: DialogThemeData(
+    backgroundColor: lightApplicationTheme.dominantBgMediumContrast,
+  ),
   extensions: [lightApplicationTheme],
 );
 
@@ -48,5 +50,8 @@ var kDarkDefaultTheme = ThemeData(
     surface: darkApplicationTheme.dominantBgMediumContrast,
   ),
   scaffoldBackgroundColor: darkApplicationTheme.dominantBgMediumContrast,
+  dialogTheme: DialogThemeData(
+    backgroundColor: darkApplicationTheme.dominantBgMediumContrast,
+  ),
   extensions: [darkApplicationTheme],
 );

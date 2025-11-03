@@ -8,6 +8,7 @@ import "setup.dart";
 @widgetbook.UseCase(name: "Default", type: SecuritySetupUI, path: "$path/ui")
 Widget buildUseCase(BuildContext context) {
   return SecuritySetupUI(
+    backCallback: () {},
     copyKeysCallback: () {},
     generateRecoveryKeyCallback: () {},
     generating: context.knobs.boolean(label: "Generating", initialValue: false),

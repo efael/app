@@ -8,6 +8,9 @@ class SecurityLocalizationsEn extends LocaleExtension {
 
   @override
   Map<String, String> get translations => {
+    "done": "Done",
+    "cancel": "Cancel",
+
     // setup ui
     "setupRecovery": "Set up recovery",
     "recoveryKey": "Recovery key",
@@ -16,6 +19,12 @@ class SecurityLocalizationsEn extends LocaleExtension {
     "dontShare": "Don't share this information with anyone!",
     "tapToCopy": "Tap to copy recovery key",
     "saveRecoveryKey": "Save recovery key",
-    "done": "Done",
+
+    // reset ui
+    "cantConfirmReset": "Can't confirm? Reset your identity.",
+    "continueReset": "Continue reset",
+    "areYouSureToReset": "Are you sure?",
+    "areYouSureToResetContent": "This process is irreversible!",
+    "areYouSureToResetButton": "Yes, reset now",
   };
 }

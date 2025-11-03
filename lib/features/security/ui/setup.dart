@@ -8,6 +8,7 @@ import "../i18n/common.dart";
 class SecuritySetupUI extends StatelessWidget {
   const SecuritySetupUI({
     super.key,
+    this.backCallback,
     this.generateRecoveryKeyCallback,
     this.copyKeysCallback,
     this.saveRecoveryKeyCallback,
@@ -16,6 +17,7 @@ class SecuritySetupUI extends StatelessWidget {
     this.keys,
   });
 
+  final VoidCallback? backCallback;
   final VoidCallback? generateRecoveryKeyCallback;
   final VoidCallback? copyKeysCallback;
   final VoidCallback? saveRecoveryKeyCallback;
@@ -29,7 +31,10 @@ class SecuritySetupUI extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: IconButton(onPressed: () {}, icon: Icon(Icons.chevron_left)),
+        title: IconButton(
+          onPressed: backCallback,
+          icon: Icon(Icons.chevron_left),
+        ),
       ),
       body: Container(
         height: double.infinity,
