@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:messenger/pages/home/widgets/chat_list.dart';
-import 'package:messenger/pages/home/widgets/chat_tile.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:widgetbook/widgetbook.dart';
-import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
+import "package:flutter/material.dart";
+import "package:messenger/pages/home/widgets/chat_list.dart";
+import "package:messenger/pages/home/widgets/chat_tile.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:widgetbook/widgetbook.dart";
+import "package:widgetbook_annotation/widgetbook_annotation.dart" as widgetbook;
 
-import '../common_wb.dart';
+import "../common_wb.dart";
 
-@widgetbook.UseCase(name: 'Default', type: ChatList, path: "$path/widgets")
+@widgetbook.UseCase(name: "Default", type: ChatList, path: "$path/widgets")
 Widget buildUseCase(BuildContext context) {
   final contacts = context.knobs.int.slider(
     label: "Contacts",

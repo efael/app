@@ -1,12 +1,12 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
-import 'package:messenger/i18n/messages.dart';
-import 'package:messenger/pages/home/controllers/controller.dart';
-import 'package:messenger/rinf/bindings/signals/signals.dart';
-import 'package:messenger/widgets/settings_card_block.dart';
-import 'package:messenger/widgets/user_avatar.dart';
+import "package:adaptive_dialog/adaptive_dialog.dart";
+import "package:flutter/material.dart";
+import "package:flutter_svg/flutter_svg.dart";
+import "package:get/get.dart";
+import "package:messenger/i18n/messages.dart";
+import "package:messenger/pages/home/controllers/controller.dart";
+import "package:messenger/rinf/bindings/signals/signals.dart";
+import "package:messenger/widgets/settings_card_block.dart";
+import "package:messenger/widgets/user_avatar.dart";
 
 class SettingsView extends GetView<HomeController> {
   const SettingsView({super.key});
@@ -123,7 +123,7 @@ class SettingsView extends GetView<HomeController> {
                             builder: (BuildContext dialogContext) {
                               return AlertDialog(
                                 contentPadding: EdgeInsets.zero,
-                                title: Text('select_lang'.tr),
+                                title: Text("select_lang".tr),
                                 content: Padding(
                                   padding: EdgeInsets.symmetric(vertical: 10),
                                   child: Column(
@@ -146,7 +146,7 @@ class SettingsView extends GetView<HomeController> {
                                 ),
                                 actions: <Widget>[
                                   TextButton(
-                                    child: Text('cancel'.tr),
+                                    child: Text("cancel".tr),
                                     onPressed: () {
                                       Navigator.of(dialogContext).pop();
                                     },
@@ -202,8 +202,8 @@ class SettingsView extends GetView<HomeController> {
                         color: Colors.red,
                         onTap: () => showOkCancelAlertDialog(
                           context: context,
-                          title: 'warning'.tr,
-                          message: 'logoutText'.tr,
+                          title: "warning".tr,
+                          message: "logoutText".tr,
                           okLabel: "yes".tr,
                           cancelLabel: "no".tr,
                           defaultType: OkCancelAlertDefaultType.cancel,

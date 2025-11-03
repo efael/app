@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
-import 'package:messenger/constants.dart';
+import "package:flutter/material.dart";
+import "package:flutter_svg/flutter_svg.dart";
+import "package:get/get.dart";
+import "package:messenger/constants.dart";
 
 class ChatList extends StatelessWidget {
   final int itemCount;

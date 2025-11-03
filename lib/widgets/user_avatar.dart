@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:messenger/constants.dart';
-import 'package:messenger/rinf/bindings/signals/signals.dart';
+import "package:flutter/material.dart";
+import "package:flutter/services.dart";
+import "package:messenger/constants.dart";
+import "package:messenger/rinf/bindings/signals/signals.dart";
 
 class UserAvatar extends StatelessWidget {
   final RoomPreviewAvatar avatar;

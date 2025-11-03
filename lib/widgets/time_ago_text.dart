@@ -1,8 +1,8 @@
-import 'dart:async';
+import "dart:async";
 
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
+import "package:intl/intl.dart";
 
 class TimeAgoText extends StatefulWidget {
   final DateTime dateTime;
@@ -43,17 +43,17 @@ class _TimeAgoTextState extends State<TimeAgoText> {
     String text;
 
     if (difference.inMinutes < 1) {
-      text = 'now'.tr;
+      text = "now".tr;
     } else if (difference.inMinutes < 60) {
       text = '${difference.inMinutes} ${'min'.tr}';
     } else if (difference.inHours < 24) {
-      text = DateFormat('h:mm').format(widget.dateTime);
+      text = DateFormat("h:mm").format(widget.dateTime);
     } else if (difference.inDays == 1) {
-      text = 'yesterday'.tr;
+      text = "yesterday".tr;
     } else if (difference.inDays < 7) {
-      text = DateFormat('EEE').format(widget.dateTime);
+      text = DateFormat("EEE").format(widget.dateTime);
     } else {
-      text = DateFormat('d/M/y').format(widget.dateTime);
+      text = DateFormat("d/M/y").format(widget.dateTime);
     }
 
     setState(() => _displayText = text);

@@ -1,14 +1,14 @@
-import 'package:get/get.dart';
-import 'package:messenger/pages/auth/bindings/binding.dart';
-import 'package:messenger/pages/auth/views/view.dart';
-import 'package:messenger/pages/chat/bindings/binding.dart';
-import 'package:messenger/pages/chat/views/user_details.dart';
-import 'package:messenger/pages/chat/views/view.dart';
-import 'package:messenger/pages/home/bindings/binding.dart';
-import 'package:messenger/pages/home/views/view.dart';
-import 'package:messenger/pages/launcher/bindings/binding.dart';
-import 'package:messenger/pages/launcher/views/view.dart';
-import 'package:messenger/routes.dart';
+import "package:get/get.dart";
+import "package:messenger/pages/auth/bindings/binding.dart";
+import "package:messenger/pages/auth/views/view.dart";
+import "package:messenger/pages/chat/bindings/binding.dart";
+import "package:messenger/pages/chat/views/user_details.dart";
+import "package:messenger/pages/chat/views/view.dart";
+import "package:messenger/pages/home/bindings/binding.dart";
+import "package:messenger/pages/home/views/view.dart";
+import "package:messenger/pages/launcher/bindings/binding.dart";
+import "package:messenger/pages/launcher/views/view.dart";
+import "package:messenger/routes.dart";
 
 class AppPages {
   static final List<GetPage> routes = [

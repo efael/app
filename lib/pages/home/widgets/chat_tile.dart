@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:messenger/constants.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:messenger/widgets/svg_image.dart';
-import 'package:messenger/widgets/time_ago_text.dart';
-import 'package:messenger/widgets/user_avatar.dart';
+import "package:flutter/material.dart";
+import "package:messenger/constants.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:messenger/widgets/svg_image.dart";
+import "package:messenger/widgets/time_ago_text.dart";
+import "package:messenger/widgets/user_avatar.dart";
 
 class ChatTile extends StatelessWidget {
   final Room room;

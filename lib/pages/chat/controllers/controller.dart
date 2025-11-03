@@ -1,12 +1,12 @@
-import 'dart:async';
+import "dart:async";
 
-import 'package:flutter/cupertino.dart';
-import 'package:get/get.dart';
-import 'package:logger/logger.dart';
-import 'package:messenger/routes.dart';
-import 'package:messenger/services/chat_service.dart';
+import "package:flutter/cupertino.dart";
+import "package:get/get.dart";
+import "package:logger/logger.dart";
+import "package:messenger/routes.dart";
+import "package:messenger/services/chat_service.dart";
 
-import '../../base_controller.dart';
+import "../../base_controller.dart";
 
 class ChatController extends BaseController with ScrollMixin {
   final chatService = Get.find<ChatService>();

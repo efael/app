@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
 
-import '../controllers/controller.dart';
+import "../controllers/controller.dart";
 
 class LauncherPage extends GetView<LauncherController> {
   const LauncherPage({super.key});

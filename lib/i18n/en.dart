@@ -1,5 +1,9 @@
-class AppLocalizationsEn {
-  static Map<String, String> translations = {
+import "package:messenger/features/onboarding/i18n/en.dart";
+import "package:messenger/i18n/extension.dart";
+
+class AppLocalizationsEn extends LocaleExtension {
+  @override
+  Map<String, String> get translations => {
     "contacts": "Contacts",
     "calls": "Calls",
     "chats": "Chats",
@@ -21,4 +25,7 @@ class AppLocalizationsEn {
     "cancel": "Cancel",
     "message": "Messages",
   };
+
+  @override
+  List<LocaleExtension> get extensions => [OnboardingLocalizationsEn()];
 }

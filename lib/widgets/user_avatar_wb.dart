@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:messenger/rinf/bindings/signals/signals.dart';
-import 'package:widgetbook/widgetbook.dart';
-import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
+import "package:flutter/material.dart";
+import "package:messenger/rinf/bindings/signals/signals.dart";
+import "package:widgetbook/widgetbook.dart";
+import "package:widgetbook_annotation/widgetbook_annotation.dart" as widgetbook;
 
-import 'package:messenger/widgets/user_avatar.dart';
+import "package:messenger/widgets/user_avatar.dart";
 
-@widgetbook.UseCase(name: 'Default', type: UserAvatar)
+@widgetbook.UseCase(name: "Default", type: UserAvatar)
 Widget buildUseCase(BuildContext context) {
   return UserAvatar(
     avatar: RoomPreviewAvatarText(

@@ -1,6 +1,6 @@
-import 'package:intl/intl.dart';
-import 'package:messenger/enums/message_state.dart';
-import 'package:messenger/enums/message_type.dart';
+import "package:intl/intl.dart";
+import "package:messenger/enums/message_state.dart";
+import "package:messenger/enums/message_type.dart";
 
 class BaseMessageType {
   final int id;
@@ -20,7 +20,7 @@ class BaseMessageType {
     this.replayTo,
   });
 
-  get formatedTime => DateFormat('HH:mm').format(time);
+  get formatedTime => DateFormat("HH:mm").format(time);
 }
 
 class TextMessageTypes extends BaseMessageType {

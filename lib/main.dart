@@ -1,23 +1,24 @@
-import 'dart:async';
-import 'dart:ui';
+import "dart:async";
+import "dart:ui";
 
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:get/get.dart';
-import 'package:messenger/binding.dart';
-import 'package:messenger/config.dart';
-import 'package:messenger/i18n/messages.dart';
-import 'package:messenger/pages.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:messenger/routes.dart';
-import 'package:messenger/themes/default.dart';
-import 'package:rinf/rinf.dart';
-import 'package:widgetbook/widgetbook.dart';
-import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
-import 'main.directories.g.dart';
+import "package:flutter/material.dart";
+import "package:flutter_localizations/flutter_localizations.dart";
+import "package:get/get.dart";
+import "package:messenger/binding.dart";
+import "package:messenger/config.dart";
+import "package:messenger/i18n/messages.dart";
+import "package:messenger/pages.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:messenger/routes.dart";
+import "package:messenger/themes/default.dart";
+import "package:messenger/widgetbook/localization_getx_addon.dart";
+import "package:rinf/rinf.dart";
+import "package:widgetbook/widgetbook.dart";
+import "package:widgetbook_annotation/widgetbook_annotation.dart" as widgetbook;
+import "main.directories.g.dart";
 
 const widgetbookEnabled =
-    String.fromEnvironment('WIDGETBOOK', defaultValue: 'disable') == 'enable';
+    String.fromEnvironment("WIDGETBOOK", defaultValue: "disable") == "enable";
 
 void main() async {
   if (widgetbookEnabled) {
@@ -85,9 +86,9 @@ class _AppState extends State<App> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('uz', 'UZ'),
-        Locale('ru', 'RU'),
-        Locale('en', 'EN'),
+        Locale("uz", "UZ"),
+        Locale("ru", "RU"),
+        Locale("en", "EN"),
       ],
     );
   }
@@ -104,6 +105,31 @@ class WidgetbookApp extends StatelessWidget {
       darkTheme: kDarkDefaultTheme,
       themeMode: ThemeMode.dark,
       directories: directories,
+      addons: [
+        LocalizationGetxAddon(
+          translations: Messages(),
+          locale: Messages.defaultLang,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale("uz", "UZ"),
+            Locale("ru", "RU"),
+            Locale("en", "EN"),
+          ],
+        ),
+        ThemeAddon(
+          initialTheme: WidgetbookTheme(name: "Dark", data: kDarkDefaultTheme),
+          themes: [
+            WidgetbookTheme(name: "Light", data: kDefaultTheme),
+            WidgetbookTheme(name: "Dark", data: kDarkDefaultTheme),
+          ],
+          themeBuilder: (context, theme, child) =>
+              Theme(data: theme, child: child),
+        ),
+      ],
     );
   }
 }

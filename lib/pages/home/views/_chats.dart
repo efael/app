@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:messenger/pages/home/controllers/controller.dart';
-import 'package:messenger/pages/home/widgets/chat_list.dart';
-import 'package:messenger/pages/home/widgets/chat_tile.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
+import "package:messenger/pages/home/controllers/controller.dart";
+import "package:messenger/pages/home/widgets/chat_list.dart";
+import "package:messenger/pages/home/widgets/chat_tile.dart";
 
 class ChatListView extends GetView<HomeController> {
   const ChatListView({super.key});
@@ -41,7 +41,7 @@ class ChatListView extends GetView<HomeController> {
                                     dividerColor: Color(0xFF314356),
                                     labelStyle: TextStyle(fontSize: 14),
                                     tabs: [
-                                      Tab(text: 'all'.tr),
+                                      Tab(text: "all".tr),
                                       ...controller.chatTabs.map(
                                         (it) => Tab(text: it.label),
                                       ),

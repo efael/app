@@ -1,6 +1,6 @@
-import 'package:get/get.dart';
+import "package:get/get.dart";
 
-import '../controllers/controller.dart';
+import "../controllers/controller.dart";
 
 class LauncherBinding extends Bindings {
   @override

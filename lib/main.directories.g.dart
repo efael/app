@@ -10,6 +10,8 @@
 // **************************************************************************
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:messenger/features/onboarding/ui/verify_wb.dart'
+    as _messenger_features_onboarding_ui_verify_wb;
 import 'package:messenger/pages/home/views/chats_wb.dart'
     as _messenger_pages_home_views_chats_wb;
 import 'package:messenger/pages/home/widgets/bottom_navigation_wb.dart'
@@ -25,6 +27,31 @@ import 'package:messenger/widgets/user_avatar_wb.dart'
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
 
 final directories = <_widgetbook.WidgetbookNode>[
+  _widgetbook.WidgetbookFolder(
+    name: 'features',
+    children: [
+      _widgetbook.WidgetbookFolder(
+        name: 'onboarding',
+        children: [
+          _widgetbook.WidgetbookFolder(
+            name: 'ui',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'OnboardingVerifyUI',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder: _messenger_features_onboarding_ui_verify_wb
+                        .buildUseCase,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  ),
   _widgetbook.WidgetbookFolder(
     name: 'pages',
     children: [

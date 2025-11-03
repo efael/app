@@ -1,7 +1,7 @@
-import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:messenger/widgets/message_bubble.dart';
+import "package:flutter/widgets.dart";
+import "package:intl/intl.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:messenger/widgets/message_bubble.dart";
 
 class TimelineItemRender extends StatelessWidget {
   const TimelineItemRender({
