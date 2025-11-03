@@ -1,5 +1,6 @@
-import 'package:messenger/features/onboarding/i18n/en.dart';
-import 'package:messenger/i18n/extension.dart';
+import "package:messenger/features/onboarding/i18n/en.dart";
+import "package:messenger/features/security/i18n/en.dart";
+import "package:messenger/i18n/extension.dart";
 
 class AppLocalizationsEn extends LocaleExtension {
   @override
@@ -27,5 +28,8 @@ class AppLocalizationsEn extends LocaleExtension {
   };
 
   @override
-  List<LocaleExtension> get extensions => [OnboardingLocalizationsEn()];
+  List<LocaleExtension> get extensions => [
+    OnboardingLocalizationsEn(),
+    SecurityLocalizationsEn(),
+  ];
 }

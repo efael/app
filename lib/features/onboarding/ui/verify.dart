@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:messenger/features/onboarding/i18n/common.dart';
-import 'package:messenger/themes/application_theme.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
+import "package:messenger/themes/application_theme.dart";
+
+import "../i18n/common.dart";
 
 class OnboardingVerifyUI extends StatelessWidget {
   const OnboardingVerifyUI({
@@ -35,8 +36,8 @@ class OnboardingVerifyUI extends StatelessWidget {
 
     return Scaffold(
       body: Container(
-        width: double.infinity,
         height: double.infinity,
+        width: double.infinity,
         padding: EdgeInsets.all(8),
         child: Column(
           children: [

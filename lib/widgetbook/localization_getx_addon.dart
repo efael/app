@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:widgetbook/widgetbook.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
+import "package:widgetbook/widgetbook.dart";
 
 /// A [WidgetbookAddon] for switching between different locales.
 ///
@@ -17,12 +17,12 @@ class LocalizationGetxAddon extends WidgetbookAddon<Locale> {
     required this.localizationsDelegates,
     this.locale,
     this.translations,
-  }) : assert(supportedLocales.isNotEmpty, 'locales cannot be empty'),
+  }) : assert(supportedLocales.isNotEmpty, "locales cannot be empty"),
        assert(
          locale == null || supportedLocales.contains(locale),
-         'initialLocale must be in locales',
+         "initialLocale must be in locales",
        ),
-       super(name: 'Locale');
+       super(name: "Locale");
 
   /// The default locale selection when the addon is first loaded.
   ///
@@ -48,7 +48,7 @@ class LocalizationGetxAddon extends WidgetbookAddon<Locale> {
   List<Field> get fields {
     return [
       ObjectDropdownField<Locale>(
-        name: 'name',
+        name: "name",
         values: supportedLocales,
         initialValue: locale ?? supportedLocales.first,
         labelBuilder: (locale) => locale.toLanguageTag(),
@@ -58,7 +58,7 @@ class LocalizationGetxAddon extends WidgetbookAddon<Locale> {
 
   @override
   Locale valueFromQueryGroup(Map<String, String> group) {
-    return valueOf('name', group)!;
+    return valueOf("name", group)!;
   }
 
   @override

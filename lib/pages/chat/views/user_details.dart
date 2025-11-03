@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:messenger/pages/chat/controllers/controller.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:messenger/widgets/user_avatar.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
+import "package:messenger/pages/chat/controllers/controller.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:messenger/widgets/user_avatar.dart";
 
 class UserDetailsPage extends GetView<ChatController> {
   const UserDetailsPage({super.key});

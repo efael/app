@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:logger/logger.dart';
-import 'package:messenger/models/chat_contact.dart';
-import 'package:messenger/pages/home/views/_calls.dart';
-import 'package:messenger/pages/home/views/_chats.dart';
-import 'package:messenger/pages/home/views/_contacts.dart';
-import 'package:messenger/pages/home/views/_settings.dart';
-import 'package:messenger/repositories/chat_repo.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:messenger/routes.dart';
-import 'package:messenger/services/chat_service.dart';
-import 'package:messenger/services/storage_service.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
+import "package:logger/logger.dart";
+import "package:messenger/models/chat_contact.dart";
+import "package:messenger/pages/home/views/_calls.dart";
+import "package:messenger/pages/home/views/_chats.dart";
+import "package:messenger/pages/home/views/_contacts.dart";
+import "package:messenger/pages/home/views/_settings.dart";
+import "package:messenger/repositories/chat_repo.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:messenger/routes.dart";
+import "package:messenger/services/chat_service.dart";
+import "package:messenger/services/storage_service.dart";
 
-import '../../base_controller.dart';
-import '../models/stack_page.dart';
+import "../../base_controller.dart";
+import "../models/stack_page.dart";
 
 class HomeController extends BaseController {
   var activeTabKey = "chats".obs;

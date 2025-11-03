@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:messenger/themes/application_theme.dart';
+import "package:flutter/material.dart";
+import "package:google_fonts/google_fonts.dart";
+import "package:messenger/themes/application_theme.dart";
 
 var lightApplicationTheme = ApplicationTheme(
   dominantBgHighContrast: Color.fromRGBO(210, 221, 235, 1),

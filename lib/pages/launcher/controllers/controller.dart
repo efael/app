@@ -1,11 +1,11 @@
-import 'package:get/get.dart';
-import 'package:messenger/config.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:messenger/routes.dart';
-import 'package:messenger/services/chat_service.dart';
-import 'package:path_provider/path_provider.dart';
+import "package:get/get.dart";
+import "package:messenger/config.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:messenger/routes.dart";
+import "package:messenger/services/chat_service.dart";
+import "package:path_provider/path_provider.dart";
 
-import '../../base_controller.dart';
+import "../../base_controller.dart";
 
 class LauncherController extends BaseController {
   Future<void> initRust() async {

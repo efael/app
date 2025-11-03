@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
 
-import '../controllers/controller.dart';
+import "../controllers/controller.dart";
 
 class AuthPage extends GetView<AuthController> {
   const AuthPage({super.key});

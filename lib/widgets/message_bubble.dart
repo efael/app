@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:messenger/constants.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
+import "package:flutter/material.dart";
+import "package:messenger/constants.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
 
 class MessageBubble extends StatelessWidget {
   final Profile profile;

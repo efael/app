@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:messenger/widgets/svg_image.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:messenger/widgets/svg_image.dart";
 
 class ChatMessageBar extends StatefulWidget {
   final Function(MatrixSendMessageContent) onSendMessage;
@@ -69,7 +68,7 @@ class _ChatMessageBarState extends State<ChatMessageBar> {
               maxLines: 7,
               controller: textController,
               decoration: InputDecoration(
-                hintText: 'message'.tr,
+                hintText: "message".tr,
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,

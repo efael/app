@@ -1,15 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:messenger/constants.dart';
-import 'package:messenger/models/message_types.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:messenger/widgets/chat_message_bar.dart';
-import 'package:messenger/widgets/message_bubble.dart';
-import 'package:messenger/widgets/popup_menu_item.dart';
-import 'package:messenger/widgets/timeline_item_render.dart';
-import 'package:messenger/widgets/user_avatar.dart';
+import "package:flutter/material.dart";
+import "package:get/get.dart";
+import "package:messenger/constants.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:messenger/widgets/chat_message_bar.dart";
+import "package:messenger/widgets/popup_menu_item.dart";
+import "package:messenger/widgets/timeline_item_render.dart";
+import "package:messenger/widgets/user_avatar.dart";
 
-import '../controllers/controller.dart';
+import "../controllers/controller.dart";
 
 class ChatPage extends GetView<ChatController> {
   const ChatPage({super.key});
@@ -76,21 +74,21 @@ class ChatPage extends GetView<ChatController> {
           PopupMenuButton(
             itemBuilder: (c) => [
               const PopupMenuItem(
-                value: 'search',
+                value: "search",
                 child: CustomPopupMenuItem(
                   icon: "assets/icons/search.svg",
                   label: "Search",
                 ),
               ),
               const PopupMenuItem(
-                value: 'clear',
+                value: "clear",
                 child: CustomPopupMenuItem(
                   icon: "assets/icons/clear.svg",
                   label: "Clear history",
                 ),
               ),
               const PopupMenuItem(
-                value: 'delete',
+                value: "delete",
                 child: CustomPopupMenuItem(
                   icon: "assets/icons/trash.svg",
                   label: "Delete chat",

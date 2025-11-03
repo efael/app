@@ -1,16 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:messenger/features/onboarding/ui/verify.dart';
-import 'package:messenger/helpers_wb.dart';
-import 'package:widgetbook/widgetbook.dart';
-import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
+import "package:flutter/material.dart";
+import "package:widgetbook/widgetbook.dart";
+import "package:widgetbook_annotation/widgetbook_annotation.dart" as widgetbook;
 
-import '../common_wb.dart';
+import "../common_wb.dart";
+import "verify.dart";
 
-class Chats extends EmptyWidget {
-  const Chats({super.key});
-}
-
-@widgetbook.UseCase(name: 'Default', type: OnboardingVerifyUI, path: "$path/ui")
+@widgetbook.UseCase(name: "Default", type: OnboardingVerifyUI, path: "$path/ui")
 Widget buildUseCase(BuildContext context) {
   return OnboardingVerifyUI(
     signOutCallback: () {},

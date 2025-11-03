@@ -1,10 +1,10 @@
-import 'dart:async';
+import "dart:async";
 
-import 'package:get/get.dart';
-import 'package:messenger/models/call_history.dart';
-import 'package:messenger/models/chat_contact.dart';
-import 'package:messenger/rinf/bindings/bindings.dart';
-import 'package:rinf/rinf.dart';
+import "package:get/get.dart";
+import "package:messenger/models/call_history.dart";
+import "package:messenger/models/chat_contact.dart";
+import "package:messenger/rinf/bindings/bindings.dart";
+import "package:rinf/rinf.dart";
 
 class ChatService extends GetxService {
   late StreamSubscription<RustSignalPack<MatrixRoomDiffResponse>>
@@ -95,7 +95,7 @@ class ChatService extends GetxService {
     print("-------");
     print(diff);
     for (var i = 0; i < activeChatItems.length; i++) {
-      print("${i} - - - ${activeChatItems[i]}");
+      print("$i - - - ${activeChatItems[i]}");
     }
     print("-------");
 
@@ -114,12 +114,12 @@ class ChatService extends GetxService {
         activeChatItems.removeLast();
       case VectorDiffTimelineItemInsert(index: final index, value: final value):
         activeChatItems.insert(index.toInt(), value);
-      case VectorDiffTimelineItemSet(index: final _index, value: final value):
-        final index = _index.toInt();
+      case VectorDiffTimelineItemSet(index: final index0, value: final value):
+        final index = index0.toInt();
 
         if (index > activeChatItems.length - 1) {
           print("invalid index set");
-          print("old ${index}, ${activeChatItems.length - 1}");
+          print("old $index, ${activeChatItems.length - 1}");
           return;
         }
 
@@ -127,9 +127,9 @@ class ChatService extends GetxService {
 
         if (value.internalId != oldElement.internalId) {
           print("wrong id set");
-          print("old ${oldElement}");
+          print("old $oldElement");
           print("--");
-          print("new ${value}");
+          print("new $value");
           return;
         }
 

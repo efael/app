@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
-import 'package:messenger/enums/call_status.dart';
-import 'package:messenger/pages/home/controllers/controller.dart';
-import 'package:messenger/rinf/bindings/signals/signals.dart';
-import 'package:messenger/widgets/user_avatar.dart';
+import "package:flutter/material.dart";
+import "package:flutter_svg/flutter_svg.dart";
+import "package:get/get.dart";
+import "package:messenger/enums/call_status.dart";
+import "package:messenger/pages/home/controllers/controller.dart";
+import "package:messenger/rinf/bindings/signals/signals.dart";
+import "package:messenger/widgets/user_avatar.dart";
 
 class CallsListView extends GetView<HomeController> {
   const CallsListView({super.key});

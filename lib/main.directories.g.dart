@@ -12,6 +12,20 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:messenger/features/onboarding/ui/verify_wb.dart'
     as _messenger_features_onboarding_ui_verify_wb;
+import 'package:messenger/features/security/ui/change_wb.dart'
+    as _messenger_features_security_ui_change_wb;
+import 'package:messenger/features/security/ui/disable_wb.dart'
+    as _messenger_features_security_ui_disable_wb;
+import 'package:messenger/features/security/ui/enter_wb.dart'
+    as _messenger_features_security_ui_enter_wb;
+import 'package:messenger/features/security/ui/reset_password_wb.dart'
+    as _messenger_features_security_ui_reset_password_wb;
+import 'package:messenger/features/security/ui/reset_wb.dart'
+    as _messenger_features_security_ui_reset_wb;
+import 'package:messenger/features/security/ui/settings_wb.dart'
+    as _messenger_features_security_ui_settings_wb;
+import 'package:messenger/features/security/ui/setup_wb.dart'
+    as _messenger_features_security_ui_setup_wb;
 import 'package:messenger/pages/home/views/chats_wb.dart'
     as _messenger_pages_home_views_chats_wb;
 import 'package:messenger/pages/home/widgets/bottom_navigation_wb.dart'
@@ -43,6 +57,86 @@ final directories = <_widgetbook.WidgetbookNode>[
                     name: 'Default',
                     builder: _messenger_features_onboarding_ui_verify_wb
                         .buildUseCase,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+      _widgetbook.WidgetbookFolder(
+        name: 'security',
+        children: [
+          _widgetbook.WidgetbookFolder(
+            name: 'ui',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'SecurityChangeUI',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder:
+                        _messenger_features_security_ui_change_wb.buildUseCase,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SecurityDisableUI',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder:
+                        _messenger_features_security_ui_disable_wb.buildUseCase,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SecurityEnterUI',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder:
+                        _messenger_features_security_ui_enter_wb.buildUseCase,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SecurityResetPasswordUI',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder: _messenger_features_security_ui_reset_password_wb
+                        .buildUseCase,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SecurityResetUI',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder:
+                        _messenger_features_security_ui_reset_wb.buildUseCase,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SecuritySettingsUI',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder: _messenger_features_security_ui_settings_wb
+                        .buildUseCase,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'SecuritySetupUI',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder:
+                        _messenger_features_security_ui_setup_wb.buildUseCase,
                   ),
                 ],
               ),

@@ -1,5 +1,6 @@
-import 'package:messenger/features/onboarding/i18n/common.dart';
-import 'package:messenger/i18n/extension.dart';
+import "package:messenger/i18n/extension.dart";
+
+import "common.dart";
 
 class OnboardingLocalizationsEn extends LocaleExtension {
   @override
