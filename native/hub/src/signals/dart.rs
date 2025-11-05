@@ -1,11 +1,10 @@
 #![allow(dead_code, clippy::large_enum_variant)]
 use rinf::{DartSignal, RustSignal, SignalPiece};
-use ruma::events::AnyMessageLikeEventContent;
 use serde::{Deserialize, Serialize};
 
 use crate::matrix::{
-    oidc::OidcConfiguration, sas_verification::Emoji, vector_diff_room::VectorDiffRoom,
-    vector_diff_timeline_item::VectorDiffTimelineItem,
+    oidc::OidcConfiguration, sas_verification::Emoji, timeline_pagination::TimelinePagination,
+    vector_diff_room::VectorDiffRoom, vector_diff_timeline_item::VectorDiffTimelineItem
 };
 
 // ---
@@ -94,6 +93,25 @@ pub enum MatrixFetchRoomResponse {
     Ok {
         room_id: String,
         diff: VectorDiffTimelineItem,
+    },
+    Err {
+        message: String,
+    },
+}
+
+// ---
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixTimelinePaginateRequest {
+    pub room_id: String,
+    pub pagination: TimelinePagination,
+}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixTimelinePaginateResponse {
+    Ok {
+        room_id: String,
+        end_of_timeline: bool
     },
     Err {
         message: String,

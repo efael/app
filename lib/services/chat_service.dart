@@ -118,18 +118,12 @@ class ChatService extends GetxService {
         final index = index0.toInt();
 
         if (index > activeChatItems.length - 1) {
-          print("invalid index set");
-          print("old $index, ${activeChatItems.length - 1}");
           return;
         }
 
         final oldElement = activeChatItems.elementAt(index);
 
         if (value.internalId != oldElement.internalId) {
-          print("wrong id set");
-          print("old $oldElement");
-          print("--");
-          print("new $value");
           return;
         }
 
@@ -158,6 +152,23 @@ class ChatService extends GetxService {
     activeChat.value = room;
     activeChatItems.clear();
     MatrixFetchRoomRequest(roomId: room.id).sendSignalToRust();
+
+    paginateBackwards();
+  }
+
+  void paginateBackwards() {
+    final targetRoom = activeChat.value;
+
+    if (targetRoom == null) {
+      print("No active room for pagination.");
+      return;
+    }
+
+    print("Fetching older messages for room: ${targetRoom.id}");
+    MatrixTimelinePaginateRequest(
+      roomId: targetRoom.id,
+      pagination: TimelinePagination.backwards,
+    ).sendSignalToRust();
   }
 
   void clear() {

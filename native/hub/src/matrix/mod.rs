@@ -13,3 +13,4 @@ pub mod sync;
 pub mod timeline;
 pub mod vector_diff_room;
 pub mod vector_diff_timeline_item;
+pub mod timeline_pagination;

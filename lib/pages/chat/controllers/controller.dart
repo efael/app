@@ -12,6 +12,7 @@ class ChatController extends BaseController with ScrollMixin {
   final chatService = Get.find<ChatService>();
 
   final showScrollToBottom = false.obs;
+  final isLoadingOlder = false.obs;
 
   final TextEditingController textController = TextEditingController();
 
@@ -19,6 +20,7 @@ class ChatController extends BaseController with ScrollMixin {
   void onClose() {
     super.onClose();
 
+    scroll.dispose();
     chatService.activeChat.value = null;
   }
 
@@ -46,6 +48,15 @@ class ChatController extends BaseController with ScrollMixin {
         scroll.jumpTo(scroll.position.maxScrollExtent);
       });
     });
+
+    scroll.addListener(() async {
+      if (scroll.position.pixels <= scroll.position.minScrollExtent + 50 &&
+          !scroll.position.outOfRange &&
+          !isLoadingOlder.value) {
+        
+        paginateBackwards();
+      }
+    });
   }
 
   @override
@@ -53,4 +64,15 @@ class ChatController extends BaseController with ScrollMixin {
 
   @override
   Future<void> onTopScroll() async {}
+
+  void paginateBackwards() {
+    isLoadingOlder.value = true;
+    try {
+      chatService.paginateBackwards();
+    }
+    finally {
+      // Small delay for smoother UX
+      isLoadingOlder.value = false;
+    }
+  }
 }

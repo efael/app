@@ -27,9 +27,7 @@ impl Handler<MatrixFetchRoomRequest> for Matrix {
             };
         };
 
-        tracing::trace!("waiting for lock");
         let rooms = self.sync.room_list.rooms.lock().await;
-        tracing::trace!("lock working");
 
         let room_id = match OwnedRoomId::from_str(&msg.room_id) {
             Ok(room_id) => room_id,
@@ -48,17 +46,12 @@ impl Handler<MatrixFetchRoomRequest> for Matrix {
             };
         };
 
-        tracing::info!("----------------");
         let items: Vec<crate::matrix::timeline::TimelineItem> = room.initial_items.iter().cloned().collect();
-        for (i, v) in items.iter().enumerate() {
-            tracing::info!("{i} = {v:?}");
-        };
-        tracing::info!("----------------");
         let diff = VectorDiffTimelineItem::Reset { values: items };
 
-        MatrixFetchRoomResponse::Ok {
+        return MatrixFetchRoomResponse::Ok {
             room_id: msg.room_id,
             diff,
-        }
+        };
     }
 }

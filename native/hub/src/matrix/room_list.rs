@@ -41,7 +41,6 @@ impl Default for RoomList {
 impl RoomList {
     #[tracing::instrument(skip(self))]
     pub fn listen_to_updates(&mut self, room_list: SdkRoomList) {
-        debug_print!("started listening to updates");
         let rooms = self.rooms.clone();
         let last_updated = self.last_updated.clone();
 
@@ -62,7 +61,6 @@ impl RoomList {
 
                 tokio::spawn(Self::handle_diffs(rooms.clone(), diffs.clone()));
 
-                tracing::trace!("sending diff to dart");
                 MatrixRoomDiffResponse(diffs).send_signal_to_dart();
 
                 let mut last_updated = last_updated.lock().await;
@@ -196,7 +194,7 @@ impl RoomList {
         let s_timeline = timeline.clone();
         let subscription = tokio::spawn(async move {
             let (items, mut subscriber) = s_timeline.subscribe().await;
-            tracing::trace!("i am spawned {s_room_id}");
+            tracing::trace!("timeline subscriber spawned {s_room_id}, items: {}", items.len());
             {
                 let items: Vector<TimelineItem> = items.into_iter().map(Into::into).collect();
                 let mut rooms = s_rooms.lock().await;

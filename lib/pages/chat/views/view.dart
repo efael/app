@@ -9,11 +9,32 @@ import "package:messenger/widgets/user_avatar.dart";
 
 import "../controllers/controller.dart";
 
-class ChatPage extends GetView<ChatController> {
+class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
 
   @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+  late final ScrollController scrollController;
+  bool isLoadingOlder = false;
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = Get.find<ChatController>();
     final room = controller.chatService.activeChat.value;
 
     return Scaffold(
@@ -107,29 +128,62 @@ class ChatPage extends GetView<ChatController> {
               child: Stack(
                 children: [
                   Obx(
-                    () => ListView.builder(
-                      controller: controller.scroll,
-                      padding: EdgeInsets.symmetric(vertical: 5),
-                      reverse: false,
-                      itemCount: controller.chatService.activeChatItems.length,
-                      itemBuilder: (c, i) {
-                        final item = controller.chatService.activeChatItems[i];
-                        return TimelineItemRender(
-                          item: item,
-                          currentUserId:
-                              controller.chatService.currentUserId.value,
-                        );
+                    () => RefreshIndicator(
+                      onRefresh: () async {
+                        // Also allow pull-down refresh for pagination
+                        setState(() => isLoadingOlder = true);
+                        controller.chatService.paginateBackwards();
+                        setState(() => isLoadingOlder = false);
                       },
+                      backgroundColor: consts.colors.dominant.bgHighContrast.light,
+                      displacement: 20,
+                      child: ListView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        itemCount:
+                            controller.chatService.activeChatItems.length + (isLoadingOlder ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          // Show top loader as first element
+                          if (isLoadingOlder && index == 0) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            );
+                          }
+
+                          final itemIndex =
+                              isLoadingOlder ? index - 1 : index;
+                          final item =
+                              controller.chatService.activeChatItems[itemIndex];
+                          return TimelineItemRender(
+                            item: item,
+                            currentUserId:
+                                controller.chatService.currentUserId.value,
+                          );
+                        },
+                      ),
                     ),
                   ),
                   Obx(
                     () => AnimatedPositioned(
                       bottom: controller.showScrollToBottom.value ? 8 : -60,
                       right: 8,
-                      duration: Duration(milliseconds: 200),
+                      duration: const Duration(milliseconds: 200),
                       child: IconButton.filledTonal(
-                        onPressed: () {},
-                        icon: Icon(Icons.arrow_downward),
+                        onPressed: () {
+                          scrollController.animateTo(
+                            scrollController.position.maxScrollExtent,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_downward),
                       ),
                     ),
                   ),
