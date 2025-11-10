@@ -129,6 +129,7 @@ pub struct MatrixSendMessageRequest {
 #[derive(Deserialize, SignalPiece, Debug)]
 pub enum MatrixSendMessageContent {
     Message { body: String },
+    Image { body: Vec<u8> },
 }
 
 #[derive(Serialize, RustSignal, Debug)]

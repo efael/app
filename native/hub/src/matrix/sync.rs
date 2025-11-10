@@ -83,8 +83,6 @@ impl Sync {
         self.room_list.listen_to_updates(rooms_list);
 
         let listener = tokio::spawn(async move {
-            // let mut loading_state = rooms.map(|r| r.loading_state());
-
             loop {
                 if let Some(_state) = sync_service.state().next().await {
                     // tracing::trace!("[sync] new state {state:?}");

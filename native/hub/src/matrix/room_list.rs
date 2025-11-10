@@ -210,8 +210,8 @@ impl RoomList {
                     .map(VectorDiffTimelineItem::from_sdk)
                     .collect();
                 tracing::trace!("timeline received new message {s_room_id}");
-                tracing::trace!("timeline something {diffs:?}");
-                
+                tracing::trace!("> {diffs:?}");
+
                 let mut rooms = s_rooms.lock().await;
                 let room_details = rooms.get_mut(&s_room_id).expect("should exist already");
 

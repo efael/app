@@ -53,7 +53,7 @@ class ChatController extends BaseController with ScrollMixin {
       if (scroll.position.pixels <= scroll.position.minScrollExtent + 50 &&
           !scroll.position.outOfRange &&
           !isLoadingOlder.value) {
-        
+
         paginateBackwards();
       }
     });
