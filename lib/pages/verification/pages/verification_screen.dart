@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:messenger/constants.dart";
 import "package:messenger/features/onboarding/common_wb.dart";
 import "package:messenger/pages/verification/widgets/verification_header_widget.dart";
 import "package:widgetbook/widgetbook.dart";
@@ -27,14 +28,51 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
+  final List<String> optionsText = [
+    "Verfy the other device to keep your message history secure",
+    "Fox extra security, another user wants to verify your identity. You'll be shown a sent of emojis to compare.",
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          VerificationHeaderWidget(verificationHeaderType: widget.verificationHeaderType),
-        ],
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 100),
+
+              VerificationHeaderWidget(verificationHeaderType: widget.verificationHeaderType),
+
+              const SizedBox(height: 24),
+
+              Text(
+                "Verification requested",
+                style: consts.typography.text1.copyWith(
+                  color: Colors.black,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                widget.verificationHeaderType != VerificationHeaderType.user
+                    ? optionsText[0]
+                    : optionsText[1],
+                style: consts.typography.text3.copyWith(
+                  fontSize: 14,
+                  color: consts.colors.content.mediumContrast.dark,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
