@@ -46,7 +46,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 100),
+              const SizedBox(height: 70),
 
               VerificationHeaderWidget(verificationHeaderType: widget.verificationHeaderType),
 
@@ -93,6 +93,68 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     );
                   }
                 },
+              ),
+
+              const SizedBox(height: 24),
+
+              if (widget.verificationHeaderType != VerificationHeaderType.user) Text(
+                "Only continue if you initiated this verification.",
+                style: consts.typography.text2.copyWith(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              Spacer(),
+
+              if (widget.verificationHeaderType != VerificationHeaderType.loading) ElevatedButton(
+                onPressed: () {},
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.black),
+                  fixedSize: WidgetStatePropertyAll<Size>(
+                    Size(
+                      MediaQuery.of(context).size.width > 600
+                          ? 600
+                          : MediaQuery.of(context).size.width,
+                      48,
+                    ),
+                  ),
+                ),
+                child: Text(
+                  "Start verification",
+                  style: consts.typography.text2.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+              if (widget.verificationHeaderType != VerificationHeaderType.loading) const SizedBox(height: 12),
+
+              if (widget.verificationHeaderType != VerificationHeaderType.loading) TextButton(
+                onPressed: () {},
+                style: ButtonStyle(
+                  fixedSize: WidgetStatePropertyAll<Size>(
+                    Size(
+                      MediaQuery.of(context).size.width > 600
+                          ? 600
+                          : MediaQuery.of(context).size.width,
+                      48,
+                    ),
+                  ),
+                ),
+                child: Text(
+                  "Ignore",
+                  style: consts.typography.text2.copyWith(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
