@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
+import "package:intl/intl.dart";
 import "package:messenger/constants.dart";
 import "package:messenger/features/onboarding/common_wb.dart";
+import "package:messenger/pages/verification/widgets/verification_device_item.dart";
 import "package:messenger/pages/verification/widgets/verification_header_widget.dart";
 import "package:widgetbook/widgetbook.dart";
 import "package:widgetbook_annotation/widgetbook_annotation.dart" as widgetbook;
@@ -69,6 +71,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   color: consts.colors.content.mediumContrast.dark,
                 ),
                 textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 24),
+
+              VerificationDeviceItem(
+                model: VerificationDeviceUIModel(
+                  name: "Element X Android",
+                  date: DateFormat("hh:mm").format(DateTime.now()),
+                  deviceId: "ILAKNDNASDLK",
+                ),
               ),
             ],
           ),
