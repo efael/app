@@ -22,6 +22,8 @@ import 'package:messenger/pages/home/widgets/chat_list_wb.dart'
     as _messenger_pages_home_widgets_chat_list_wb;
 import 'package:messenger/pages/home/widgets/chat_tile_wb.dart'
     as _messenger_pages_home_widgets_chat_tile_wb;
+import 'package:messenger/pages/verification/pages/verification_screen.dart'
+    as _messenger_pages_verification_pages_verification_screen;
 import 'package:messenger/widgets/user_avatar_wb.dart'
     as _messenger_widgets_user_avatar_wb;
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
@@ -33,6 +35,22 @@ final directories = <_widgetbook.WidgetbookNode>[
       _widgetbook.WidgetbookFolder(
         name: 'onboarding',
         children: [
+          _widgetbook.WidgetbookFolder(
+            name: 'pages',
+            children: [
+              _widgetbook.WidgetbookComponent(
+                name: 'VerificationScreen',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder:
+                        _messenger_pages_verification_pages_verification_screen
+                            .buildUseCase,
+                  ),
+                ],
+              ),
+            ],
+          ),
           _widgetbook.WidgetbookFolder(
             name: 'ui',
             children: [
