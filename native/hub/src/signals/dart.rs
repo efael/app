@@ -3,8 +3,7 @@ use rinf::{DartSignal, RustSignal, SignalPiece};
 use serde::{Deserialize, Serialize};
 
 use crate::matrix::{
-    oidc::OidcConfiguration, sas_verification::Emoji, timeline_pagination::TimelinePagination,
-    vector_diff_room::VectorDiffRoom, vector_diff_timeline_item::VectorDiffTimelineItem
+    oidc::OidcConfiguration, ruma::EncryptedFile, sas_verification::Emoji, timeline_pagination::TimelinePagination, vector_diff_room::VectorDiffRoom, vector_diff_timeline_item::VectorDiffTimelineItem
 };
 
 // ---
@@ -129,11 +128,36 @@ pub struct MatrixSendMessageRequest {
 #[derive(Deserialize, SignalPiece, Debug)]
 pub enum MatrixSendMessageContent {
     Message { body: String },
-    Image { body: Vec<u8> },
+    Image {
+        caption: Option<String>,
+        size: u64,
+        mimetype: String, // "image/jpeg", "image/png"
+        bytes: Vec<u8>,
+    },
 }
 
 #[derive(Serialize, RustSignal, Debug)]
 pub enum MatrixSendMessageResponse {
     Ok {},
     Err { message: String },
+}
+
+
+// ---
+
+#[derive(Deserialize, DartSignal, Debug)]
+pub struct MatrixUploadEncryptedFileRequest {
+    pub room_id: String,
+    pub bytes: Vec<u8>,
+}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixUploadEncryptedFileResponse {
+    Ok { file: EncryptedFile },
+    Err { message: String },
+}
+
+#[derive(Serialize, RustSignal, Debug)]
+pub enum MatrixUploadEncryptedFileProgress {
+    
 }

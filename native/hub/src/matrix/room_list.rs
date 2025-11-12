@@ -3,7 +3,7 @@ use matrix_sdk::RoomState as SdkRoomState;
 use matrix_sdk_ui::eyeball_im::Vector;
 use matrix_sdk_ui::room_list_service::RoomList as SdkRoomList;
 use matrix_sdk_ui::timeline::RoomExt;
-use rinf::{RustSignal, debug_print};
+use rinf::RustSignal;
 use ruma::OwnedRoomId;
 use std::collections::BTreeMap;
 use std::ops::DerefMut;

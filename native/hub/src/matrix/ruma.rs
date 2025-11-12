@@ -1,14 +1,14 @@
 #![allow(dead_code)]
 
+use std::collections::BTreeMap;
+
 use rinf::SignalPiece;
-use ruma::events::{
+use ruma::{events::{
     Mentions as SdkMentions, MessageLikeEventType as SdkMessageLikeEventType,
     StateEventType as SdkStateEventType,
     key::verification::VerificationMethod as SdkVerificationMethod,
     room::{
-        EncryptedFile as SdkEncryptedFile, ImageInfo as SdkImageInfo,
-        MediaSource as SdkMediaSource, ThumbnailInfo as SdkThumbnailInfo,
-        message::{
+        EncryptedFile as SdkEncryptedFile, ImageInfo as SdkImageInfo, JsonWebKey as SdkJsonWebKey, MediaSource as SdkMediaSource, ThumbnailInfo as SdkThumbnailInfo, message::{
             AudioInfo as SdkAudioInfo, AudioMessageEventContent as SdkAudioMessageEventContent,
             EmoteMessageEventContent as SdkEmoteMessageEventContent, FileInfo as SdkFileInfo,
             FileMessageEventContent as SdkFileMessageEventContent,
@@ -23,14 +23,21 @@ use ruma::events::{
             ServerNoticeType as SdkServerNoticeType,
             TextMessageEventContent as SdkTextMessageEventContent, VideoInfo as SdkVideoInfo,
             VideoMessageEventContent as SdkVideoMessageEventContent,
-        },
+        }
     },
     sticker::{
         StickerEventContent as SdkStickerEventContent, StickerMediaSource as SdkStickerMediaSource,
     },
+}};
+
+use ruma::serde::{
+    base64::{
+        Base64 as SdkBase64,
+        UrlSafe as SdkUrlSafe,
+    }
 };
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, SignalPiece)]
 pub enum MessageLikeEventType {
@@ -831,6 +838,17 @@ pub struct EncryptedFile {
     /// The URL to the file.
     pub url: String,
 
+    /// A [JSON Web Key](https://tools.ietf.org/html/rfc7517#appendix-A.3) object.
+    pub key: JsonWebKey,
+
+    /// The 128-bit unique counter block used by AES-CTR, encoded as unpadded base64.
+    pub iv: Base64String,
+
+    /// A map from an algorithm name to a hash of the ciphertext, encoded as unpadded base64.
+    ///
+    /// Clients should support the SHA-256 hash, which uses the key sha256.
+    pub hashes: BTreeMap<String, Base64String>,
+
     /// Version of the encrypted attachments protocol.
     ///
     /// Must be `v2`.
@@ -841,7 +859,42 @@ impl From<Box<SdkEncryptedFile>> for EncryptedFile {
     fn from(value: Box<SdkEncryptedFile>) -> Self {
         Self {
             url: value.url.to_string(),
+            key: value.key.into(),
+            iv: value.iv.into(),
+            hashes: value.hashes.into_iter()
+                .map(|(k, v)| (k, v.into()))
+                .collect(),
             v: value.v,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, SignalPiece)]
+pub struct JsonWebKey {
+    /// Key type. Must be `oct`.
+    pub kty: String,
+
+    /// Key operations. Must at least contain `encrypt` and `decrypt`.
+    pub key_ops: Vec<String>,
+
+    /// Algorithm. Must be `A256CTR`.
+    pub alg: String,
+
+    /// The key, encoded as url-safe unpadded base64.
+    pub k: Base64String,
+
+    /// Extractable. Must be `true`.
+    pub ext: bool,
+}
+
+impl From<SdkJsonWebKey> for JsonWebKey {
+    fn from(value: SdkJsonWebKey) -> Self {
+        Self {
+            kty: value.kty.clone(),
+            key_ops: value.key_ops.clone(),
+            alg: value.alg.clone(),
+            k: value.k.clone().into(),
+            ext: value.ext.clone(),
         }
     }
 }
@@ -915,5 +968,20 @@ impl From<SdkStickerMediaSource> for StickerMediaSource {
             SdkStickerMediaSource::Encrypted(encrypted) => Self::Encrypted(encrypted.into()),
             _ => Self::Unknown,
         }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, SignalPiece)]
+pub struct Base64String(pub String);
+
+impl From<SdkBase64> for Base64String {
+    fn from(value: SdkBase64) -> Self {
+        Self(value.encode())
+    }
+}
+
+impl From<SdkBase64<SdkUrlSafe>> for Base64String {
+    fn from(value: SdkBase64<SdkUrlSafe>) -> Self {
+        Self(value.encode())
     }
 }

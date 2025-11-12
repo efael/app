@@ -10,6 +10,7 @@ pub mod session_callbacks;
 pub mod session_verification_request;
 pub mod sync_background_request;
 pub mod paginate_timeline_request;
+pub mod upload_encrypted_file_request;
 
 use std::{io::ErrorKind, path::PathBuf};
 
@@ -30,7 +31,7 @@ use crate::{
         dart::{
             MatrixFetchRoomRequest, MatrixInitRequest, MatrixLogoutRequest,
             MatrixOidcAuthFinishRequest, MatrixOidcAuthRequest, MatrixSASConfirmRequest,
-            MatrixSendMessageRequest, MatrixSessionVerificationRequest, MatrixTimelinePaginateRequest,
+            MatrixSendMessageRequest, MatrixSessionVerificationRequest, MatrixTimelinePaginateRequest, MatrixUploadEncryptedFileRequest,
         },
         init_client_error::InitClientError,
         internal::{InternalRefreshSessionRequest, InternalSyncBackgroundRequest},
@@ -80,6 +81,7 @@ impl Matrix {
         actor.listen_to_handler::<MatrixFetchRoomRequest>();
         actor.listen_to_handler::<MatrixSendMessageRequest>();
         actor.listen_to_handler::<MatrixTimelinePaginateRequest>();
+        actor.listen_to_handler::<MatrixUploadEncryptedFileRequest>();
 
         actor.listen_to_notification::<MatrixOidcAuthRequest>();
         actor.listen_to_notification::<MatrixOidcAuthFinishRequest>();

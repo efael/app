@@ -3,16 +3,14 @@ use std::str::FromStr;
 use async_trait::async_trait;
 use messages::prelude::{Context, Handler};
 use ruma::{
-    OwnedRoomId,
-    events::{
+    OwnedRoomId, UInt, events::{
         AnyMessageLikeEventContent,
         room::{
             ImageInfo,
             message::{ImageMessageEventContent, MessageType, RoomMessageEventContent},
         },
-    },
+    }
 };
-use tracing::instrument::WithSubscriber;
 
 use crate::{
     actors::matrix::Matrix,
@@ -75,11 +73,11 @@ impl Handler<MatrixSendMessageRequest> for Matrix {
                         |_| MatrixSendMessageResponse::Ok {},
                     );
             }
-            MatrixSendMessageContent::Image { body } => {
-                let mut cursor = std::io::Cursor::new(body);
+            MatrixSendMessageContent::Image { size, bytes, mimetype, caption } => {
+                let mut cursor = std::io::Cursor::new(bytes);
                 let upload = client.upload_encrypted_file(&mut cursor);
 
-                let sub = upload.subscribe_to_send_progress();
+                let progress = upload.subscribe_to_send_progress();
 
                 let uploaded = match upload.await {
                     Ok(uploaded) => uploaded,
@@ -90,29 +88,29 @@ impl Handler<MatrixSendMessageRequest> for Matrix {
                     }
                 };
 
+                let mut info = ImageInfo::new();
+                info.height = Some(UInt::new(1920).unwrap());
+                info.width = Some(UInt::new(1080).unwrap());
+                info.mimetype = Some(mimetype);
+                info.size = Some(UInt::new(size).unwrap());
+
+                let image_msg = ImageMessageEventContent::encrypted(
+                    caption.unwrap_or("MY TEST IMAGE".to_string()),
+                    uploaded,
+                )
+                .info(Some(Box::new(info)));
+
                 return room
                     .timeline
                     .send(AnyMessageLikeEventContent::RoomMessage(
-                        RoomMessageEventContent::new(MessageType::Image(
-                            ImageMessageEventContent::encrypted(
-                                "My test image".to_string(),
-                                uploaded,
-                            )
-                            .info(ImageInfo {
-                                height: Some(UInt::new(1920).unwrap()),
-                                width: Some(UInt::new(1080).unwrap()),
-                                mimetype: Some("image/jpeg".to_string()),
-                                size: Some(UInt::new(file_size).unwrap()),
-                                ..Default::default()
-                            }),
-                        )),
+                        RoomMessageEventContent::new(MessageType::Image(image_msg)),
                     ))
                     .await
                     .map_or_else(
                         |err| {
-                            tracing::error!(error = %err, "failed to send message");
+                            tracing::error!(error = %err, "failed to send image");
                             MatrixSendMessageResponse::Err {
-                                message: "failed to send message".to_string(),
+                                message: "failed to send image".to_string(),
                             }
                         },
                         |_| MatrixSendMessageResponse::Ok {},
