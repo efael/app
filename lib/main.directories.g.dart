@@ -22,10 +22,12 @@ import 'package:messenger/pages/home/widgets/chat_list_wb.dart'
     as _messenger_pages_home_widgets_chat_list_wb;
 import 'package:messenger/pages/home/widgets/chat_tile_wb.dart'
     as _messenger_pages_home_widgets_chat_tile_wb;
-import 'package:messenger/pages/verifysession/pages/incoming_verification_failed_screen.dart'
-    as _messenger_pages_verifysession_pages_incoming_verification_failed_screen;
-import 'package:messenger/pages/verifysession/pages/incoming_verification_screen.dart'
-    as _messenger_pages_verifysession_pages_incoming_verification_screen;
+import 'package:messenger/pages/verifysession/pages/verification_complete_failed_screen.dart'
+    as _messenger_pages_verifysession_pages_verification_complete_failed_screen;
+import 'package:messenger/pages/verifysession/pages/verification_emoji_screen.dart'
+    as _messenger_pages_verifysession_pages_verification_emoji_screen;
+import 'package:messenger/pages/verifysession/pages/verification_screen.dart'
+    as _messenger_pages_verifysession_pages_verification_screen;
 import 'package:messenger/widgets/user_avatar_wb.dart'
     as _messenger_widgets_user_avatar_wb;
 import 'package:widgetbook/widgetbook.dart' as _widgetbook;
@@ -41,23 +43,34 @@ final directories = <_widgetbook.WidgetbookNode>[
             name: 'pages',
             children: [
               _widgetbook.WidgetbookComponent(
-                name: 'IncomingVerificationFailedScreen',
+                name: 'VerificationCompleteFailedScreen',
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
                     name: 'Default',
                     builder:
-                        _messenger_pages_verifysession_pages_incoming_verification_failed_screen
-                            .incomingVerificationCompleteFailedScreenBuilder,
+                        _messenger_pages_verifysession_pages_verification_complete_failed_screen
+                            .verificationCompleteFailedScreenBuilder,
                   ),
                 ],
               ),
               _widgetbook.WidgetbookComponent(
-                name: 'IncomingVerificationScreen',
+                name: 'VerificationEmojiScreen',
                 useCases: [
                   _widgetbook.WidgetbookUseCase(
                     name: 'Default',
                     builder:
-                        _messenger_pages_verifysession_pages_incoming_verification_screen
+                        _messenger_pages_verifysession_pages_verification_emoji_screen
+                            .verificationEmojiCompareScreen,
+                  ),
+                ],
+              ),
+              _widgetbook.WidgetbookComponent(
+                name: 'VerificationScreen',
+                useCases: [
+                  _widgetbook.WidgetbookUseCase(
+                    name: 'Default',
+                    builder:
+                        _messenger_pages_verifysession_pages_verification_screen
                             .buildUseCase,
                   ),
                 ],

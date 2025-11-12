@@ -6,12 +6,13 @@ import "package:messenger/pages/verifysession/widgets/verification_button.dart";
 import "package:messenger/pages/verifysession/widgets/verification_device_item.dart";
 import "package:messenger/pages/verifysession/widgets/verification_email_item.dart";
 import "package:messenger/pages/verifysession/widgets/verification_header_widget.dart";
+import "package:messenger/pages/verifysession/widgets/verification_text_button.dart";
 import "package:widgetbook/widgetbook.dart";
 import "package:widgetbook_annotation/widgetbook_annotation.dart" as widgetbook;
 
-@widgetbook.UseCase(name: "Default", type: IncomingVerificationScreen, path: "$path/pages")
+@widgetbook.UseCase(name: "Default", type: VerificationScreen, path: "$path/pages")
 Widget buildUseCase(BuildContext context) {
-  return IncomingVerificationScreen(
+  return VerificationScreen(
     verificationHeaderType: context.knobs.object.dropdown(
       label: "Incoming Verification Header Type",
       options: VerificationHeaderType.values,
@@ -23,15 +24,15 @@ Widget buildUseCase(BuildContext context) {
   );
 }
 
-class IncomingVerificationScreen extends StatefulWidget {
+class VerificationScreen extends StatefulWidget {
   VerificationHeaderType verificationHeaderType;
-  IncomingVerificationScreen({super.key, required this.verificationHeaderType});
+  VerificationScreen({super.key, required this.verificationHeaderType});
 
   @override
-  State<IncomingVerificationScreen> createState() => _IncomingVerificationScreenState();
+  State<VerificationScreen> createState() => _VerificationScreenState();
 }
 
-class _IncomingVerificationScreenState extends State<IncomingVerificationScreen> {
+class _VerificationScreenState extends State<VerificationScreen> {
   final List<String> optionsText = [
     "Verfy the other device to keep your message history secure",
     "Fox extra security, another user wants to verify your identity. You'll be shown a sent of emojis to compare.",
@@ -119,27 +120,7 @@ class _IncomingVerificationScreenState extends State<IncomingVerificationScreen>
                 const SizedBox(height: 12),
 
               if (widget.verificationHeaderType != VerificationHeaderType.loading)
-                TextButton(
-                  onPressed: () {},
-                  style: ButtonStyle(
-                    fixedSize: WidgetStatePropertyAll<Size>(
-                      Size(
-                        MediaQuery.of(context).size.width > 600
-                            ? 600
-                            : MediaQuery.of(context).size.width,
-                        48,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    "Ignore",
-                    style: consts.typography.text2.copyWith(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                VerificationTextButton(title: "Ignore", onPressed: () {}),
             ],
           ),
         ),

@@ -7,9 +7,9 @@ import "package:widgetbook/widgetbook.dart";
 
 import "package:widgetbook_annotation/widgetbook_annotation.dart" as widgetbook;
 
-@widgetbook.UseCase(name: "Default", type: IncomingVerificationCompleteFailedScreen, path: "$path/pages")
-Widget incomingVerificationCompleteFailedScreenBuilder(BuildContext context) {
-  return IncomingVerificationCompleteFailedScreen(
+@widgetbook.UseCase(name: "Default", type: VerificationCompleteFailedScreen, path: "$path/pages")
+Widget verificationCompleteFailedScreenBuilder(BuildContext context) {
+  return VerificationCompleteFailedScreen(
     verificationHeaderType: context.knobs.object.dropdown(
       label: "Type",
       options: <VerificationHeaderType>[
@@ -24,15 +24,15 @@ Widget incomingVerificationCompleteFailedScreenBuilder(BuildContext context) {
   );
 }
 
-class IncomingVerificationCompleteFailedScreen extends StatefulWidget {
+class VerificationCompleteFailedScreen extends StatefulWidget {
   VerificationHeaderType verificationHeaderType;
-  IncomingVerificationCompleteFailedScreen({super.key, required this.verificationHeaderType});
+  VerificationCompleteFailedScreen({super.key, required this.verificationHeaderType});
 
   @override
-  State<IncomingVerificationCompleteFailedScreen> createState() => _IncomingVerificationCompleteFailedScreenState();
+  State<VerificationCompleteFailedScreen> createState() => _VerificationCompleteFailedScreenState();
 }
 
-class _IncomingVerificationCompleteFailedScreenState extends State<IncomingVerificationCompleteFailedScreen> {
+class _VerificationCompleteFailedScreenState extends State<VerificationCompleteFailedScreen> {
   final List<String> optionsText = [
     "Now you can read or send message securely on your other device.",
     "Either the request timed out, the request was denied, or there was a verification mismatch.",
@@ -48,11 +48,11 @@ class _IncomingVerificationCompleteFailedScreenState extends State<IncomingVerif
           child: Column(
             children: [
               const SizedBox(height: 70),
-          
+
               VerificationHeaderWidget(verificationHeaderType: widget.verificationHeaderType),
-          
+
               const SizedBox(height: 24),
-          
+
               Text(
                 "Verification requested",
                 style: consts.typography.text1.copyWith(
@@ -62,9 +62,9 @@ class _IncomingVerificationCompleteFailedScreenState extends State<IncomingVerif
                 ),
                 textAlign: TextAlign.center,
               ),
-          
+
               const SizedBox(height: 12),
-          
+
               Text(
                 widget.verificationHeaderType == VerificationHeaderType.complete
                     ? optionsText[0]
@@ -75,13 +75,11 @@ class _IncomingVerificationCompleteFailedScreenState extends State<IncomingVerif
                 ),
                 textAlign: TextAlign.center,
               ),
-          
+
               const Spacer(),
-          
-              VerificationButton(title: "Done", onPressed: () {
-                
-              },),
-          
+
+              VerificationButton(title: "Done", onPressed: () {}),
+
               const SizedBox(height: 24),
             ],
           ),
