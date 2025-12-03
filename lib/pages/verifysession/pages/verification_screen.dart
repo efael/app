@@ -114,7 +114,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               Spacer(),
 
               if (widget.verificationHeaderType != VerificationHeaderType.loading)
-                VerificationButton(title: "Start verification"),
+                VerificationButton(title: "Start verification", onPressed: () => {},),
 
               if (widget.verificationHeaderType != VerificationHeaderType.loading)
                 const SizedBox(height: 12),
